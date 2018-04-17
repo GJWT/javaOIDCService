@@ -1,4 +1,4 @@
-package utils;
+package org.oidc.service.util;
 
 /**
  * This class has utility methods for various services

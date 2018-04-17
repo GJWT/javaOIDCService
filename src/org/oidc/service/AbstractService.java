@@ -1,17 +1,16 @@
-package service;
+package org.oidc.service;
 
-import config.ServiceConfig;
-import interfaces.State;
-import enums.ClientAuthenticationMethod;
-import enums.EndpointName;
-import enums.HttpMethod;
-import enums.SerializationType;
-import enums.ServiceName;
-import helperclasses.HttpArguments;
-import helperclasses.HttpHeader;
+import org.oidc.service.base.ServiceConfig;
+import org.oidc.service.data.State;
+import org.oidc.service.base.enums.ClientAuthenticationMethod;
+import org.oidc.service.base.enums.EndpointName;
+import org.oidc.service.base.enums.HttpMethod;
+import org.oidc.service.base.enums.SerializationType;
+import org.oidc.service.base.enums.ServiceName;
+import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.HttpHeader;
 import java.util.Map;
-import servicecontext.ServiceContext;
-import utils.ServiceUtil;
+import org.oidc.service.base.ServiceContext;
 
 /**
  * This is the base class for all services and provides default implementation for various methods.
