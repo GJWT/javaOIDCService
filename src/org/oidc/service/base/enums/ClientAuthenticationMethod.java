@@ -1,4 +1,4 @@
-package enums;
+package org.oidc.service.base.enums;
 
 /**
  * Types of ClientAuthenticationMethods

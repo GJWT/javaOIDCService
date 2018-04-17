@@ -1,4 +1,4 @@
-package enums;
+package org.oidc.service.base.enums;
 
 /**
  * The name of the endpoint on the server that the request should be sent to

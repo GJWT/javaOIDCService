@@ -1,4 +1,4 @@
-package enums;
+package org.oidc.service.base.enums;
 
 /**
  * All the algorithms that can be used for signing or verifying a token as determined by Auth0
