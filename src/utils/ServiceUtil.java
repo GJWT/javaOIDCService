@@ -10,6 +10,6 @@ public class ServiceUtil {
      * @return the query/fragment part
      **/
     public static String getUrlInfo(String url) {
-
+        return null;
     }
 }

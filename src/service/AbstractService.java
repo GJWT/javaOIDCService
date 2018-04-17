@@ -7,10 +7,10 @@ import enums.EndpointName;
 import enums.HttpMethod;
 import enums.SerializationType;
 import enums.ServiceName;
-import helper_classes.HttpArguments;
-import helper_classes.HttpHeader;
+import helperclasses.HttpArguments;
+import helperclasses.HttpHeader;
 import java.util.Map;
-import service_context.ServiceContext;
+import servicecontext.ServiceContext;
 import utils.ServiceUtil;
 
 /**
@@ -157,7 +157,7 @@ public abstract class AbstractService implements Service {
             String responseBody,
             SerializationType serializationType,
             String stateKey) {
-
+        return null;
     }
 
     /**
@@ -170,7 +170,7 @@ public abstract class AbstractService implements Service {
      * @return the parsed and to some extent verified response
      **/
     public Message parseResponse(String responseBody) {
-
+        return null;
     }
 
     /**
@@ -185,7 +185,7 @@ public abstract class AbstractService implements Service {
      **/
     public Message parseResponse(
             String responseBody, SerializationType serializationType) {
-
+        return null;
     }
 
     /**
@@ -203,7 +203,7 @@ public abstract class AbstractService implements Service {
      * @return HttpArguments
      */
     public HttpArguments getRequestParameters(Map<String,String> requestArguments) {
-
+        return null;
     }
 
     public String getEndpoint() {
