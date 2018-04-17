@@ -1,7 +1,7 @@
-package interfaces;
+package org.oidc.service;
 
-import enums.SerializationType;
-import helper_classes.HttpArguments;
+import org.oidc.service.base.enums.SerializationType;
+import org.oidc.service.base.HttpArguments;
 import java.util.Map;
 
 /**

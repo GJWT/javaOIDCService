@@ -1,6 +1,6 @@
-package helper_classes;
+package org.oidc.service.base;
 
-import enums.HttpMethod;
+import org.oidc.service.base.enums.HttpMethod;
 
 /**
  * HttpArguments containing Http method, url, body, and header

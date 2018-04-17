@@ -1,4 +1,4 @@
-package helper_classes;
+package org.oidc.service.base;
 
 /**
  * Contains authorization and content-type that defines the operating

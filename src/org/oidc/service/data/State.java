@@ -1,6 +1,6 @@
-package interfaces;
+package org.oidc.service.data;
 
-import enums.MessageType;
+import org.oidc.service.base.enums.MessageType;
 import java.util.List;
 import java.util.Map;
 
