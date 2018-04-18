@@ -1,16 +1,15 @@
 package org.oidc.service;
 
-import org.oidc.service.base.ServiceConfig;
-import org.oidc.service.data.State;
+import java.util.Map;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.service.base.HttpArguments;
-import org.oidc.service.base.HttpHeader;
-import java.util.Map;
+import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.data.State;
 
 /**
  * This is the base class for all services and provides default implementation for various methods.
