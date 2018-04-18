@@ -1,8 +1,8 @@
 package org.oidc.service.data;
 
-import org.oidc.common.MessageType;
 import java.util.List;
 import java.util.Map;
+import org.oidc.common.MessageType;
 
 /**
  Contract for cache which can be implemented by developers using in-memory

@@ -1,8 +1,8 @@
 package org.oidc.service;
 
+import java.util.Map;
 import org.oidc.common.SerializationType;
 import org.oidc.service.base.HttpArguments;
-import java.util.Map;
 
 /**
  * Provides the methods that are needed to support any
