@@ -1,6 +1,6 @@
 package org.oidc.service.base;
 
-import org.oidc.service.base.enums.HttpMethod;
+import org.oidc.common.HttpMethod;
 
 /**
  * HttpArguments containing Http method, url, body, and header

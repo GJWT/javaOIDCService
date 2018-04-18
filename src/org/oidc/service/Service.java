@@ -1,6 +1,6 @@
 package org.oidc.service;
 
-import org.oidc.service.base.enums.SerializationType;
+import org.oidc.common.SerializationType;
 import org.oidc.service.base.HttpArguments;
 import java.util.Map;
 

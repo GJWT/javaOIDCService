@@ -1,6 +1,6 @@
 package org.oidc.service.data;
 
-import org.oidc.service.base.enums.MessageType;
+import org.oidc.common.MessageType;
 import java.util.List;
 import java.util.Map;
 
