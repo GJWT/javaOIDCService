@@ -1,4 +1,4 @@
-package enums;
+package org.oidc.common;
 
 /**
  * Specifies whether KeySpecifications is referring to a file or an url
