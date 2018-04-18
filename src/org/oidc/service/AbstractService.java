@@ -2,11 +2,11 @@ package org.oidc.service;
 
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.data.State;
-import org.oidc.service.base.enums.ClientAuthenticationMethod;
-import org.oidc.service.base.enums.EndpointName;
-import org.oidc.service.base.enums.HttpMethod;
-import org.oidc.service.base.enums.SerializationType;
-import org.oidc.service.base.enums.ServiceName;
+import org.oidc.common.ClientAuthenticationMethod;
+import org.oidc.common.EndpointName;
+import org.oidc.common.HttpMethod;
+import org.oidc.common.SerializationType;
+import org.oidc.common.ServiceName;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.HttpHeader;
 import java.util.Map;
