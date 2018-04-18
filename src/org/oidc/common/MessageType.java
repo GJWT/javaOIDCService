@@ -1,4 +1,4 @@
-package org.oidc.service.base.enums;
+package org.oidc.common;
 
 /**
  * Different types of request/response

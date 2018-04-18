@@ -1,4 +1,4 @@
-package org.oidc.service.base.enums;
+package org.oidc.common;
 
 /**
  * The way the request is serialized

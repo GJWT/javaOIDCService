@@ -1,4 +1,4 @@
-package org.oidc.service.base.enums;
+package org.oidc.common;
 
 /**
  * The names of different services supported within the Oidcservice layer
