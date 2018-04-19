@@ -1,15 +1,24 @@
 package org.oidc.service;
 
+import com.google.common.base.Strings;
 import java.util.Map;
+import org.oidc.common.AddedClaims;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
+import org.oidc.common.OidcServiceError;
+import org.oidc.common.ResponseError;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
+import org.oidc.message.Message;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.HttpHeader;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
+import org.oidc.service.util.ServiceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is the base class for all services and provides default implementation for various methods.
@@ -105,6 +114,17 @@ public abstract class AbstractService implements Service {
      */
     protected ServiceConfig serviceConfig;
 
+    private AddedClaims addedClaims;
+
+    /**
+     * Constants
+     */
+    private static final String METHOD = "method";
+    private static final String AUTHENTICATION_METHOD = "authenticationMethod";
+    private static final String SERIALIZATION_TYPE = "serializationType";
+
+    Logger logger = LoggerFactory.getLogger(AbstractService.class);
+
     /**
      * @param serviceContext It contains information that a client needs to talk to a server.
      *                       This is shared by various services.
@@ -113,8 +133,12 @@ public abstract class AbstractService implements Service {
      */
     public AbstractService(ServiceContext serviceContext,
                            State state,
-                           ServiceConfig config) {
-
+                           ServiceConfig config,
+                           AddedClaims addedClaims) {
+        this.serviceContext = serviceContext;
+        this.state = state;
+        this.config = config;
+        this.addedClaims = addedClaims;
     }
 
     /**
@@ -151,11 +175,64 @@ public abstract class AbstractService implements Service {
      * @param stateKey the key that identifies the State object
      * @return the parsed and to some extent verified response
      **/
-    public Message parseResponse(
-            String responseBody,
-            SerializationType serializationType,
-            String stateKey) {
-        return null;
+    public Message parseResponse(String responseBody, SerializationType serializationType, String stateKey) throws Exception {
+        if(serializationType == null) {
+            serializationType = this.serializationType;
+        }
+
+        if(serializationType.equals(SerializationType.URL_ENCODED)) {
+            responseBody = ServiceUtil.getUrlInfo(responseBody);
+        }
+
+        Message response = null;
+        try {
+            response = this.responseMessage.deserialize(responseBody, serializationType);
+        } catch (Exception e) {
+            if(SerializationType.JSON.equals(serializationType)) {
+                try {
+                    response = this.responseMessage.deserialize(responseBody, "jwt", this.serviceContext.getIssuer());
+                } catch (Exception exc) {
+                    logger.error("Error while deserializing");
+                    throw exc;
+                }
+            }
+        }
+
+        if(response != null && response.getError() == null) {
+            AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder()
+                    .setClientId(this.serviceContext.getClientId())
+                    .setIssuer(this.serviceContext.getIssuer())
+                    .setKeyJar(this.serviceContext.getKeyJar())
+                    .setShouldVerify(true)
+                    .buildAddedClaims();
+
+            boolean isSuccessful;
+            try {
+                isSuccessful = response.verify(addedClaims);
+            } catch (Exception e) {
+                logger.error("Exception while verifying response");
+                throw e;
+            }
+
+            if(!isSuccessful) {
+                logger.error("Verification of the response failed");
+                throw new OidcServiceError("Verification of the response failed");
+            }
+
+            if(response.getType() instanceof AuthorizationResponse && Strings.isNullOrEmpty(response.getScope())) {
+                response.setScope(addedClaims.getScope());
+            }
+
+            if(!Strings.isNullOrEmpty(stateKey)) {
+                response = this.postParseResponse(response, stateKey);
+            }
+        }
+
+        if(response == null) {
+            throw new ResponseError("Missing or faulty response");
+        }
+
+        return response;
     }
 
     /**
@@ -167,8 +244,8 @@ public abstract class AbstractService implements Service {
      * @param responseBody The response, can be either in a JSON or an urlencoded format
      * @return the parsed and to some extent verified response
      **/
-    public Message parseResponse(String responseBody) {
-        return null;
+    public Message parseResponse(String responseBody) throws Exception {
+        return parseResponse(responseBody, SerializationType.JSON, "");
     }
 
     /**
@@ -182,8 +259,8 @@ public abstract class AbstractService implements Service {
      * @return the parsed and to some extent verified response
      **/
     public Message parseResponse(
-            String responseBody, SerializationType serializationType) {
-        return null;
+            String responseBody, SerializationType serializationType) throws Exception {
+        return parseResponse(responseBody, serializationType, "");
     }
 
     /**
@@ -201,7 +278,44 @@ public abstract class AbstractService implements Service {
      * @return HttpArguments
      */
     public HttpArguments getRequestParameters(Map<String,String> requestArguments) {
-        return null;
+        if(Strings.isNullOrEmpty(requestArguments.get(METHOD))) {
+            requestArguments.put(METHOD, this.httpMethod.name());
+        }
+
+        if(Strings.isNullOrEmpty(requestArguments.get(AUTHENTICATION_METHOD))) {
+            requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name());
+        }
+
+        if(Strings.isNullOrEmpty(requestArguments.get(SERIALIZATION_TYPE))) {
+            requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name());
+        }
+
+        HttpArguments httpArguments = new HttpArguments();
+        httpArguments.setHttpMethod(httpMethod);
+
+        AddedClaims addedClaimsCopy = new AddedClaims.AddedClaimsBuilder().setAddedClaims(addedClaims);
+        if(!Strings.isNullOrEmpty(this.serviceContext.getIssuer())) {
+            addedClaimsCopy.buildAddedClaimsBuilder().setIssuer(this.serviceContext.getIssuer()).buildAddedClaims();
+        }
+
+        SerializationType contentType;
+        HttpHeader httpHeader = null;
+        if(HttpMethod.POST.equals(httpMethod) || HttpMethod.PUT.equals(httpMethod)) {
+            if(SerializationType.URL_ENCODED.equals(serializationType)) {
+                contentType = SerializationType.URL_ENCODED;
+            } else {
+                contentType = SerializationType.JSON;
+            }
+
+            httpArguments.setBody(ServiceUtil.getHttpBody(request, contentType));
+            httpHeader.setContentType(contentType.name());
+        }
+
+        if(httpHeader != null) {
+            httpArguments.setHeader(httpHeader);
+        }
+
+        return httpArguments;
     }
 
     public String getEndpoint() {

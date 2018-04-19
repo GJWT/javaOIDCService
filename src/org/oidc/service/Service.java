@@ -37,7 +37,7 @@ public interface Service {
      * @param stateKey The key that corresponds to the appropriate State object
      * @return the parsed and to some extent verified response
      **/
-    Message parseResponse(String response, SerializationType serializationType, String stateKey);
+    Message parseResponse(String response, SerializationType serializationType, String stateKey) throws Exception;
 
     /**
      This the start of a pipeline that will:
@@ -54,7 +54,7 @@ public interface Service {
      * @param response The response, can be either in a JSON or an urlencoded format
      * @return the parsed and to some extent verified response
      **/
-    Message parseResponse(String response);
+    Message parseResponse(String response) throws Exception;
 
     /**
      This is the start of a pipeline that will:
@@ -71,7 +71,7 @@ public interface Service {
      * @param serializationType  which serialization that was used
      * @return the parsed and to some extent verified response
      **/
-    Message parseResponse(String response, SerializationType serializationType);
+    Message parseResponse(String response, SerializationType serializationType) throws Exception;
 
     /**
      * This method will run after the response has been parsed and verified.

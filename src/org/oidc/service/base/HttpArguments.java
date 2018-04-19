@@ -10,7 +10,7 @@ public class HttpArguments {
     /**
      * Specifies whether it is a POST or GET request
      */
-    private HttpMethod method;
+    private HttpMethod httpMethod;
     /**
      * The url of the resource
      */
@@ -26,26 +26,33 @@ public class HttpArguments {
     private HttpHeader header;
 
     /**
-     * @param method Specifies whether it is a POST or GET request
+     * @param httpMethod Specifies whether it is a POST or GET request
      * @param url The url of the resource
      * @param body Used to carry the entity-body associated with the request or response
      *             (optional)
      * @param header Defines the operating parameters of the Http transaction
      */
-    public HttpArguments(HttpMethod method, String url, String body, HttpHeader header) {
+    public HttpArguments(HttpMethod httpMethod, String url, String body, HttpHeader header) {
+        this.httpMethod = httpMethod;
+        this.url = url;
+        this.body = body;
+        this.header = header;
+    }
+
+    public HttpArguments(HttpMethod httpMethod) {
+        this.httpMethod = httpMethod;
+    }
+
+    public HttpArguments() {
 
     }
 
-    public HttpArguments(HttpMethod method) {
-        this.method = method;
+    public HttpMethod getHttpMethod() {
+        return httpMethod;
     }
 
-    public HttpMethod getMethod() {
-        return method;
-    }
-
-    public void setMethod(HttpMethod method) {
-        this.method = method;
+    public void setHttpMethod(HttpMethod httpMethod) {
+        this.httpMethod = httpMethod;
     }
 
     public String getUrl() {
