@@ -114,12 +114,15 @@ public abstract class AbstractService implements Service {
      */
     protected ServiceConfig serviceConfig;
 
+    /**
+     * Additional claims
+     */
     private AddedClaims addedClaims;
 
     /**
      * Constants
      */
-    private static final String METHOD = "method";
+    private static final String HTTP_METHOD = "httpMethod";
     private static final String AUTHENTICATION_METHOD = "authenticationMethod";
     private static final String SERIALIZATION_TYPE = "serializationType";
 
@@ -180,7 +183,7 @@ public abstract class AbstractService implements Service {
             serializationType = this.serializationType;
         }
 
-        if(serializationType.equals(SerializationType.URL_ENCODED)) {
+        if(SerializationType.URL_ENCODED.equals(serializationType)) {
             responseBody = ServiceUtil.getUrlInfo(responseBody);
         }
 
@@ -278,8 +281,8 @@ public abstract class AbstractService implements Service {
      * @return HttpArguments
      */
     public HttpArguments getRequestParameters(Map<String,String> requestArguments) {
-        if(Strings.isNullOrEmpty(requestArguments.get(METHOD))) {
-            requestArguments.put(METHOD, this.httpMethod.name());
+        if(Strings.isNullOrEmpty(requestArguments.get(HTTP_METHOD))) {
+            requestArguments.put(HTTP_METHOD, this.httpMethod.name());
         }
 
         if(Strings.isNullOrEmpty(requestArguments.get(AUTHENTICATION_METHOD))) {
@@ -300,7 +303,7 @@ public abstract class AbstractService implements Service {
 
         SerializationType contentType;
         HttpHeader httpHeader = null;
-        if(HttpMethod.POST.equals(httpMethod) || HttpMethod.PUT.equals(httpMethod)) {
+        if(HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD)) || HttpMethod.PUT.equals(requestArguments.get(HTTP_METHOD))) {
             if(SerializationType.URL_ENCODED.equals(serializationType)) {
                 contentType = SerializationType.URL_ENCODED;
             } else {

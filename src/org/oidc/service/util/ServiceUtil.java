@@ -34,7 +34,12 @@ public class ServiceUtil {
     }
 
     /**
-     *
+     * Serializes the message request to either URL encoded or JSON format.  Will throw an
+     * exception if another serialization type is provided.
+     * @param request the message request to be serialized
+     * @param serializationType the manner in which the request message should be serialized
+     * @return the request serialized according to the passed in serialization type
+     * @throws UnsupportedContentType
      */
     public static String getHttpBody(Message request, SerializationType serializationType) throws UnsupportedContentType {
         if(SerializationType.URL_ENCODED.equals(serializationType)) {

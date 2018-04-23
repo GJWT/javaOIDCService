@@ -121,19 +121,23 @@ public class ServiceContext {
      * @param keySpecifications contains fileName and algorithm
      **/
     public void importKeys(Map<FileOrUrl,KeySpecifications> keySpecifications) {
+        if(keySpecifications == null) {
+            throw new IllegalArgumentException("null keySpecifications");
+        }
+
         Set<FileOrUrl> keys = keySpecifications.keySet();
         KeySpecifications keySpecificationsIndex;
         Key rsaKey;
         KeyBundle keyBundle;
         for(FileOrUrl key : keys) {
-            if(key.equals(FileOrUrl.FILE)) {
+            if(FileOrUrl.FILE.equals(key)) {
                 keySpecificationsIndex = keySpecifications.get(key);
-                if(keySpecificationsIndex.getAlgorithm().equalsIgnoreCase("rsa")) {
+                if("rsa".equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
                     rsaKey = new RSAKey(importPrivateRsaKeyFromFile(keySpecificationsIndex), "sig");
                     keyBundle = new KeyBundle();
                     keyJar.addKeyBundle("", keyBundle);
                 }
-            } else if (key.equals(FileOrUrl.URL)) {
+            } else if (FileOrUrl.URL.equals(key)) {
                 keyBundle = new KeyBundle();
                 keyJar.addKeyBundle(,keyBundle);
             }
@@ -152,6 +156,10 @@ public class ServiceContext {
      * @return local filename
      **/
     public String fileNameFromWebname(String webName) throws ValueError {
+        if(Strings.isNullOrEmpty(webName)) {
+            throw new IllegalArgumentException("null or empty webName");
+        }
+
         if(!webName.startsWith(this.baseUrl)) {
             throw new ValueError("Webname does not match baseUrl");
         }
