@@ -5,7 +5,13 @@ package org.oidc.common;
  **/
 public class KeySpecifications {
 
+    /**
+     * Name of the file that contains the keys
+     */
     private String fileName;
+    /**
+     * The algorithm that was used to encrypt the keys
+     */
     private String algorithm;
 
     public KeySpecifications(String fileName, String algorithm) {

@@ -4,10 +4,26 @@ import com.auth0.msg.KeyJar;
 
 public class AddedClaims {
 
+    /**
+     * The client identifier, which is always required.
+     */
     private String clientId;
+    /**
+     * The Issuer ID. This is the unique identifier of the OP/AS the
+     * client is communicating with.
+     */
     private String issuer;
+    /**
+     * Used to store keys
+     */
     private KeyJar keyJar;
+    /**
+     * Whether response should be verified or not
+     */
     private boolean shouldVerify;
+    /**
+     * https://tools.ietf.org/html/rfc6749#section-3.3
+     */
     private String scope;
 
     private AddedClaims(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify, String scope) {

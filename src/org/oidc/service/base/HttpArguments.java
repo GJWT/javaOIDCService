@@ -8,7 +8,7 @@ import org.oidc.common.HttpMethod;
 public class HttpArguments {
 
     /**
-     * Specifies whether it is a POST or GET request
+     * Specifies whether it is a POST, PUT or GET request
      */
     private HttpMethod httpMethod;
     /**
