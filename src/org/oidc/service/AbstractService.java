@@ -11,6 +11,7 @@ import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.OidcServiceException;
 import org.oidc.common.ResponseException;
+import org.oidc.common.MissingRequiredAttribute;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
@@ -172,7 +173,7 @@ public abstract class AbstractService implements Service {
 
      * @param response the response as a Message instance
      */
-    public abstract void updateServiceContext(Message response);
+    public abstract void updateServiceContext(Message response) throws MissingRequiredAttribute;
 
     /**
      This the start of a pipeline that will:

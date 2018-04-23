@@ -3,6 +3,7 @@ package org.oidc.service;
 import com.auth0.msg.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Map;
+import org.oidc.common.MissingRequiredAttribute;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.service.base.HttpArguments;
@@ -96,5 +97,5 @@ public interface Service {
      * services that are not expected to store state in the state DB.
      * @param response The response as a Message instance
      */
-    void updateServiceContext(Message response);
+    void updateServiceContext(Message response) throws MissingRequiredAttribute;
 }
