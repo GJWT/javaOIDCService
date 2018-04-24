@@ -16,7 +16,6 @@ import org.oidc.message.RegistrationResponse;
  */
 public class ServiceContextConfig {
 
-
     /**
      * Where dynamically received or statically assigned provider
      * information is stored

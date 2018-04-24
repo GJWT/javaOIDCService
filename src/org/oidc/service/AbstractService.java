@@ -184,7 +184,7 @@ public abstract class AbstractService implements Service {
         }
 
         if(SerializationType.URL_ENCODED.equals(serializationType)) {
-            responseBody = ServiceUtil.getUrlInfo(responseBody);
+            responseBody = ServiceUtil.getUrlQueryReference(responseBody);
         }
 
         Message response = null;
@@ -222,7 +222,7 @@ public abstract class AbstractService implements Service {
                 throw new OidcServiceError("Verification of the response failed");
             }
 
-            if(response.getType() instanceof AuthorizationResponse && Strings.isNullOrEmpty(response.getScope())) {
+            if(response instanceof AuthorizationResponse && Strings.isNullOrEmpty(response.getScope())) {
                 response.setScope(addedClaims.getScope());
             }
 
@@ -281,6 +281,10 @@ public abstract class AbstractService implements Service {
      * @return HttpArguments
      */
     public HttpArguments getRequestParameters(Map<String,String> requestArguments) {
+        if(requestArguments == null) {
+            throw new IllegalArgumentException("null requestArguments");
+        }
+
         if(Strings.isNullOrEmpty(requestArguments.get(HTTP_METHOD))) {
             requestArguments.put(HTTP_METHOD, this.httpMethod.name());
         }
@@ -292,6 +296,8 @@ public abstract class AbstractService implements Service {
         if(Strings.isNullOrEmpty(requestArguments.get(SERIALIZATION_TYPE))) {
             requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name());
         }
+
+        //request = self.construct_request(request_args=request_args, **kwargs)
 
         HttpArguments httpArguments = new HttpArguments();
         httpArguments.setHttpMethod(httpMethod);

@@ -110,10 +110,13 @@ public class ServiceContext {
 
     public ServiceContext(
             KeyJar keyJar,
-            ServiceContextConfig config)
-            throws NoSuchFieldException, IllegalAccessException {
+            ServiceContextConfig config) {
         this.keyJar = keyJar;
         this.config = config;
+    }
+
+    public ServiceContext() {
+
     }
 
     /**
@@ -203,6 +206,18 @@ public class ServiceContext {
 
     public KeyJar getKeyJar() {
         return keyJar;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public ServiceContextConfig getConfig() {
+        return config;
+    }
+
+    public Map<String, Boolean> getAllow() {
+        return allow;
     }
 }
 

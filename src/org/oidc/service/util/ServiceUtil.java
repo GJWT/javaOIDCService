@@ -16,9 +16,12 @@ public class ServiceUtil {
      * @param url a URL possibly containing a query or a fragment part
      * @return the query/reference part
      **/
-    public static String getUrlInfo(String url) throws MalformedURLException {
+    public static String getUrlQueryReference(String url) throws MalformedURLException {
+        if(Strings.isNullOrEmpty(url)) {
+            throw new IllegalArgumentException("null or empty url");
+        }
         String queryOrReference = null;
-        if(!Strings.isNullOrEmpty(url) && url.contains("?") && url.contains("#")) {
+        if(url.contains("?") && url.contains("#")) {
             URL urlObject = new URL(url);
             String query = urlObject.getQuery();
             String reference = urlObject.getRef();

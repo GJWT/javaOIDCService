@@ -21,7 +21,7 @@ public class ServiceConfig {
      */
     private ClientAuthenticationMethod defaultAuthenticationMethod;
     /**
-     * The HTTP method (POST, PUT, GET) that are to be used to transmit the
+     * The HTTP method (POST, GET) that are to be used to transmit the
      * request.
      */
     private HttpMethod httpMethod;
