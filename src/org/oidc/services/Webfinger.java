@@ -19,15 +19,20 @@ import org.oidc.service.util.URIUtil;
 
 public class Webfinger extends AbstractService {
 
-    Message response = new JRD();
-    ServiceName serviceName = ServiceName.WEB_FINGER;
-    private List<String> oidcIssuers;
-
     /**
-     * Constants
+     * Message that describes the response.
      */
-    private static final String ALLOW_HTTP_LINKS = "allowHttpLinks";
-
+    Message responseMessage = new JRD();
+    /**
+     * ServiceName - enum (A name of the service. Later when a RP/client is
+     * implemented instances of different services are found by using this name.
+     * Default is webFinger)
+     */
+    ServiceName serviceName = ServiceName.WEB_FINGER;
+    /**
+     * OIDC issuers
+     */
+    private List<String> oidcIssuers;
 
     public Webfinger(ServiceContext serviceContext,
                      State state,
@@ -49,6 +54,14 @@ public class Webfinger extends AbstractService {
         this(serviceContext, null, null, oidcIssuers);
     }
 
+    /**
+     * This method will run after the response has been parsed and verified.  It requires response
+     * in order for the service context to be updated.  This method may update certain attributes
+     * of the service context such as issuer, clientId, or clientSecret.  This method does not require
+     * a stateKey since it is used for services that are not expected to store state in the state DB.
+
+     * @param response the response as a Message instance
+     */
     public void updateServiceContext(Message response) throws MissingRequiredAttribute {
         List<Link> links = response.getLinks();
         if (links == null || links.isEmpty()) {
@@ -61,7 +74,7 @@ public class Webfinger extends AbstractService {
                     link.getOidcIssuer().equals(this.oidcIssuers)) {
                 href = link.getHRef();
                 if (!this.getConfig()) {
-                    if (!Strings.isNullOrEmpty(href) && href.startsWith("http://")) {
+                    if (!Strings.isNullOrEmpty(href) && href.startsWith("http://") && !isHttpAllowed) {
                         throw new ValueError("http link not allowed: " + href);
                     }
                 }
