@@ -1,14 +1,10 @@
 package org.oidc.service.util;
 
-import static org.hamcrest.core.StringContains.containsString;
-
 import java.net.MalformedURLException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.oidc.common.SerializationType;
-import org.oidc.common.UnsupportedContentType;
 
 public class ServiceUtilTest {
 
@@ -19,19 +15,19 @@ public class ServiceUtilTest {
     public void testGetQueryReferenceNullUrl() throws Exception{
         thrown.expect(MalformedURLException.class);
         thrown.expectMessage("null or empty url");
-        ServiceUtil.getUrlQueryReference(null);
+        ServiceUtil.getUrlInfo(null);
     }
 
     @Test
     public void testGetQueryReferenceEmptyUrl() throws Exception{
         thrown.expect(MalformedURLException.class);
         thrown.expectMessage("null or empty url");
-        ServiceUtil.getUrlQueryReference("");
+        ServiceUtil.getUrlInfo("");
     }
 
     @Test
     public void testGetUrlQueryReferenceWithQueryExcluded() throws Exception{
-        String url = ServiceUtil.getUrlQueryReference("https://www.google.co.in/?gfe_rd=cr&ei=ptYq" +
+        String url = ServiceUtil.getUrlInfo("https://www.google.co.in/?gfe_rd=cr&ei=ptYq" +
                 "WK26I4fT8gfth6CACg#q=geeks+for+geeks+java");
         Assert.assertTrue(url.equals("q=gnu&rlz=1C1CHZL_enIN714IN715&oq=gnu&aqs=chrome..69i57j69i60l5.653j0j7&" +
                 "sourceid=chrome&ie=UTF-8"));
@@ -39,11 +35,11 @@ public class ServiceUtilTest {
 
     @Test
     public void testGetUrlQueryReferenceWithQueryIncluded() throws Exception{
-        String url = ServiceUtil.getUrlQueryReference("https://www.google.co.in/#q=geeks+for+geeks+java");
+        String url = ServiceUtil.getUrlInfo("https://www.google.co.in/#q=geeks+for+geeks+java");
         Assert.assertTrue(url.equals("q=geeks+for+geeks+java"));
     }
 
-    @Test
+    /*@Test
     public void testGetHttpBodyWithSerializationTypeUrlEncoded() {
         ServiceUtil.getHttpBody(new AuthorizationResponse(), SerializationType.URL_ENCODED);
     }
@@ -55,8 +51,8 @@ public class ServiceUtilTest {
 
     @Test
     public void testGetHttpBodyWithIncorrectSerializationType() {
-        thrown.expect(UnsupportedContentType.class);
+        thrown.expect(UnsupportedContentTypeException.class);
         thrown.expectMessage(containsString("Unsupported content type: "));
         ServiceUtil.getHttpBody(new AuthorizationResponse(), SerializationType.JWT);
-    }
+    }*/
 }

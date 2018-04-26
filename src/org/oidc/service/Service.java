@@ -1,7 +1,9 @@
 package org.oidc.service;
 
+import com.auth0.msg.Message;
 import java.util.Map;
 import org.oidc.common.SerializationType;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.service.base.HttpArguments;
 
 /**
@@ -24,7 +26,7 @@ public interface Service {
      * @param requestArguments
      * @return HttpArguments
      */
-    HttpArguments getRequestParameters(Map<String, String> requestArguments);
+    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException;
 
     /**
      This the start of a pipeline that will:

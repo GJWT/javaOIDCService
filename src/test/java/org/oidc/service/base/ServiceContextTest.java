@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.oidc.common.ValueError;
+import org.oidc.common.ValueException;
 
 public class ServiceContextTest {
 
@@ -30,7 +30,7 @@ public class ServiceContextTest {
 
     @Test
     public void testFileNameFromWebnameWhereWebNameDoesntStartWithBaseUrl() throws Exception {
-        thrown.expect(ValueError.class);
+        thrown.expect(ValueException.class);
         thrown.expectMessage("Webname does not match baseUrl");
         ServiceContextConfig serviceContextConfig = new ServiceContextConfig.ServiceContextConfigBuilder().setBaseUrl("baseUrl")
                 .buildServiceContext();

@@ -2,6 +2,10 @@ package org.oidc.common;
 
 import com.auth0.msg.KeyJar;
 
+/**
+ * Commonly used claims.
+ * May need to be extended to accommodate additional claims
+ */
 public class AddedClaims {
 
     /**
@@ -34,6 +38,11 @@ public class AddedClaims {
         this.scope = scope;
     }
 
+    /**
+     * Constructor used to copy an AddedClaims object
+     * to another
+     * @param addedClaims
+     */
     private AddedClaims(AddedClaims addedClaims) {
         this.clientId = addedClaims.clientId;
         this.issuer = addedClaims.issuer;

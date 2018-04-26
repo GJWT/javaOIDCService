@@ -26,4 +26,12 @@ public class KeySpecifications {
     public String getAlgorithm() {
         return algorithm;
     }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
+    }
 }

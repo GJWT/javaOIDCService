@@ -5,18 +5,18 @@ import com.google.common.base.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.oidc.common.SerializationType;
-import org.oidc.common.UnsupportedContentType;
+import org.oidc.common.UnsupportedSerializationTypeException;
 
 /**
  * This class has utility methods for various services
  **/
 public class ServiceUtil {
     /**
-     Pick out the fragment or query part from a URL.
-     * @param url a URL possibly containing a query or a fragment part
-     * @return the query/reference part
+     Pick out the reference or query part from a URL.
+     * @param url a URL possibly containing a query or a reference part
+     * @return the query or reference part
      **/
-    public static String getUrlQueryReference(String url) throws MalformedURLException {
+    public static String getUrlInfo(String url) throws MalformedURLException {
         if(Strings.isNullOrEmpty(url)) {
             throw new IllegalArgumentException("null or empty url");
         }
@@ -42,15 +42,15 @@ public class ServiceUtil {
      * @param request the message request to be serialized
      * @param serializationType the manner in which the request message should be serialized
      * @return the request serialized according to the passed in serialization type
-     * @throws UnsupportedContentType
+     * @throws UnsupportedSerializationTypeException
      */
-    public static String getHttpBody(Message request, SerializationType serializationType) throws UnsupportedContentType {
+    public static String getHttpBody(Message request, SerializationType serializationType) throws UnsupportedSerializationTypeException {
         if(SerializationType.URL_ENCODED.equals(serializationType)) {
             return request.toUrlEncoded();
         } else if(SerializationType.JSON.equals(serializationType)) {
             return request.toJson();
         } else {
-            throw new UnsupportedContentType("Unsupported content type: " + serializationType);
+            throw new UnsupportedSerializationTypeException("Unsupported serialization type: " + serializationType);
         }
     }
 }
