@@ -1,8 +1,15 @@
 package org.oidc.service.base;
 
+import com.auth0.msg.ClaimType;
 import com.auth0.msg.DataLocation;
+import com.auth0.msg.Jwk;
 import com.auth0.msg.Key;
+import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
+import com.auth0.msg.ProviderConfigurationResponse;
+import com.auth0.msg.RSAKey;
+import com.auth0.msg.RegistrationRequest;
+import com.auth0.msg.RegistrationResponse;
 import com.google.common.base.Strings;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -13,9 +20,6 @@ import java.util.Set;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
-import org.oidc.message.ProviderConfigurationResponse;
-import org.oidc.message.RegistrationRequest;
-import org.oidc.message.RegistrationResponse;
 
 /**
  This class keeps information that a client needs to be able to talk
@@ -123,7 +127,7 @@ public class ServiceContext {
      The client needs its own set of keys. It can either dynamically create them or load them from local storage. This method can also fetch other entities keys provided that the URL points to a JWKS.
      * @param keySpecifications contains fileName and algorithm
      **/
-    public void importKeys(Map<FileOrUrl,KeySpecifications> keySpecifications) {
+        public void importKeys(Map<FileOrUrl,KeySpecifications> keySpecifications) {
         if(keySpecifications == null) {
             throw new IllegalArgumentException("null keySpecifications");
         }
@@ -136,13 +140,14 @@ public class ServiceContext {
             if(FileOrUrl.FILE.equals(key)) {
                 keySpecificationsIndex = keySpecifications.get(key);
                 if("rsa".equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
-                    rsaKey = new RSAKey(importPrivateRsaKeyFromFile(keySpecificationsIndex), "sig");
+                    rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()), "sig");
                     keyBundle = new KeyBundle();
+                    keyBundle.addKey(rsaKey);
                     keyJar.addKeyBundle("", keyBundle);
                 }
             } else if (FileOrUrl.URL.equals(key)) {
                 keyBundle = new KeyBundle();
-                keyJar.addKeyBundle(,keyBundle);
+                keyJar.addKeyBundle("issuer",keyBundle);
             }
         }
     }
@@ -183,8 +188,13 @@ public class ServiceContext {
      **/
     public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException {
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-        if(!Strings.isNullOrEmpty(this.providerConfigurationResponse.getIssuer())) {
-            messageDigest.update(this.providerConfigurationResponse.getIssuer().getBytes());
+        if(this.providerConfigurationResponse.getClaims() != null
+                && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) != null
+                && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) instanceof List
+                && !((List) this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER)).isEmpty()) {
+            for (String issuer : ((List<String>) this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER))) {
+                messageDigest.update(issuer.getBytes());
+            }
         } else {
             messageDigest.digest(this.issuer.getBytes());
         }
@@ -196,27 +206,115 @@ public class ServiceContext {
         }
     }
 
-    public String getClientId() {
-        return clientId;
-    }
-
-    public String getIssuer() {
-        return issuer;
-    }
-
     public KeyJar getKeyJar() {
         return keyJar;
     }
 
-    public void setIssuer(String issuer) {
-        this.issuer = issuer;
+    public void setKeyJar(KeyJar keyJar) {
+        this.keyJar = keyJar;
     }
 
     public ServiceContextConfig getConfig() {
         return config;
     }
 
+    public void setConfig(ServiceContextConfig config) {
+        this.config = config;
+    }
+
+    public ProviderConfigurationResponse getProviderConfigurationResponse() {
+        return providerConfigurationResponse;
+    }
+
+    public void setProviderConfigurationResponse(ProviderConfigurationResponse providerConfigurationResponse) {
+        this.providerConfigurationResponse = providerConfigurationResponse;
+    }
+
+    public RegistrationResponse getRegistrationResponse() {
+        return registrationResponse;
+    }
+
+    public void setRegistrationResponse(RegistrationResponse registrationResponse) {
+        this.registrationResponse = registrationResponse;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
+    public String getRequestsDirectory() {
+        return requestsDirectory;
+    }
+
+    public void setRequestsDirectory(String requestsDirectory) {
+        this.requestsDirectory = requestsDirectory;
+    }
+
     public Map<String, Boolean> getAllow() {
         return allow;
+    }
+
+    public void setAllow(Map<String, Boolean> allow) {
+        this.allow = allow;
+    }
+
+    public RegistrationResponse getBehavior() {
+        return behavior;
+    }
+
+    public void setBehavior(RegistrationResponse behavior) {
+        this.behavior = behavior;
+    }
+
+    public RegistrationRequest getClientPreferences() {
+        return clientPreferences;
+    }
+
+    public void setClientPreferences(RegistrationRequest clientPreferences) {
+        this.clientPreferences = clientPreferences;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+    public String getIssuer() {
+        return issuer;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public List<String> getRedirectUris() {
+        return redirectUris;
+    }
+
+    public void setRedirectUris(List<String> redirectUris) {
+        this.redirectUris = redirectUris;
+    }
+
+    public Map<DataLocation, String> getCallBack() {
+        return callBack;
+    }
+
+    public void setCallBack(Map<DataLocation, String> callBack) {
+        this.callBack = callBack;
     }
 }

@@ -78,6 +78,4 @@ public class HttpArguments {
     public void setHeader(HttpHeader header) {
         this.header = header;
     }
-
-
 }

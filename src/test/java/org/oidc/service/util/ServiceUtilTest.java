@@ -1,10 +1,19 @@
 package org.oidc.service.util;
 
+import static org.hamcrest.core.StringContains.containsString;
+
+import com.auth0.msg.ClaimType;
+import com.auth0.msg.Message;
+import com.auth0.msg.ProviderConfigurationResponse;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.oidc.common.SerializationType;
+import org.oidc.common.UnsupportedSerializationTypeException;
 
 public class ServiceUtilTest {
 
@@ -39,20 +48,31 @@ public class ServiceUtilTest {
         Assert.assertTrue(url.equals("q=geeks+for+geeks+java"));
     }
 
-    /*@Test
-    public void testGetHttpBodyWithSerializationTypeUrlEncoded() {
-        ServiceUtil.getHttpBody(new AuthorizationResponse(), SerializationType.URL_ENCODED);
+    @Test
+    public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException {
+        Map<ClaimType,Object> claims = new HashMap<>();
+        claims.put(ClaimType.ISSUER, "issuer");
+        Message request = new ProviderConfigurationResponse(claims);
+        String httpBody = ServiceUtil.getHttpBody(request, SerializationType.URL_ENCODED);
+        Assert.assertTrue(httpBody.equals());
     }
 
     @Test
-    public void testGetHttpBodyWithSerializationTypeJson() {
-        ServiceUtil.getHttpBody(new AuthorizationResponse(), SerializationType.JSON);
+    public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException {
+        Map<ClaimType,Object> claims = new HashMap<>();
+        claims.put(ClaimType.ISSUER, "issuer");
+        Message request = new ProviderConfigurationResponse(claims);
+        String httpBody = ServiceUtil.getHttpBody(request, SerializationType.JSON);
+        Assert.assertTrue(httpBody.equals());
     }
 
     @Test
-    public void testGetHttpBodyWithIncorrectSerializationType() {
-        thrown.expect(UnsupportedContentTypeException.class);
+    public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException {
+        thrown.expect(UnsupportedSerializationTypeException.class);
         thrown.expectMessage(containsString("Unsupported content type: "));
-        ServiceUtil.getHttpBody(new AuthorizationResponse(), SerializationType.JWT);
-    }*/
+        Map<ClaimType,Object> claims = new HashMap<>();
+        claims.put(ClaimType.ISSUER, "issuer");
+        Message request = new ProviderConfigurationResponse(claims);
+        ServiceUtil.getHttpBody(request, SerializationType.JWT);
+    }
 }

@@ -1,13 +1,14 @@
 package org.oidc.service.base;
 
+import com.auth0.msg.BuildSpecification;
+import com.auth0.msg.ProviderConfigurationResponse;
+import com.auth0.msg.RegistrationRequest;
+import com.auth0.msg.RegistrationResponse;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.KeyType;
-import org.oidc.message.ProviderConfigurationResponse;
-import org.oidc.message.RegistrationRequest;
-import org.oidc.message.RegistrationResponse;
 
 /**
  * This is the configuration that is created by the configuration of the RP
@@ -120,7 +121,7 @@ public class ServiceContextConfig {
      *  ‘path’ A path to the directory
      *  ‘size’ The key size (1024, 2048, 4096, ..)
      */
-    private Map<KeyType, buildSpecification> keyDefs;
+    private Map<KeyType,BuildSpecification> keyDefs;
 
     public ServiceContextConfig(
             ProviderConfigurationResponse providerConfigurationResponse,
@@ -221,11 +222,6 @@ public class ServiceContextConfig {
 
         public ServiceContextConfig.ServiceContextConfigBuilder setProviderInfo(ProviderConfigurationResponse providerConfigurationResponse) {
             this.providerConfigurationResponse = providerConfigurationResponse;
-            return this;
-        }
-
-        public ServiceContextConfig.ServiceContextConfigBuilder setBehavior(RegistrationResponse behavior) {
-            this.behavior = behavior;
             return this;
         }
 

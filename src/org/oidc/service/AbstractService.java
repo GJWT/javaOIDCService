@@ -1,5 +1,6 @@
 package org.oidc.service;
 
+import com.auth0.msg.ClaimType;
 import com.auth0.msg.Message;
 import com.google.common.base.Strings;
 import java.util.Map;
@@ -12,7 +13,6 @@ import org.oidc.common.ResponseException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
-import org.oidc.message.Message;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.HttpHeader;
 import org.oidc.service.base.ServiceConfig;
@@ -146,6 +146,10 @@ public abstract class AbstractService implements Service {
         this.addedClaims = addedClaims;
     }
 
+    public AbstractService() {
+
+    }
+
     /**
      This method will run after the response has been parsed and verified.  It requires response and
      stateKey in order for the service context to be updated.  StateKey is used to fetch and update
@@ -194,33 +198,22 @@ public abstract class AbstractService implements Service {
         try {
             if(SerializationType.URL_ENCODED.equals(serializationType)) {
                 response = this.responseMessage.fromUrlEncoded(urlInfo);
-            } else if(SerializationType.JWT.equals(serializationType)) {
-                response = this.responseMessage.fromJwt(urlInfo, key);
             } else if(SerializationType.JSON.equals(serializationType)) {
                 response = this.responseMessage.fromJson(urlInfo);
             }
         } catch (Exception e) {
-            if(SerializationType.JSON.equals(serializationType)) {
-                try {
-                    response = this.responseMessage.fromJson(urlInfo);
-                } catch (Exception exc) {
-                    logger.error("Error while deserializing");
-                    throw exc;
-                }
-            }
+            logger.error("Error while deserializing");
+            throw e;
         }
 
         if(response != null && response.getError() == null) {
-            AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder()
-                    .setClientId(this.serviceContext.getClientId())
-                    .setIssuer(this.serviceContext.getIssuer())
-                    .setKeyJar(this.serviceContext.getKeyJar())
-                    .setShouldVerify(true)
-                    .buildAddedClaims();
+            response.addClaim(ClaimType.CLIENT_ID, this.serviceContext.getClientId());
+            response.addClaim(ClaimType.ISSUER, this.serviceContext.getIssuer());
+            response.addClaim(ClaimType.KEY_JAR, this.serviceContext.getKeyJar());
+            response.addClaim(ClaimType.SHOULD_VERIFY, true);
 
             boolean isSuccessful;
             try {
-                //todo: how can I add the claims above? Leo
                 isSuccessful = response.verify();
             } catch (Exception e) {
                 logger.error("Exception while verifying response");
