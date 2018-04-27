@@ -112,6 +112,14 @@ public class ServiceContext {
      */
     private Map<DataLocation,String> callBack;
 
+    /**
+     * Constants
+     */
+    private static final String SIG = "sig";
+    private static final String RSA = "rsa";
+    private static final String SHA_256 = "SHA-256";
+    private static final String ISSUER = "issuer";
+
     public ServiceContext(
             KeyJar keyJar,
             ServiceContextConfig config) {
@@ -139,15 +147,15 @@ public class ServiceContext {
         for(FileOrUrl key : keys) {
             if(FileOrUrl.FILE.equals(key)) {
                 keySpecificationsIndex = keySpecifications.get(key);
-                if("rsa".equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
-                    rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()), "sig");
+                if(RSA.equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
+                    rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()), SIG);
                     keyBundle = new KeyBundle();
                     keyBundle.addKey(rsaKey);
                     keyJar.addKeyBundle("", keyBundle);
                 }
             } else if (FileOrUrl.URL.equals(key)) {
                 keyBundle = new KeyBundle();
-                keyJar.addKeyBundle("issuer",keyBundle);
+                keyJar.addKeyBundle(ISSUER,keyBundle);
             }
         }
     }
@@ -187,7 +195,7 @@ public class ServiceContext {
      * @return a list of one unique URL
      **/
     public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException {
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+        MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
         if(this.providerConfigurationResponse.getClaims() != null
                 && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) != null
                 && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) instanceof List

@@ -35,15 +35,16 @@ public class ServiceUtilTest {
     }
 
     @Test
-    public void testGetUrlQueryReferenceWithQueryExcluded() throws Exception{
-        String url = ServiceUtil.getUrlInfo("https://www.google.co.in/?gfe_rd=cr&ei=ptYq" +
-                "WK26I4fT8gfth6CACg#q=geeks+for+geeks+java");
-        Assert.assertTrue(url.equals("q=gnu&rlz=1C1CHZL_enIN714IN715&oq=gnu&aqs=chrome..69i57j69i60l5.653j0j7&" +
-                "sourceid=chrome&ie=UTF-8"));
+    public void testGetUrlQueryReferenceWithQueryIncluded() throws Exception{
+        String url = ServiceUtil.getUrlInfo("https://www.google.co.in/search?q=gnu&rlz=1C1CHZL_enIN71" +
+                "4IN715&oq=gnu&aqs=chrome..69i57j69i60l5.653j0j7&sourceid=chrome&ie=UTF" +
+                "-8#q=geeks+for+geeks+java");
+        Assert.assertTrue(url.equals("q=gnu&rlz=1C1CHZL_enIN714IN715&oq=gnu&aqs=chrome..69i5" +
+                "7j69i60l5.653j0j7&sourceid=chrome&ie=UTF-8"));
     }
 
     @Test
-    public void testGetUrlQueryReferenceWithQueryIncluded() throws Exception{
+    public void testGetUrlQueryReferenceWithQueryExcluded() throws Exception{
         String url = ServiceUtil.getUrlInfo("https://www.google.co.in/#q=geeks+for+geeks+java");
         Assert.assertTrue(url.equals("q=geeks+for+geeks+java"));
     }
