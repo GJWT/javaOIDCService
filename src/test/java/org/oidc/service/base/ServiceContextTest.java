@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
-import org.oidc.common.ValueException;
 
 public class ServiceContextTest {
 

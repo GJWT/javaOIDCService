@@ -12,8 +12,6 @@ import java.util.Map;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.util.Constants;

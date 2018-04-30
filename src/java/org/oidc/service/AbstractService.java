@@ -1,18 +1,28 @@
 package org.oidc.service;
 
+import com.auth0.msg.ClaimType;
 import com.auth0.msg.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Strings;
 import java.util.Map;
+import org.oidc.common.AddedClaims;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
+import org.oidc.common.OidcServiceException;
+import org.oidc.common.ResponseException;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.ValueException;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.HttpHeader;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
+import org.oidc.service.util.ServiceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is the base class for all services and provides default implementation for various methods.
@@ -109,6 +119,20 @@ public abstract class AbstractService implements Service {
     protected ServiceConfig serviceConfig;
 
     /**
+     * Additional claims
+     */
+    private AddedClaims addedClaims;
+
+    /**
+     * Constants
+     */
+    private static final String HTTP_METHOD = "httpMethod";
+    private static final String AUTHENTICATION_METHOD = "authenticationMethod";
+    private static final String SERIALIZATION_TYPE = "serializationType";
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractService.class);
+
+    /**
      * @param serviceContext It contains information that a client needs to talk to a server.
      *                       This is shared by various services.
      * @param state Serves as an in-memory cache
@@ -116,7 +140,15 @@ public abstract class AbstractService implements Service {
      */
     public AbstractService(ServiceContext serviceContext,
                            State state,
-                           ServiceConfig config) {
+                           ServiceConfig config,
+                           AddedClaims addedClaims) {
+        this.serviceContext = serviceContext;
+        this.state = state;
+        this.config = config;
+        this.addedClaims = addedClaims;
+    }
+
+    public AbstractService() {
 
     }
 
@@ -141,7 +173,7 @@ public abstract class AbstractService implements Service {
 
      * @param response the response as a Message instance
      */
-    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException;
+    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException;
 
     /**
      This the start of a pipeline that will:
@@ -154,10 +186,64 @@ public abstract class AbstractService implements Service {
      * @param stateKey the key that identifies the State object
      * @return the parsed and to some extent verified response
      **/
-    public Message parseResponse(
-            String responseBody,
-            SerializationType serializationType,
-            String stateKey) {
+    public Message parseResponse(String responseBody, SerializationType serializationType, String stateKey) throws Exception {
+        if(serializationType == null) {
+            serializationType = this.serializationType;
+        }
+
+        String urlInfo = null;
+        if(SerializationType.URL_ENCODED.equals(serializationType)) {
+            urlInfo = ServiceUtil.getUrlInfo(responseBody);
+        }
+
+        Message response = null;
+        try {
+            if(SerializationType.URL_ENCODED.equals(serializationType)) {
+                response = this.responseMessage.fromUrlEncoded(urlInfo);
+            } else if(SerializationType.JSON.equals(serializationType)) {
+                response = this.responseMessage.fromJson(urlInfo);
+            }
+        } catch (Exception e) {
+            logger.error("Error while deserializing");
+            throw e;
+        }
+
+        if(response != null && response.getError() == null) {
+            response.addClaim(ClaimType.CLIENT_ID, this.serviceContext.getClientId());
+            response.addClaim(ClaimType.ISSUER, this.serviceContext.getIssuer());
+            response.addClaim(ClaimType.KEY_JAR, this.serviceContext.getKeyJar());
+            response.addClaim(ClaimType.SHOULD_VERIFY, true);
+
+            boolean isSuccessful;
+            try {
+                isSuccessful = response.verify();
+            } catch (Exception e) {
+                logger.error("Exception while verifying response");
+                throw e;
+            }
+
+            if(!isSuccessful) {
+                logger.error("Verification of the response failed");
+                throw new OidcServiceException("Verification of the response failed");
+            }
+
+            //TODO
+            /*
+            if(response instanceof AuthorizationResponse && Strings.isNullOrEmpty(response.getScope())) {
+                response.setScope(addedClaims.getScope());
+            }*/
+
+            response = this.postParseResponse(response, stateKey);
+        }
+
+        if(response == null) {
+            throw new ResponseException("Missing or faulty response");
+        }
+
+        return response;
+    }
+
+    public Message postParseResponse(Message responseMessage, String stateKey) {
         return null;
     }
 
@@ -170,8 +256,8 @@ public abstract class AbstractService implements Service {
      * @param responseBody The response, can be either in a JSON or an urlencoded format
      * @return the parsed and to some extent verified response
      **/
-    public Message parseResponse(String responseBody) {
-        return null;
+    public Message parseResponse(String responseBody) throws Exception {
+        return parseResponse(responseBody, SerializationType.JSON, "");
     }
 
     /**
@@ -185,8 +271,8 @@ public abstract class AbstractService implements Service {
      * @return the parsed and to some extent verified response
      **/
     public Message parseResponse(
-            String responseBody, SerializationType serializationType) {
-        return null;
+            String responseBody, SerializationType serializationType) throws Exception {
+        return parseResponse(responseBody, serializationType, "");
     }
 
     /**
@@ -203,19 +289,194 @@ public abstract class AbstractService implements Service {
      * @param requestArguments
      * @return HttpArguments
      */
-    public HttpArguments getRequestParameters(Map<String,String> requestArguments) throws Exception {
+    public HttpArguments getRequestParameters(Map<String,String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException {
+        if(requestArguments == null) {
+            throw new IllegalArgumentException("null requestArguments");
+        }
+
+        if(Strings.isNullOrEmpty(requestArguments.get(HTTP_METHOD))) {
+            requestArguments.put(HTTP_METHOD, this.httpMethod.name());
+        }
+
+        if(Strings.isNullOrEmpty(requestArguments.get(AUTHENTICATION_METHOD))) {
+            requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name());
+        }
+
+        if(Strings.isNullOrEmpty(requestArguments.get(SERIALIZATION_TYPE))) {
+            requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name());
+        }
+
+        Message request = constructRequest();
+
+        HttpArguments httpArguments = new HttpArguments();
+        httpArguments.setHttpMethod(httpMethod);
+
+        AddedClaims addedClaimsCopy = new AddedClaims.AddedClaimsBuilder().setAddedClaims(addedClaims);
+        if(!Strings.isNullOrEmpty(this.serviceContext.getIssuer())) {
+            addedClaimsCopy.buildAddedClaimsBuilder().setIssuer(this.serviceContext.getIssuer()).buildAddedClaims();
+        }
+
+        SerializationType contentType;
+        HttpHeader httpHeader = null;
+        if(HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD))) {
+            if(SerializationType.URL_ENCODED.equals(serializationType)) {
+                contentType = SerializationType.URL_ENCODED;
+            } else {
+                contentType = SerializationType.JSON;
+            }
+
+            httpArguments.setBody(ServiceUtil.getHttpBody(request, contentType));
+            httpHeader.setContentType(contentType.name());
+        }
+
+        if(httpHeader != null) {
+            httpArguments.setHeader(httpHeader);
+        }
+
+        return httpArguments;
+    }
+
+    public Message constructRequest() {
         return null;
     }
 
+    public Message getRequestMessage() {
+        return requestMessage;
+    }
+
+    public void setRequestMessage(Message requestMessage) {
+        this.requestMessage = requestMessage;
+    }
+
+    public Message getResponseMessage() {
+        return responseMessage;
+    }
+
+    public void setResponseMessage(Message responseMessage) {
+        this.responseMessage = responseMessage;
+    }
+
+    public EndpointName getEndpointName() {
+        return endpointName;
+    }
+
+    public void setEndpointName(EndpointName endpointName) {
+        this.endpointName = endpointName;
+    }
+
+    public boolean isSynchronous() {
+        return isSynchronous;
+    }
+
+    public void setSynchronous(boolean synchronous) {
+        isSynchronous = synchronous;
+    }
+
+    public ServiceName getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(ServiceName serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public ClientAuthenticationMethod getDefaultAuthenticationMethod() {
+        return defaultAuthenticationMethod;
+    }
+
+    public void setDefaultAuthenticationMethod(ClientAuthenticationMethod defaultAuthenticationMethod) {
+        this.defaultAuthenticationMethod = defaultAuthenticationMethod;
+    }
+
+    public HttpMethod getHttpMethod() {
+        return httpMethod;
+    }
+
+    public static String getAuthenticationMethod() {
+        return AUTHENTICATION_METHOD;
+    }
+
+    public void setHttpMethod(HttpMethod httpMethod) {
+        this.httpMethod = httpMethod;
+    }
+
+    public SerializationType getSerializationType() {
+        return serializationType;
+    }
+
+    public void setSerializationType(SerializationType serializationType) {
+        this.serializationType = serializationType;
+    }
+
+    public SerializationType getDeserializationType() {
+        return deserializationType;
+    }
+
+    public void setDeserializationType(SerializationType deserializationType) {
+        this.deserializationType = deserializationType;
+    }
+
+    public ServiceConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ServiceConfig config) {
+        this.config = config;
+    }
+
     public String getEndpoint() {
-        return this.endpoint;
+        return endpoint;
     }
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
-    public ServiceConfig getConfig() {
-        return config;
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public ServiceContext getServiceContext() {
+        return serviceContext;
+    }
+
+    public void setServiceContext(ServiceContext serviceContext) {
+        this.serviceContext = serviceContext;
+    }
+
+    public Map<String, String> getPreConstruct() {
+        return preConstruct;
+    }
+
+    public void setPreConstruct(Map<String, String> preConstruct) {
+        this.preConstruct = preConstruct;
+    }
+
+    public Map<String, String> getPostConstruct() {
+        return postConstruct;
+    }
+
+    public void setPostConstruct(Map<String, String> postConstruct) {
+        this.postConstruct = postConstruct;
+    }
+
+    public ServiceConfig getServiceConfig() {
+        return serviceConfig;
+    }
+
+    public void setServiceConfig(ServiceConfig serviceConfig) {
+        this.serviceConfig = serviceConfig;
+    }
+
+    public AddedClaims getAddedClaims() {
+        return addedClaims;
+    }
+
+    public void setAddedClaims(AddedClaims addedClaims) {
+        this.addedClaims = addedClaims;
     }
 }

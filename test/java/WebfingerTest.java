@@ -9,8 +9,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.WebFingerError;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.HttpArguments;
 import org.oidc.service.util.Constants;
 import org.oidc.services.Webfinger;
 

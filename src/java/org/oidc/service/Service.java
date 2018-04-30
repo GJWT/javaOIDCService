@@ -1,10 +1,11 @@
 package org.oidc.service;
 
 import com.auth0.msg.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
-import org.oidc.common.ValueException;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.service.base.HttpArguments;
 
 /**
@@ -27,7 +28,7 @@ public interface Service {
      * @param requestArguments
      * @return HttpArguments
      */
-    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws Exception;
+    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException;
 
     /**
      This the start of a pipeline that will:
@@ -40,7 +41,7 @@ public interface Service {
      * @param stateKey The key that corresponds to the appropriate State object
      * @return the parsed and to some extent verified response
      **/
-    Message parseResponse(String response, SerializationType serializationType, String stateKey);
+    Message parseResponse(String response, SerializationType serializationType, String stateKey) throws Exception;
 
     /**
      This the start of a pipeline that will:
@@ -57,7 +58,7 @@ public interface Service {
      * @param response The response, can be either in a JSON or an urlencoded format
      * @return the parsed and to some extent verified response
      **/
-    Message parseResponse(String response);
+    Message parseResponse(String response) throws Exception;
 
     /**
      This is the start of a pipeline that will:
@@ -74,7 +75,7 @@ public interface Service {
      * @param serializationType  which serialization that was used
      * @return the parsed and to some extent verified response
      **/
-    Message parseResponse(String response, SerializationType serializationType);
+    Message parseResponse(String response, SerializationType serializationType) throws Exception;
 
     /**
      * This method will run after the response has been parsed and verified.
@@ -96,5 +97,5 @@ public interface Service {
      * services that are not expected to store state in the state DB.
      * @param response The response as a Message instance
      */
-    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException;
+    void updateServiceContext(Message response) throws MissingRequiredAttributeException;
 }
