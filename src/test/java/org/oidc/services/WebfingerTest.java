@@ -2,7 +2,6 @@ package org.oidc.services;
 
 import static org.hamcrest.core.StringContains.containsString;
 
-import java.org.oidc.service.base.HttpArguments;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +11,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.WebFingerException;
+import org.oidc.service.AbstractService;
+import org.oidc.service.base.HttpArguments;
 import org.oidc.service.util.Constants;
 
 public class WebfingerTest {
