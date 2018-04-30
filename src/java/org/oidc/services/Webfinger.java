@@ -10,6 +10,7 @@ import java.util.Map;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
+import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
@@ -61,24 +62,24 @@ public class Webfinger extends AbstractService {
      * in order for the service context to be updated.  This method may update certain attributes
      * of the service context such as issuer, clientId, or clientSecret.  This method does not require
      * a stateKey since it is used for services that are not expected to store state in the state DB.
-
+     *
      * @param response the response as a Message instance
      */
-    public void updateServiceContext(Message response) throws MissingRequiredAttributeException {
+    public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException {
         List<Link> links = response.getLinks();
         if (links == null || links.isEmpty()) {
             throw new MissingRequiredAttributeException("links is null or empty");
         }
 
         String href;
+        boolean isHttpAllowed;
         for (Link link : links) {
             if (!Strings.isNullOrEmpty(link.getOidcIssuer()) &&
                     link.getOidcIssuer().equals(this.oidcIssuers)) {
                 href = link.getHRef();
-                if (!this.getConfig()) {
-                    if (!Strings.isNullOrEmpty(href) && href.startsWith("http://") && !isHttpAllowed) {
-                        throw new ValueException("http link not allowed: " + href);
-                    }
+                isHttpAllowed = this.getConfig();
+                if (!Strings.isNullOrEmpty(href) && href.startsWith("http://") && !isHttpAllowed) {
+                    throw new ValueException("http link not allowed: " + href);
                 }
                 this.serviceContext.setIssuer(link.getHRef());
                 break;
@@ -102,7 +103,9 @@ public class Webfinger extends AbstractService {
                 queryParams.put("oidcIssuers", this.oidcIssuers);
             }
         } else {
-            queryParams.put("oidcIssuers", oidcIssuers);
+            List<String> values = queryParams.get("oidcIssuers");
+            values.addAll(oidcIssuers);
+            queryParams.put("oidcIssuers", values);
         }
 
         String host;
@@ -111,15 +114,30 @@ public class Webfinger extends AbstractService {
         } else if (resource.startsWith("http")) {
             URL url = new URL(resource);
             host = url.getHost();
-            if (url.getPort() != -1) {
-                host += ":" + url.getPort();
+            int port = url.getPort();
+            if (port != -1) {
+                host += ":" + port;
             }
         } else if (resource.startsWith("acct:")) {
             String[] hostArr = resource.split("@");
-            host = hostArr[hostArr.length - 1].replace("/", "#").replace("?", "#")
-                    .split("#")[0];
+            if(hostArr != null && hostArr.length > 0) {
+                String[] hostArrSplit = hostArr[hostArr.length - 1].replace("/", "#").replace("?", "#")
+                        .split("#");
+                if(hostArrSplit != null && hostArrSplit.length > 0) {
+                    host = hostArrSplit[0];
+                } else {
+                    throw new ValueException("host cannot be split properly");
+                }
+            } else {
+                throw new ValueException("host cannot be split properly");
+            }
         } else if (resource.startsWith("device:")) {
-            host = resource.split(":")[1];
+            String[] resourceArrSplit = resource.split(":");
+            if(resourceArrSplit != null && resourceArrSplit.length > 1) {
+                host = resourceArrSplit[1];
+            } else {
+                throw new ValueException("resource cannot be split properly");
+            }
         } else {
             throw new WebFingerException(resource + " has an unknown schema");
         }
@@ -133,36 +151,37 @@ public class Webfinger extends AbstractService {
 
     /**
      * Builds the request message and constructs the HTTP headers.
-
-     This is the starting pont for a pipeline that will:
-
-     - construct the request message
-     - add/remove information to/from the request message in the way a
-     specific client authentication method requires.
-     - gather a set of HTTP headers like Content-type and Authorization.
-     - serialize the request message into the necessary format (JSON,
-     urlencoded, signed JWT)
+     * <p>
+     * This is the starting pont for a pipeline that will:
+     * <p>
+     * - construct the request message
+     * - add/remove information to/from the request message in the way a
+     * specific client authentication method requires.
+     * - gather a set of HTTP headers like Content-type and Authorization.
+     * - serialize the request message into the necessary format (JSON,
+     * urlencoded, signed JWT)
+     *
      * @param requestArguments
      * @return HttpArguments
      */
-    public HttpArguments getRequestParameters(Map<String,String> requestArguments) throws Exception {
-        if(requestArguments == null) {
+    public HttpArguments getRequestParameters(Map<String, String> requestArguments) throws Exception {
+        if (requestArguments == null) {
             throw new IllegalArgumentException("null requestArguments");
         }
 
         String resource = requestArguments.get("resource");
-        if(Strings.isNullOrEmpty(resource)) {
+        if (Strings.isNullOrEmpty(resource)) {
             resource = addedClaims.getResource();
-            if(Strings.isNullOrEmpty(resource)) {
+            if (Strings.isNullOrEmpty(resource)) {
                 resource = this.serviceContext.getConfig().getBaseUrl();
             }
-            if(Strings.isNullOrEmpty(resource)) {
+            if (Strings.isNullOrEmpty(resource)) {
                 throw new MissingRequiredAttributeException("resource attribute is missing");
             }
         }
 
         HttpArguments httpArguments;
-        if(!Strings.isNullOrEmpty(addedClaims.getUrl())) {
+        if (!Strings.isNullOrEmpty(addedClaims.getUrl())) {
             httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource, addedClaims.getResource()));
         } else {
             httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource));

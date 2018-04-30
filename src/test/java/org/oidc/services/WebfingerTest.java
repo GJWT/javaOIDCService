@@ -10,10 +10,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.oidc.common.AddedClaims;
+import org.oidc.common.WebFingerError;
 import org.oidc.common.WebFingerException;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.util.Constants;
+import org.oidc.services.Webfinger;
 
 public class WebfingerTest {
 
@@ -67,6 +69,26 @@ public class WebfingerTest {
         thrown.expectMessage("unknown schema");
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("", null);
+    }
+
+    @Test
+    public void testGetRequestParametersNullRequestArguments() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("null requestArguments");
+        Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
+        webfinger.getRequestParameters(null);
+    }
+
+    @Test
+    public void testGetRequestParametersNullResource() throws Exception {
+        Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
+        Map<String,String> requestArguments = new HashMap<String,String>();
+        requestArguments.put("resource", null);
+
+        AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder()
+                .setOidcIssuers(Arrays.asList("http://webfinger.net/rel/profile-page", "vcard"))
+                .buildAddedClaims();
+        HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
     }
 
     @Test

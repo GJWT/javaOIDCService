@@ -5,10 +5,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import org.oidc.common.ValueException;
 
 public class URIUtil {
 
-    private static boolean hasScheme(String url) {
+    private static boolean hasScheme(String url) throws ValueException {
         if(Strings.isNullOrEmpty(url)) {
             throw new IllegalArgumentException("null or empty url");
         }
@@ -16,24 +17,30 @@ public class URIUtil {
         if(url.contains("://")) {
             return true;
         } else {
-            String authority = url.replace("/", "#").replace("?", "#")
-                    .split("#")[0];
+            String[] urlArr = url.replace("/", "#").replace("?", "#")
+                    .split("#");
+            String authority;
+            if(urlArr != null && urlArr.length > 0) {
+                authority = urlArr[0];
+            } else {
+                throw new ValueException("Could not properly split url");
+            }
 
             if(!Strings.isNullOrEmpty(authority) && authority.contains(":")) {
                 String[] splitAuthority = authority.split(":", 1);
-                if(splitAuthority.length == 2 && !Strings.isNullOrEmpty(splitAuthority[1])
-                        && splitAuthority[1].matches("\\d+")) {
+                if(splitAuthority != null && splitAuthority.length == 2 &&
+                        !Strings.isNullOrEmpty(splitAuthority[1]) && splitAuthority[1].matches("\\d+")) {
                     return false;
+                } else {
+                    throw new ValueException("Could not properly split authority");
                 }
             } else {
                 return false;
             }
         }
-
-        return true;
     }
 
-    private static boolean isAcctSchemeAssumed(String url) {
+    private static boolean isAcctSchemeAssumed(String url) throws ValueException {
         if(Strings.isNullOrEmpty(url)) {
             throw new IllegalArgumentException("null or empty url");
         }
@@ -48,21 +55,28 @@ public class URIUtil {
                     return false;
                 }
             } else {
-                return false;
+                throw new ValueException("could not properly split host");
             }
         } else {
             return false;
         }
     }
 
-    public static String normalizeUrl(String url) {
-        if(isAcctSchemeAssumed(url)) {
+    public static String normalizeUrl(String url) throws ValueException {
+        if(hasScheme(url)) {
+
+        } else if(isAcctSchemeAssumed(url)) {
             url = "acct:" + url;
         } else {
             url = "https://" + url;
         }
 
-        return url.split("#")[0];
+        String[] urlSplit = url.split("#");
+        if(urlSplit != null && urlSplit.length > 0) {
+            return urlSplit[0];
+        } else {
+            throw new ValueException("could not properly split url");
+        }
     }
 
     public static String urlEncodeUTF8(Map<String,List<String>> map) {
