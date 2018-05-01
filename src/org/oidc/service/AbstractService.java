@@ -2,6 +2,7 @@ package org.oidc.service;
 
 import com.auth0.msg.ClaimType;
 import com.auth0.msg.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.util.Map;
 import org.oidc.common.AddedClaims;
@@ -287,7 +288,7 @@ public abstract class AbstractService implements Service {
      * @param requestArguments
      * @return HttpArguments
      */
-    public HttpArguments getRequestParameters(Map<String,String> requestArguments) throws UnsupportedSerializationTypeException {
+    public HttpArguments getRequestParameters(Map<String,String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException {
         if(requestArguments == null) {
             throw new IllegalArgumentException("null requestArguments");
         }

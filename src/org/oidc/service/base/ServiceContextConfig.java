@@ -1,6 +1,5 @@
 package org.oidc.service.base;
 
-import com.auth0.msg.BuildSpecification;
 import com.auth0.msg.ProviderConfigurationResponse;
 import com.auth0.msg.RegistrationRequest;
 import com.auth0.msg.RegistrationResponse;
@@ -121,7 +120,7 @@ public class ServiceContextConfig {
      *  ‘path’ A path to the directory
      *  ‘size’ The key size (1024, 2048, 4096, ..)
      */
-    private Map<KeyType,BuildSpecification> keyDefs;
+    private Map<KeyType,KeySpecifications> keyDefs;
 
     public ServiceContextConfig(
             ProviderConfigurationResponse providerConfigurationResponse,

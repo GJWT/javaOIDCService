@@ -22,10 +22,10 @@ import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
 
 /**
- This class keeps information that a client needs to be able to talk
- to a server. Some of this information comes from configuration and some
- from dynamic provider info discovery or client registration, but information is also
- picked up during the conversation with a server.
+ * This class keeps information that a client needs to be able to talk
+ * to a server. Some of this information comes from configuration and some
+ * from dynamic provider info discovery or client registration, but information is also
+ * picked up during the conversation with a server.
  **/
 public class ServiceContext {
     /**
@@ -70,7 +70,7 @@ public class ServiceContext {
      * And that by design. So, if you want to talk to those you have to
      * allow them to diverge from the standard.
      */
-    private Map<String,Boolean> allow;
+    private Map<String, Boolean> allow;
     /**
      * If manual client registration is done, this is where the results of
      * that is kept.
@@ -110,7 +110,7 @@ public class ServiceContext {
      * In callback, we can keep the redirect uris per response mode
      * separate.
      */
-    private Map<DataLocation,String> callBack;
+    private Map<DataLocation, String> callBack;
 
     /**
      * Constants
@@ -132,11 +132,12 @@ public class ServiceContext {
     }
 
     /**
-     The client needs its own set of keys. It can either dynamically create them or load them from local storage. This method can also fetch other entities keys provided that the URL points to a JWKS.
+     * The client needs its own set of keys. It can either dynamically create them or load them from local storage. This method can also fetch other entities keys provided that the URL points to a JWKS.
+     *
      * @param keySpecifications contains fileName and algorithm
      **/
-        public void importKeys(Map<FileOrUrl,KeySpecifications> keySpecifications) {
-        if(keySpecifications == null) {
+    public void importKeys(Map<FileOrUrl, KeySpecifications> keySpecifications) {
+        if (keySpecifications == null) {
             throw new IllegalArgumentException("null keySpecifications");
         }
 
@@ -144,10 +145,10 @@ public class ServiceContext {
         KeySpecifications keySpecificationsIndex;
         Key rsaKey;
         KeyBundle keyBundle;
-        for(FileOrUrl key : keys) {
-            if(FileOrUrl.FILE.equals(key)) {
+        for (FileOrUrl key : keys) {
+            if (FileOrUrl.FILE.equals(key)) {
                 keySpecificationsIndex = keySpecifications.get(key);
-                if(RSA.equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
+                if (RSA.equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
                     rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()), SIG);
                     keyBundle = new KeyBundle();
                     keyBundle.addKey(rsaKey);
@@ -155,33 +156,34 @@ public class ServiceContext {
                 }
             } else if (FileOrUrl.URL.equals(key)) {
                 keyBundle = new KeyBundle();
-                keyJar.addKeyBundle(ISSUER,keyBundle);
+                keyJar.addKeyBundle(ISSUER, keyBundle);
             }
         }
     }
 
     /**
-     A 1<->1 map is maintained between a URL pointing to a file and
-     the name of the file in the file system.
-
-     As an example if the base_url is 'https://example.com' and a jwks_uri
-     is 'https://example.com/jwks_uri.json' then the filename of the
-     corresponding file on the local filesystem would be 'jwks_uri'.
-     Relative to the directory from which the RP instance is run.
+     * A 1<->1 map is maintained between a URL pointing to a file and
+     * the name of the file in the file system.
+     * <p>
+     * As an example if the base_url is 'https://example.com' and a jwks_uri
+     * is 'https://example.com/jwks_uri.json' then the filename of the
+     * corresponding file on the local filesystem would be 'jwks_uri'.
+     * Relative to the directory from which the RP instance is run.
+     *
      * @param webName the published URL
      * @return local filename
      **/
     public String fileNameFromWebname(String webName) throws ValueException {
-        if(Strings.isNullOrEmpty(webName)) {
+        if (Strings.isNullOrEmpty(webName)) {
             throw new IllegalArgumentException("null or empty webName");
         }
 
-        if(!webName.startsWith(this.baseUrl)) {
+        if (!webName.startsWith(this.baseUrl)) {
             throw new ValueException("Webname does not match baseUrl");
         }
 
         webName = webName.substring(this.baseUrl.length());
-        if(webName.startsWith("/")) {
+        if (webName.startsWith("/")) {
             return webName.substring(1);
         } else {
             return webName;
@@ -189,14 +191,14 @@ public class ServiceContext {
     }
 
     /**
-     Need to generate a redirectUri path that is unique for an OP/RP combo.  This is to counter the mix-up attack.
-
+     * Need to generate a redirectUri path that is unique for an OP/RP combo.  This is to counter the mix-up attack.
+     *
      * @param requestsDirectory the leading path
      * @return a list of one unique URL
      **/
     public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException {
         MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
-        if(this.providerConfigurationResponse.getClaims() != null
+        if (this.providerConfigurationResponse.getClaims() != null
                 && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) != null
                 && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) instanceof List
                 && !((List) this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER)).isEmpty()) {
@@ -207,7 +209,7 @@ public class ServiceContext {
             messageDigest.digest(this.issuer.getBytes());
         }
         messageDigest.digest(this.baseUrl.getBytes());
-        if(!requestsDirectory.startsWith("/")) {
+        if (!requestsDirectory.startsWith("/")) {
             return Arrays.asList(this.baseUrl + "/" + requestsDirectory + "/" + messageDigest.digest());
         } else {
             return Arrays.asList(this.baseUrl + requestsDirectory + "/" + messageDigest.digest());

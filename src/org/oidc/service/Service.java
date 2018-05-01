@@ -1,6 +1,7 @@
 package org.oidc.service;
 
 import com.auth0.msg.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Map;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
@@ -26,7 +27,7 @@ public interface Service {
      * @param requestArguments
      * @return HttpArguments
      */
-    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException;
+    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException;
 
     /**
      This the start of a pipeline that will:

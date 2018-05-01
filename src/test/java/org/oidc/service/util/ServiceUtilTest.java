@@ -5,6 +5,7 @@ import static org.hamcrest.core.StringContains.containsString;
 import com.auth0.msg.ClaimType;
 import com.auth0.msg.Message;
 import com.auth0.msg.ProviderConfigurationResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,25 +51,25 @@ public class ServiceUtilTest {
     }
 
     @Test
-    public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException {
+    public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException, JsonProcessingException {
         Map<ClaimType,Object> claims = new HashMap<>();
         claims.put(ClaimType.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.URL_ENCODED);
-        Assert.assertTrue(httpBody.equals());
+        //Assert.assertTrue(httpBody.equals());
     }
 
     @Test
-    public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException {
+    public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException, JsonProcessingException {
         Map<ClaimType,Object> claims = new HashMap<>();
         claims.put(ClaimType.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.JSON);
-        Assert.assertTrue(httpBody.equals());
+        //Assert.assertTrue(httpBody.equals());
     }
 
     @Test
-    public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException {
+    public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException, JsonProcessingException {
         thrown.expect(UnsupportedSerializationTypeException.class);
         thrown.expectMessage(containsString("Unsupported content type: "));
         Map<ClaimType,Object> claims = new HashMap<>();
