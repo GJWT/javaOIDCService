@@ -1,5 +1,6 @@
 package org.oidc.service.data;
 
+import com.auth0.msg.Message;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.MessageType;
