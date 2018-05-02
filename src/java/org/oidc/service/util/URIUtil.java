@@ -63,6 +63,7 @@ public class URIUtil {
     }
 
     public static String normalizeUrl(String url) throws ValueException {
+        //will have to use well-tested Java URL libraries
         if(hasScheme(url)) {
 
         } else if(isAcctSchemeAssumed(url)) {

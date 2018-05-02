@@ -479,4 +479,12 @@ public abstract class AbstractService implements Service {
     public void setAddedClaims(AddedClaims addedClaims) {
         this.addedClaims = addedClaims;
     }
+
+    public AddedClaims getAddedClaims() {
+        return addedClaims;
+    }
+
+    public void setAddedClaims(AddedClaims addedClaims) {
+        this.addedClaims = addedClaims;
+    }
 }

@@ -13,6 +13,7 @@ import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
 import org.oidc.service.AbstractService;
+import org.oidc.service.LinkInfo;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -35,26 +36,16 @@ public class Webfinger extends AbstractService {
     /**
      * OIDC issuers
      */
-    private List<String> oidcIssuers;
+    private static final String linkRelationType = Constants.OIDC_ISSUER;
 
     public Webfinger(ServiceContext serviceContext,
                      State state,
-                     ServiceConfig config,
-                     List<String> oidcIssuers) {
+                     ServiceConfig config) {
         super(serviceContext, state, config);
-        if (oidcIssuers != null && !oidcIssuers.isEmpty()) {
-            this.oidcIssuers = oidcIssuers;
-        } else {
-            this.oidcIssuers = Arrays.asList(Constants.OIDC_ISSUER);
-        }
     }
 
     public Webfinger(ServiceContext serviceContext) {
-        this(serviceContext, null, null, null);
-    }
-
-    public Webfinger(ServiceContext serviceContext, List<String> oidcIssuers) {
-        this(serviceContext, null, null, oidcIssuers);
+        this(serviceContext, null, null);
     }
 
     /**
@@ -65,48 +56,47 @@ public class Webfinger extends AbstractService {
      *
      * @param response the response as a Message instance
      */
+    @Override
     public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException {
-        List<Link> links = response.getLinks();
+        List<LinkInfo> links = (List<LinkInfo>) response.getClaims().get("links");
         if (links == null || links.isEmpty()) {
             throw new MissingRequiredAttributeException("links is null or empty");
         }
 
         String href;
         boolean isHttpAllowed;
-        for (Link link : links) {
-            if (!Strings.isNullOrEmpty(link.getOidcIssuer()) &&
-                    link.getOidcIssuer().equals(this.oidcIssuers)) {
-                href = link.getHRef();
+        for (LinkInfo link : links) {
+            if (!Strings.isNullOrEmpty(link.getRel()) &&
+                    link.getRel().equals(linkRelationType)) {
+                href = link.gethRef();
                 isHttpAllowed = this.getConfig();
                 if (!Strings.isNullOrEmpty(href) && href.startsWith("http://") && !isHttpAllowed) {
                     throw new ValueException("http link not allowed: " + href);
                 }
-                this.serviceContext.setIssuer(link.getHRef());
+                this.serviceContext.setIssuer(link.gethRef());
+                //pick the first one
                 break;
             }
         }
     }
 
     public void updateServiceContext(Message response, String stateKey) {
-        throw new UnsupportedOperationException("stateKey is not required to update service context" +
+        throw new UnsupportedOperationException("stateKey is not supported to update service context" +
                 "for the WebFinger service");
     }
 
-    public String getQuery(String resource, List<String> oidcIssuers) throws Exception {
+    /**
+     * The idea is to retrieve the host and port from the resource and discard other things
+     * like path, query, fragment.  The schema can be one of the 3 values: https, acct (when
+     * resource looks like email address), device.
+     * @param resource
+     * @return
+     * @throws Exception
+     */
+    public String getQuery(String resource) throws Exception {
+        //two things wrong w resource: no schema or may contain a url fragment and it can't
+        //you add a default schema and you remove a url fragment
         resource = URIUtil.normalizeUrl(resource);
-
-        Map<String, List<String>> queryParams = new LinkedHashMap<String, List<String>>();
-        queryParams.put("resource", Arrays.asList(resource));
-
-        if (oidcIssuers == null) {
-            if (this.oidcIssuers != null && !this.oidcIssuers.isEmpty()) {
-                queryParams.put("oidcIssuers", this.oidcIssuers);
-            }
-        } else {
-            List<String> values = queryParams.get("oidcIssuers");
-            values.addAll(oidcIssuers);
-            queryParams.put("oidcIssuers", values);
-        }
 
         String host;
         if (Strings.isNullOrEmpty(resource)) {
@@ -120,10 +110,13 @@ public class Webfinger extends AbstractService {
             }
         } else if (resource.startsWith("acct:")) {
             String[] hostArr = resource.split("@");
-            if(hostArr != null && hostArr.length > 0) {
+            if (hostArr != null && hostArr.length > 0) {
+                //TODO: see if there are existing libraries that could do this job
+                //test with Roland's test input to verify functionality
+                //todo: make it a main method and fine tune it (dont work about webfinger)
                 String[] hostArrSplit = hostArr[hostArr.length - 1].replace("/", "#").replace("?", "#")
                         .split("#");
-                if(hostArrSplit != null && hostArrSplit.length > 0) {
+                if (hostArrSplit != null && hostArrSplit.length > 0) {
                     host = hostArrSplit[0];
                 } else {
                     throw new ValueException("host cannot be split properly");
@@ -133,7 +126,7 @@ public class Webfinger extends AbstractService {
             }
         } else if (resource.startsWith("device:")) {
             String[] resourceArrSplit = resource.split(":");
-            if(resourceArrSplit != null && resourceArrSplit.length > 1) {
+            if (resourceArrSplit != null && resourceArrSplit.length > 1) {
                 host = resourceArrSplit[1];
             } else {
                 throw new ValueException("resource cannot be split properly");
@@ -142,11 +135,7 @@ public class Webfinger extends AbstractService {
             throw new WebFingerException(resource + " has an unknown schema");
         }
 
-        return String.format(Constants.WEB_FINGER_URL, host) + "?" + URIUtil.urlEncodeUTF8(queryParams);
-    }
-
-    public String getQuery(String resource) throws Exception {
-        return getQuery(resource, null);
+        return String.format(Constants.WEB_FINGER_URL, host) + "?" + URIUtil.urlEncodeUTF8(resource);
     }
 
     /**
@@ -164,16 +153,18 @@ public class Webfinger extends AbstractService {
      * @param requestArguments
      * @return HttpArguments
      */
+    @Override
     public HttpArguments getRequestParameters(Map<String, String> requestArguments) throws Exception {
         if (requestArguments == null) {
             throw new IllegalArgumentException("null requestArguments");
         }
 
         String resource = requestArguments.get("resource");
+        AddedClaims addedClaims = getAddedClaims();
         if (Strings.isNullOrEmpty(resource)) {
             resource = addedClaims.getResource();
             if (Strings.isNullOrEmpty(resource)) {
-                resource = this.serviceContext.getConfig().getBaseUrl();
+                resource = this.serviceContext.getBaseUrl();
             }
             if (Strings.isNullOrEmpty(resource)) {
                 throw new MissingRequiredAttributeException("resource attribute is missing");
