@@ -1,5 +1,6 @@
 package org.oidc.service.base;
 
+import com.auth0.msg.Claim;
 import com.auth0.msg.ClaimType;
 import com.auth0.msg.KeyJar;
 import com.auth0.msg.ProviderConfigurationResponse;
@@ -15,6 +16,7 @@ import org.junit.rules.ExpectedException;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
+import org.oidc.service.util.Constants;
 
 public class ServiceContextTest {
 
@@ -102,8 +104,8 @@ public class ServiceContextTest {
     @Test
     public void testGenerateRequestUrisWithNullIssuer() throws NoSuchAlgorithmException {
         ServiceContext serviceContext = new ServiceContext();
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, null);
+        Map<Claim,Object> claims = new HashMap<>();
+        claims.put(new Claim(Constants.ISSUER, ClaimType.STRING), null);
         ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
         serviceContext.setProviderConfigurationResponse(pcr);
         serviceContext.generateRequestUris("/url");
@@ -112,8 +114,8 @@ public class ServiceContextTest {
     @Test
     public void testGenerateRequestUrisWithForwardSlash() throws NoSuchAlgorithmException {
         ServiceContext serviceContext = new ServiceContext();
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuerValue");
+        Map<Claim,Object> claims = new HashMap<>();
+        claims.put(new Claim(Constants.ISSUER, ClaimType.STRING), "issuer");
         ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("/url");
@@ -127,8 +129,8 @@ public class ServiceContextTest {
     @Test
     public void testGenerateRequestUrisWithMultipleClaimsForPCR() throws NoSuchAlgorithmException {
         ServiceContext serviceContext = new ServiceContext();
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, Arrays.asList("issuerValue", "issuerValue2"));
+        Map<Claim,Object> claims = new HashMap<>();
+        claims.put(new Claim(Constants.ISSUER, ClaimType.LIST), Arrays.asList("issuerValue", "issuerValue2"));
         ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("/url");
@@ -138,8 +140,8 @@ public class ServiceContextTest {
     @Test
     public void testGenerateRequestUrisWithoutForwardSlash() throws NoSuchAlgorithmException {
         ServiceContext serviceContext = new ServiceContext();
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuerValue");
+        Map<Claim,Object> claims = new HashMap<>();
+        claims.put(new Claim(Constants.ISSUER, ClaimType.STRING), "issuer");
         ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("url");

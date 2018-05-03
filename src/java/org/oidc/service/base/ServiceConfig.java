@@ -43,7 +43,14 @@ public class ServiceConfig {
      */
     private Map<String,String> postConstruct;
 
-    public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod, HttpMethod httpMethod, SerializationType serializationType, SerializationType deSerializationType, Map<String, String> preConstruct, Map<String, String> postConstruct) {
+    private boolean shouldAllowHttp;
+    private boolean shouldAllowNonStandardIssuer;
+
+    public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod,
+                         HttpMethod httpMethod, SerializationType serializationType,
+                         SerializationType deSerializationType, Map<String, String> preConstruct,
+                         Map<String, String> postConstruct, boolean shouldAllowHttp,
+                         boolean shouldAllowNonStandardIssuer) {
         this.endpoint = endpoint;
         this.defaultAuthenticationMethod = defaultAuthenticationMethod;
         this.httpMethod = httpMethod;
@@ -51,6 +58,8 @@ public class ServiceConfig {
         this.deSerializationType = deSerializationType;
         this.preConstruct = preConstruct;
         this.postConstruct = postConstruct;
+        this.shouldAllowHttp = shouldAllowHttp;
+        this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
     }
 
     public String getEndpoint() {
@@ -107,5 +116,21 @@ public class ServiceConfig {
 
     public void setPostConstruct(Map<String, String> postConstruct) {
         this.postConstruct = postConstruct;
+    }
+
+    public boolean isShouldAllowHttp() {
+        return shouldAllowHttp;
+    }
+
+    public void setShouldAllowHttp(boolean shouldAllowHttp) {
+        this.shouldAllowHttp = shouldAllowHttp;
+    }
+
+    public boolean isShouldAllowNonStandardIssuer() {
+        return shouldAllowNonStandardIssuer;
+    }
+
+    public void setShouldAllowNonStandardIssuer(boolean shouldAllowNonStandardIssuer) {
+        this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
     }
 }

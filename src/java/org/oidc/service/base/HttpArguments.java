@@ -39,6 +39,18 @@ public class HttpArguments {
         this.header = header;
     }
 
+    /**
+     * @param httpMethod Specifies whether it is a POST or GET request
+     * @param url The url of the resource
+     */
+    public HttpArguments(HttpMethod httpMethod, String url) {
+        this.httpMethod = httpMethod;
+        this.url = url;
+    }
+
+    /**
+     * @param httpMethod Specifies whether it is a POST or GET request
+     */
     public HttpArguments(HttpMethod httpMethod) {
         this.httpMethod = httpMethod;
     }
