@@ -1,12 +1,15 @@
 package org.oidc.services;
 
+import com.auth0.msg.JsonResponseDescriptor;
 import com.auth0.msg.Message;
 import com.google.common.base.Strings;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import org.oidc.common.AddedClaims;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
@@ -21,12 +24,19 @@ import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
 import org.oidc.service.util.URIUtil;
 
+/**
+ * Webfinger is used to discover information about
+ * people or other entities on the Internet using standard
+ * HTTP protocols.  WebFinger discovers information for a URI
+ * that might not be usable as a locator otherwise, such as account or email URIs.
+ * See for more info: https://tools.ietf.org/html/rfc7033
+ */
 public class Webfinger extends AbstractService {
 
     /**
      * Message that describes the response.
      */
-    Message responseMessage = new JRD();
+    Message responseMessage = new JsonResponseDescriptor();
     /**
      * ServiceName - enum (A name of the service. Later when a RP/client is
      * implemented instances of different services are found by using this name.
@@ -34,14 +44,22 @@ public class Webfinger extends AbstractService {
      */
     ServiceName serviceName = ServiceName.WEB_FINGER;
     /**
-     * OIDC issuers
+     * Open ID connection provider
      */
     private static final String linkRelationType = Constants.OIDC_ISSUER;
+    /**
+     * Constants
+     */
+    private static final String UTF_8 = "UTF-8";
 
     public Webfinger(ServiceContext serviceContext,
                      State state,
                      ServiceConfig config) {
         super(serviceContext, state, config);
+        this.serviceName = ServiceName.WEB_FINGER;
+        this.requestMessage =
+        this.responseMessage = new JsonResponseDescriptor();
+
     }
 
     public Webfinger(ServiceContext serviceContext) {
@@ -64,13 +82,12 @@ public class Webfinger extends AbstractService {
         }
 
         String href;
-        boolean isHttpAllowed;
         for (LinkInfo link : links) {
             if (!Strings.isNullOrEmpty(link.getRel()) &&
                     link.getRel().equals(linkRelationType)) {
                 href = link.gethRef();
-                isHttpAllowed = this.getConfig();
-                if (!Strings.isNullOrEmpty(href) && href.startsWith("http://") && !isHttpAllowed) {
+                //allows for non-standard behavior for schema and issuer
+                if (!serviceConfig.isShouldAllowHttp() || !serviceConfig.isShouldAllowNonStandardIssuer()) {
                     throw new ValueException("http link not allowed: " + href);
                 }
                 this.serviceContext.setIssuer(link.gethRef());
@@ -93,11 +110,8 @@ public class Webfinger extends AbstractService {
      * @return
      * @throws Exception
      */
-    public String getQuery(String resource) throws Exception {
-        //two things wrong w resource: no schema or may contain a url fragment and it can't
-        //you add a default schema and you remove a url fragment
+    public String getQuery(String resource) throws ValueException, MalformedURLException, WebFingerException, UnsupportedEncodingException {
         resource = URIUtil.normalizeUrl(resource);
-
         String host;
         if (Strings.isNullOrEmpty(resource)) {
             throw new IllegalArgumentException("unknown schema");
@@ -111,9 +125,6 @@ public class Webfinger extends AbstractService {
         } else if (resource.startsWith("acct:")) {
             String[] hostArr = resource.split("@");
             if (hostArr != null && hostArr.length > 0) {
-                //TODO: see if there are existing libraries that could do this job
-                //test with Roland's test input to verify functionality
-                //todo: make it a main method and fine tune it (dont work about webfinger)
                 String[] hostArrSplit = hostArr[hostArr.length - 1].replace("/", "#").replace("?", "#")
                         .split("#");
                 if (hostArrSplit != null && hostArrSplit.length > 0) {
@@ -135,14 +146,14 @@ public class Webfinger extends AbstractService {
             throw new WebFingerException(resource + " has an unknown schema");
         }
 
-        return String.format(Constants.WEB_FINGER_URL, host) + "?" + URIUtil.urlEncodeUTF8(resource);
+        return String.format(Constants.WEB_FINGER_URL, host) + "?" + URLEncoder.encode(resource, UTF_8);
     }
 
     /**
      * Builds the request message and constructs the HTTP headers.
-     * <p>
+     *
      * This is the starting pont for a pipeline that will:
-     * <p>
+     *
      * - construct the request message
      * - add/remove information to/from the request message in the way a
      * specific client authentication method requires.
@@ -150,11 +161,12 @@ public class Webfinger extends AbstractService {
      * - serialize the request message into the necessary format (JSON,
      * urlencoded, signed JWT)
      *
-     * @param requestArguments
+     * @param requestArguments will contain the value for resource
      * @return HttpArguments
      */
     @Override
-    public HttpArguments getRequestParameters(Map<String, String> requestArguments) throws Exception {
+    public HttpArguments getRequestParameters(Map<String, String> requestArguments) throws MissingRequiredAttributeException,
+            MalformedURLException, WebFingerException, ValueException, UnsupportedEncodingException {
         if (requestArguments == null) {
             throw new IllegalArgumentException("null requestArguments");
         }
@@ -171,13 +183,7 @@ public class Webfinger extends AbstractService {
             }
         }
 
-        HttpArguments httpArguments;
-        if (!Strings.isNullOrEmpty(addedClaims.getUrl())) {
-            httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource, addedClaims.getResource()));
-        } else {
-            httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource));
-        }
-
+        HttpArguments httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource));
         return httpArguments;
     }
 }

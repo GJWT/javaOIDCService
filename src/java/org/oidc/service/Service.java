@@ -2,10 +2,14 @@ package org.oidc.service;
 
 import com.auth0.msg.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.common.ValueException;
+import org.oidc.common.WebFingerException;
 import org.oidc.service.base.HttpArguments;
 
 /**
@@ -28,7 +32,7 @@ public interface Service {
      * @param requestArguments
      * @return HttpArguments
      */
-    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException;
+    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException, MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException, UnsupportedEncodingException;
 
     /**
      This the start of a pipeline that will:
@@ -97,5 +101,5 @@ public interface Service {
      * services that are not expected to store state in the state DB.
      * @param response The response as a Message instance
      */
-    void updateServiceContext(Message response) throws MissingRequiredAttributeException;
+    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException;
 }

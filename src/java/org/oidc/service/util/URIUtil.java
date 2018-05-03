@@ -1,11 +1,8 @@
 package org.oidc.service.util;
 
 import com.google.common.base.Strings;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
 import org.oidc.common.ValueException;
+import org.apache.commons.validator.routines.UrlValidator;
 
 public class URIUtil {
 
@@ -80,37 +77,10 @@ public class URIUtil {
         }
     }
 
-    public static String urlEncodeUTF8(Map<String,List<String>> map) {
-        if(map == null) {
-            throw new IllegalArgumentException("null map");
-        }
-        StringBuilder sb = new StringBuilder();
-        String key;
-        List<String> values;
-        for (Map.Entry<String,List<String>> entry : map.entrySet()) {
-            if (sb.length() > 0) {
-                sb.append("&");
-            }
-
-            key = urlEncodeUTF8(entry.getKey().toString());
-            values = entry.getValue();
-
-            for(String value : values) {
-                sb.append(String.format("%s=%s", key, urlEncodeUTF8(value)));
-                sb.append("&");
-            }
-        }
-        if(sb.charAt(sb.length()-1) == '&') {
-            sb.deleteCharAt(sb.length()-1);
-        }
-        return sb.toString();
-    }
-
-    private static String urlEncodeUTF8(String s) {
-        try {
-            return URLEncoder.encode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new UnsupportedOperationException(e);
-        }
+    private boolean hasSchemeReal(String url) {
+        String[] schemes = {"http","https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        //urlValidator.isValid()
+        return false;
     }
 }

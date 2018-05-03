@@ -2,6 +2,7 @@ package org.oidc.service.util;
 
 import static org.hamcrest.core.StringContains.containsString;
 
+import com.auth0.msg.Claim;
 import com.auth0.msg.ClaimType;
 import com.auth0.msg.Message;
 import com.auth0.msg.ProviderConfigurationResponse;
@@ -52,8 +53,8 @@ public class ServiceUtilTest {
 
     @Test
     public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException, JsonProcessingException {
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuer");
+        Map<Claim,Object> claims = new HashMap<>();
+        claims.put(new Claim(Constants.ISSUER, ClaimType.STRING), "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.URL_ENCODED);
         //Assert.assertTrue(httpBody.equals());
@@ -61,8 +62,8 @@ public class ServiceUtilTest {
 
     @Test
     public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException, JsonProcessingException {
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuer");
+        Map<Claim,Object> claims = new HashMap<>();
+        claims.put(new Claim(Constants.ISSUER, ClaimType.STRING), "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.JSON);
         //Assert.assertTrue(httpBody.equals());
@@ -72,8 +73,8 @@ public class ServiceUtilTest {
     public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException, JsonProcessingException {
         thrown.expect(UnsupportedSerializationTypeException.class);
         thrown.expectMessage(containsString("Unsupported content type: "));
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuer");
+        Map<Claim,Object> claims = new HashMap<>();
+        claims.put(new Claim(Constants.ISSUER, ClaimType.STRING), "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         ServiceUtil.getHttpBody(request, SerializationType.JWT);
     }

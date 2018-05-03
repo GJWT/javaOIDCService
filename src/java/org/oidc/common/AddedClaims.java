@@ -1,6 +1,7 @@
 package org.oidc.common;
 
 import com.auth0.msg.KeyJar;
+import org.oidc.service.data.State;
 
 /**
  * Commonly used claims.
@@ -29,13 +30,32 @@ public class AddedClaims {
      * https://tools.ietf.org/html/rfc6749#section-3.3
      */
     private String scope;
+    /**
+     * Resource
+     */
+    private String resource;
+    /**
+     * Client authentication method - defined in enum ClientAuthenticationMethod
+     * (The client authentication method to use if nothing else is specified.
+     * Default is '' which means none.)
+     */
+    private ClientAuthenticationMethod clientAuthenticationMethod;
+    /**
+     * Serves as an in-memory cache
+     */
+    private State state;
 
-    private AddedClaims(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify, String scope) {
+    private AddedClaims(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify,
+                        String scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
+                        State state) {
         this.clientId = clientId;
         this.issuer = issuer;
         this.keyJar = keyJar;
         this.shouldVerify = shouldVerify;
         this.scope = scope;
+        this.resource = resource;
+        this.clientAuthenticationMethod = clientAuthenticationMethod;
+        this.state = state;
     }
 
     /**
@@ -49,6 +69,9 @@ public class AddedClaims {
         this.keyJar = addedClaims.keyJar;
         this.shouldVerify = addedClaims.shouldVerify;
         this.scope = addedClaims.scope;
+        this.resource = addedClaims.resource;
+        this.clientAuthenticationMethod = addedClaims.clientAuthenticationMethod;
+        this.state = addedClaims.state;
     }
 
     public String getClientId() {
@@ -71,6 +94,16 @@ public class AddedClaims {
         return scope;
     }
 
+    public String getResource() { return resource; }
+
+    public ClientAuthenticationMethod getClientAuthenticationMethod() {
+        return clientAuthenticationMethod;
+    }
+
+    public State getState() {
+        return state;
+    }
+
     public AddedClaimsBuilder buildAddedClaimsBuilder() {
         return new AddedClaimsBuilder();
     }
@@ -81,6 +114,9 @@ public class AddedClaims {
         private KeyJar keyJar;
         private boolean shouldVerify;
         private String scope;
+        private String resource;
+        private ClientAuthenticationMethod clientAuthenticationMethod;
+        private State state;
 
         public AddedClaimsBuilder setClientId(String clientId) {
             this.clientId = clientId;
@@ -102,16 +138,32 @@ public class AddedClaims {
             return this;
         }
 
+        public AddedClaimsBuilder setScope(String scope) {
+            this.scope = scope;
+            return this;
+        }
+
+        public AddedClaimsBuilder setResource(String resource) {
+            this.resource = resource;
+            return this;
+        }
+
+        public AddedClaimsBuilder setClientAuthenticationMethod(ClientAuthenticationMethod clientAuthenticationMethod) {
+            this.clientAuthenticationMethod = clientAuthenticationMethod;
+            return this;
+        }
+
+        public AddedClaimsBuilder setState(State state) {
+            this.state = state;
+            return this;
+        }
+
         public AddedClaims setAddedClaims(AddedClaims addedClaims) {
             return new AddedClaims(addedClaims);
         }
 
-        public void setScope(String scope) {
-            this.scope = scope;
-        }
-
         public AddedClaims buildAddedClaims() {
-            return new AddedClaims(clientId, issuer, keyJar, shouldVerify, scope);
+            return new AddedClaims(clientId, issuer, keyJar, shouldVerify, scope, resource, clientAuthenticationMethod, state);
         }
     }
 }

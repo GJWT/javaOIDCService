@@ -1,6 +1,6 @@
 package org.oidc.service.base;
 
-import com.auth0.msg.ClaimType;
+import com.auth0.msg.Claim;
 import com.auth0.msg.DataLocation;
 import com.auth0.msg.Jwk;
 import com.auth0.msg.Key;
@@ -20,6 +20,7 @@ import java.util.Set;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
+import org.oidc.service.util.Constants;
 
 /**
  * This class keeps information that a client needs to be able to talk
@@ -198,11 +199,12 @@ public class ServiceContext {
      **/
     public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException {
         MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
+        Claim issuerClaim = new Claim(Constants.ISSUER);
         if (this.providerConfigurationResponse.getClaims() != null
-                && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) != null
-                && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) instanceof List
-                && !((List) this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER)).isEmpty()) {
-            for (String issuer : ((List<String>) this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER))) {
+                && this.providerConfigurationResponse.getClaims().get(issuerClaim) != null
+                && this.providerConfigurationResponse.getClaims().get(issuerClaim) instanceof List
+                && !((List) this.providerConfigurationResponse.getClaims().get(issuerClaim)).isEmpty()) {
+            for (String issuer : ((List<String>) this.providerConfigurationResponse.getClaims().get(issuerClaim))) {
                 messageDigest.update(issuer.getBytes());
             }
         } else {
