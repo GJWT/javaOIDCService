@@ -202,7 +202,7 @@ public abstract class AbstractService implements Service {
             if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
                 this.responseMessage.fromUrlEncoded(urlInfo);
             } else if (SerializationType.JSON.equals(this.serializationType)) {
-                this.responseMessage.fromJson(urlInfo);
+                this.responseMessage.fromJson(responseBody);
             }
         } catch (Exception e) {
             logger.error("Error while deserializing");

@@ -44,21 +44,21 @@ public class WebfingerTest {
     public void testGetQueryWithDevice() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("device:p1.example.com");
-        Assert.assertTrue(query.equals("https://p1.example.com/.well-known/webfinger?resource=device%3Ap1.example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
+        Assert.assertTrue(query.equals("https://p1.example.com/.well-known/webfinger?device%3Ap1.example.com"));
     }
 
     @Test
     public void testGetQueryWithAcct() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("acct:bob@example.com");
-        Assert.assertTrue(query.equals("https://example.com/.well-known/webfinger?resource=acct%3Abob%40example.com&rel=http%3A%2F%2Fwebfinger.net%2Frel%2Fprofile-page&rel=vcard"));
+        Assert.assertTrue(query.equals("https://example.com/.well-known/webfinger?acct%3Abob%40example.com"));
     }
 
     @Test
     public void testGetQueryWithWWWSchema() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("www.yahoo.com");
-        Assert.fail();
+        Assert.assertTrue(query.equals("https://www.yahoo.com/.well-known/webfinger?https%3A%2F%2Fwww.yahoo.com"));
     }
 
     @Test
@@ -96,14 +96,39 @@ public class WebfingerTest {
     }
 
     @Test
+    public void testGetRequestParametersNullResourceAndNullAddedClaimsResource() throws Exception {
+        ServiceContext serviceContext = SERVICE_CONTEXT;
+        serviceContext.setBaseUrl("baseUrl");
+        Webfinger webfinger = new Webfinger(serviceContext);
+        AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource(null).buildAddedClaims();
+        webfinger.setAddedClaims(addedClaims);
+        Map<String, String> requestArguments = new HashMap<String, String>();
+        requestArguments.put("resource", null);
+        HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+    }
+
+    @Test
+    public void testGetRequestParametersNullResourceAndNullAddedClaimsResourceAndNullBaseUrl() throws Exception {
+        thrown.expect(MissingRequiredAttributeException.class);
+        thrown.expectMessage("resource attribute is missing");
+        ServiceContext serviceContext = SERVICE_CONTEXT;
+        serviceContext.setBaseUrl(null);
+        Webfinger webfinger = new Webfinger(serviceContext);
+        AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource(null).buildAddedClaims();
+        webfinger.setAddedClaims(addedClaims);
+        Map<String, String> requestArguments = new HashMap<String, String>();
+        requestArguments.put("resource", null);
+        HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+    }
+
+    @Test
     public void testGetRequestParametersUrl() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         Map<String, String> requestArguments = new HashMap<String, String>();
         requestArguments.put("resource", "acct:bob@example.com");
 
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
-        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?resource" +
-                "=acct%3Abob%40example.com&rel=http%3A%2F%2Fwebfinger.net%2Frel%2Fprofile-page&rel=vcard"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?acct%3Abob%40example.com"));
     }
 
     @Test
@@ -113,9 +138,7 @@ public class WebfingerTest {
         requestArguments.put("resource", "acct:carol@example.com");
 
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
-        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?" +
-                "resource=acct%3Acarol%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1" +
-                ".0%2Fissuer"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?acct%3Acarol%40example.com"));
     }
 
     @Test

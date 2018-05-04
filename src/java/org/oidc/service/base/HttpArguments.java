@@ -55,9 +55,7 @@ public class HttpArguments {
         this.httpMethod = httpMethod;
     }
 
-    public HttpArguments() {
-
-    }
+    public HttpArguments() {}
 
     public HttpMethod getHttpMethod() {
         return httpMethod;

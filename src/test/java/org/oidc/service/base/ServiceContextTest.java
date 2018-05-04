@@ -44,7 +44,7 @@ public class ServiceContextTest {
         serviceContext.setKeyJar(keyJar);
         Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 0);
         Map<FileOrUrl,KeySpecifications> keySpecificationsMap = new HashMap<>();
-        KeySpecifications keySpecifications = new KeySpecifications("fileName.txt", "rsa");
+        KeySpecifications keySpecifications = new KeySpecifications("salesforce.key", "rsa");
         keySpecificationsMap.put(FileOrUrl.FILE, keySpecifications);
         serviceContext.importKeys(keySpecificationsMap);
         Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 1);

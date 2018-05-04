@@ -1,47 +1,36 @@
 package org.oidc.service.util;
 
 import com.google.common.base.Strings;
+import org.apache.commons.validator.routines.RegexValidator;
 import org.oidc.common.ValueException;
 import org.apache.commons.validator.routines.UrlValidator;
 
 public class URIUtil {
 
-    private static boolean hasScheme(String url) throws ValueException {
+    private static boolean hasScheme(String url) {
         if(Strings.isNullOrEmpty(url)) {
             throw new IllegalArgumentException("null or empty url");
         }
-
-        if(url.contains("://")) {
-            return true;
-        } else {
-            String[] urlArr = url.replace("/", "#").replace("?", "#")
-                    .split("#");
-            String authority;
-            if(urlArr != null && urlArr.length > 0) {
-                authority = urlArr[0];
-            } else {
-                throw new ValueException("Could not properly split url");
-            }
-
-            if(!Strings.isNullOrEmpty(authority) && authority.contains(":")) {
-                String[] splitAuthority = authority.split(":", 1);
-                if(splitAuthority != null && splitAuthority.length == 2 &&
-                        !Strings.isNullOrEmpty(splitAuthority[1]) && splitAuthority[1].matches("\\d+")) {
-                    return false;
-                } else {
-                    throw new ValueException("Could not properly split authority");
-                }
-            } else {
-                return false;
-            }
+        if(url.contains("tel:")) {
+            String pattern = "tel:\\+[0-9]{10,12}";
+            return url.matches(pattern);
         }
+        url = url.replaceFirst("@", ".");
+        url = url.replaceFirst(".jp", ".com");
+        if(url.contains("acct:")) {
+            url = url.replaceFirst("acct:", "acct://");
+        } else if(url.contains("device:")) {
+            url = url.replaceFirst("device:", "device://");
+        } else if(url.contains("mailto:")) {
+            url = url.replaceFirst("mailto:", "mailto://");
+        }
+        String[] regexs = {"http","https", "acct", "device", "mailto"};
+        RegexValidator validator = new RegexValidator(regexs, true  );
+        UrlValidator urlValidator = new UrlValidator(regexs, validator, UrlValidator.ALLOW_ALL_SCHEMES);
+        return urlValidator.isValid(url);
     }
 
     private static boolean isAcctSchemeAssumed(String url) throws ValueException {
-        if(Strings.isNullOrEmpty(url)) {
-            throw new IllegalArgumentException("null or empty url");
-        }
-
         if(url.contains("@")) {
             String[] hostArr = url.split("@");
             if(hostArr != null && hostArr.length > 0) {
@@ -60,7 +49,6 @@ public class URIUtil {
     }
 
     public static String normalizeUrl(String url) throws ValueException {
-        //will have to use well-tested Java URL libraries
         if(hasScheme(url)) {
 
         } else if(isAcctSchemeAssumed(url)) {
@@ -69,11 +57,6 @@ public class URIUtil {
             url = "https://" + url;
         }
 
-        String[] urlSplit = url.split("#");
-        if(urlSplit != null && urlSplit.length > 0) {
-            return urlSplit[0];
-        } else {
-            throw new ValueException("could not properly split url");
-        }
+        return url.split("#")[0];
     }
 }

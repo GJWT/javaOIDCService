@@ -12,8 +12,6 @@ import java.util.Map;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
-import org.oidc.common.ResponseException;
-import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
@@ -24,10 +22,7 @@ import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
-import org.oidc.service.util.ServiceUtil;
 import org.oidc.service.util.URIUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Webfinger is used to discover information about
@@ -96,6 +91,7 @@ public class Webfinger extends AbstractService {
      * The idea is to retrieve the host and port from the resource and discard other things
      * like path, query, fragment.  The schema can be one of the 3 values: https, acct (when
      * resource looks like email address), device.
+     *
      * @param resource
      * @return
      * @throws Exception
@@ -103,9 +99,7 @@ public class Webfinger extends AbstractService {
     public String getQuery(String resource) throws ValueException, MalformedURLException, WebFingerException, UnsupportedEncodingException {
         resource = URIUtil.normalizeUrl(resource);
         String host;
-        if (Strings.isNullOrEmpty(resource)) {
-            throw new IllegalArgumentException("unknown schema");
-        } else if (resource.startsWith("http")) {
+        if (resource.startsWith("http")) {
             URL url = new URL(resource);
             host = url.getHost();
             int port = url.getPort();
@@ -128,7 +122,8 @@ public class Webfinger extends AbstractService {
         } else if (resource.startsWith("device:")) {
             String[] resourceArrSplit = resource.split(":");
             if (resourceArrSplit != null && resourceArrSplit.length > 1) {
-                host = resourceArrSplit[1];
+                host = resourceArrSplit[1].replace("/", "#").replace("?", "#")
+                        .split("#")[0];
             } else {
                 throw new ValueException("resource cannot be split properly");
             }
@@ -141,9 +136,9 @@ public class Webfinger extends AbstractService {
 
     /**
      * Builds the request message and constructs the HTTP headers.
-     *
+     * <p>
      * This is the starting pont for a pipeline that will:
-     *
+     * <p>
      * - construct the request message
      * - add/remove information to/from the request message in the way a
      * specific client authentication method requires.
@@ -176,6 +171,4 @@ public class Webfinger extends AbstractService {
         HttpArguments httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource));
         return httpArguments;
     }
-
-
 }
