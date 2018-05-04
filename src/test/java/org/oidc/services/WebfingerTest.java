@@ -1,7 +1,5 @@
 package org.oidc.services;
 
-import static org.hamcrest.core.StringContains.containsString;
-
 import com.auth0.msg.Claim;
 import com.auth0.msg.JsonResponseDescriptor;
 import com.auth0.msg.Message;

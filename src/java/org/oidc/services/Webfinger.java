@@ -39,34 +39,17 @@ import org.slf4j.LoggerFactory;
 public class Webfinger extends AbstractService {
 
     /**
-     * Message that describes the response.
-     */
-    Message responseMessage = new JsonResponseDescriptor();
-    /**
-     * ServiceName - enum (A name of the service. Later when a RP/client is
-     * implemented instances of different services are found by using this name.
-     * Default is webFinger)
-     */
-    ServiceName serviceName = ServiceName.WEB_FINGER;
-    /**
-     * Open ID connection provider
-     */
-    private static final String linkRelationType = Constants.OIDC_ISSUER;
-    /**
      * Constants
      */
     private static final String UTF_8 = "UTF-8";
-
-    private static final Logger logger = LoggerFactory.getLogger(Webfinger.class);
 
     public Webfinger(ServiceContext serviceContext,
                      State state,
                      ServiceConfig config) {
         super(serviceContext, state, config);
         this.serviceName = ServiceName.WEB_FINGER;
-        //this.requestMessage =
+        //this.requestMessage = TODO: Leo to provide me class
         this.responseMessage = new JsonResponseDescriptor();
-
     }
 
     public Webfinger(ServiceContext serviceContext) {
@@ -194,51 +177,5 @@ public class Webfinger extends AbstractService {
         return httpArguments;
     }
 
-    /**
-     * This the start of a pipeline that will:
-     * <p>
-     * - Deserializes a response into its response message class.
-     * - verifies the correctness of the response by running the
-     * verify method belonging to the message class used.
-     *
-     * @param responseBody      The response, can be either in a JSON or an urlencoded format
-     * @param serializationType which serialization that was used
-     * @param stateKey          the key that identifies the State object
-     * @return the parsed and to some extent verified response
-     **/
-    public Message parseResponse(String responseBody, SerializationType serializationType, String stateKey) throws Exception {
-        if (serializationType != null) {
-            this.serializationType = serializationType;
-        }
 
-        String urlInfo = null;
-        if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
-            urlInfo = ServiceUtil.getUrlInfo(responseBody);
-        }
-
-        try {
-            if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
-                this.responseMessage.fromUrlEncoded(urlInfo);
-            } else if (SerializationType.JSON.equals(this.serializationType)) {
-                this.responseMessage.fromJson(responseBody);
-            }
-        } catch (Exception e) {
-            logger.error("Error while deserializing");
-            throw e;
-        }
-
-        //TODO
-        /*
-        if(response instanceof AuthorizationResponse && Strings.isNullOrEmpty(response.getScope())) {
-          response.setScope(addedClaims.getScope());
-        }*/
-
-        this.responseMessage = this.postParseResponse(this.responseMessage, stateKey);
-
-        if (this.responseMessage == null) {
-            throw new ResponseException("Missing or faulty response");
-        }
-
-        return this.responseMessage;
-    }
 }

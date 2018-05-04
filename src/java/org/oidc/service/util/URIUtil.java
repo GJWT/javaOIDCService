@@ -76,11 +76,4 @@ public class URIUtil {
             throw new ValueException("could not properly split url");
         }
     }
-
-    private boolean hasSchemeReal(String url) {
-        String[] schemes = {"http","https"};
-        UrlValidator urlValidator = new UrlValidator(schemes);
-        //urlValidator.isValid()
-        return false;
-    }
 }

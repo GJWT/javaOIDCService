@@ -134,7 +134,8 @@ public class ServiceContextTest {
         ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("/url");
-        //Assert.assertTrue(requestUris.equals());
+        Assert.assertTrue(requestUris.size() == 1);
+        Assert.assertTrue(requestUris.get(0).startsWith("baseUrl/url/"));
     }
 
     /**
@@ -151,7 +152,8 @@ public class ServiceContextTest {
         ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("/url");
-        //Assert.assertTrue(requestUris.equals());
+        Assert.assertTrue(requestUris.size() == 1);
+        Assert.assertTrue(requestUris.get(0).startsWith("baseUrl/url/"));
     }
 
     @Test
@@ -164,6 +166,7 @@ public class ServiceContextTest {
         ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("url");
-        //Assert.assertTrue(requestUris.equals());
+        Assert.assertTrue(requestUris.size() == 1);
+        Assert.assertTrue(requestUris.get(0).startsWith("baseUrl/url/"));
     }
 }

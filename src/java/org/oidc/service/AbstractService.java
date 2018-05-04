@@ -22,6 +22,7 @@ import org.oidc.service.base.HttpHeader;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
+import org.oidc.service.util.Constants;
 import org.oidc.service.util.ServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +132,10 @@ public abstract class AbstractService implements Service {
     private static final String HTTP_METHOD = "httpMethod";
     private static final String AUTHENTICATION_METHOD = "authenticationMethod";
     private static final String SERIALIZATION_TYPE = "serializationType";
+    /**
+     * Open ID connection provider
+     */
+    protected static final String linkRelationType = Constants.OIDC_ISSUER;
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractService.class);
 
