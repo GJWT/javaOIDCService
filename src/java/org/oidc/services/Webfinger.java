@@ -12,6 +12,8 @@ import java.util.Map;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.ResponseException;
+import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
@@ -22,7 +24,10 @@ import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
+import org.oidc.service.util.ServiceUtil;
 import org.oidc.service.util.URIUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Webfinger is used to discover information about
@@ -52,12 +57,14 @@ public class Webfinger extends AbstractService {
      */
     private static final String UTF_8 = "UTF-8";
 
+    private static final Logger logger = LoggerFactory.getLogger(Webfinger.class);
+
     public Webfinger(ServiceContext serviceContext,
                      State state,
                      ServiceConfig config) {
         super(serviceContext, state, config);
         this.serviceName = ServiceName.WEB_FINGER;
-        this.requestMessage =
+        //this.requestMessage =
         this.responseMessage = new JsonResponseDescriptor();
 
     }
@@ -99,7 +106,7 @@ public class Webfinger extends AbstractService {
 
     public void updateServiceContext(Message response, String stateKey) {
         throw new UnsupportedOperationException("stateKey is not supported to update service context" +
-                "for the WebFinger service");
+                " for the WebFinger service");
     }
 
     /**
@@ -185,5 +192,53 @@ public class Webfinger extends AbstractService {
 
         HttpArguments httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource));
         return httpArguments;
+    }
+
+    /**
+     * This the start of a pipeline that will:
+     * <p>
+     * - Deserializes a response into its response message class.
+     * - verifies the correctness of the response by running the
+     * verify method belonging to the message class used.
+     *
+     * @param responseBody      The response, can be either in a JSON or an urlencoded format
+     * @param serializationType which serialization that was used
+     * @param stateKey          the key that identifies the State object
+     * @return the parsed and to some extent verified response
+     **/
+    public Message parseResponse(String responseBody, SerializationType serializationType, String stateKey) throws Exception {
+        if (serializationType != null) {
+            this.serializationType = serializationType;
+        }
+
+        String urlInfo = null;
+        if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
+            urlInfo = ServiceUtil.getUrlInfo(responseBody);
+        }
+
+        try {
+            if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
+                this.responseMessage.fromUrlEncoded(urlInfo);
+            } else if (SerializationType.JSON.equals(this.serializationType)) {
+                this.responseMessage.fromJson(responseBody);
+            }
+        } catch (Exception e) {
+            logger.error("Error while deserializing");
+            throw e;
+        }
+
+        //TODO
+        /*
+        if(response instanceof AuthorizationResponse && Strings.isNullOrEmpty(response.getScope())) {
+          response.setScope(addedClaims.getScope());
+        }*/
+
+        this.responseMessage = this.postParseResponse(this.responseMessage, stateKey);
+
+        if (this.responseMessage == null) {
+            throw new ResponseException("Missing or faulty response");
+        }
+
+        return this.responseMessage;
     }
 }

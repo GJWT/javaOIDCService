@@ -9,7 +9,7 @@ import org.oidc.common.ValueException;
 public class URIUtilTest {
 
     @Rule
-    ExpectedException thrown = ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testNormalizeUrlNullUrl() throws ValueException{

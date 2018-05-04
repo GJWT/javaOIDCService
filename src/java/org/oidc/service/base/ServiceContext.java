@@ -197,7 +197,7 @@ public class ServiceContext {
      * @param requestsDirectory the leading path
      * @return a list of one unique URL
      **/
-    public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException {
+    public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException, ValueException {
         MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
         Claim issuerClaim = new Claim(Constants.ISSUER);
         if (this.providerConfigurationResponse.getClaims() != null
@@ -208,7 +208,11 @@ public class ServiceContext {
                 messageDigest.update(issuer.getBytes());
             }
         } else {
-            messageDigest.digest(this.issuer.getBytes());
+            if(!Strings.isNullOrEmpty(this.issuer)) {
+                messageDigest.digest(this.issuer.getBytes());
+            } else {
+                throw new ValueException("null or empty issuer");
+            }
         }
         messageDigest.digest(this.baseUrl.getBytes());
         if (!requestsDirectory.startsWith("/")) {

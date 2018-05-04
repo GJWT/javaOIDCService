@@ -3,15 +3,12 @@ package org.oidc.services;
 import static org.hamcrest.core.StringContains.containsString;
 
 import com.auth0.msg.Claim;
-import com.auth0.msg.ClaimType;
 import com.auth0.msg.JsonResponseDescriptor;
 import com.auth0.msg.Message;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Assert;
@@ -35,12 +32,12 @@ public class WebfingerTest {
     private static final String OP_BASEURL = "https://example.org/op";
 
     @Rule
-    ExpectedException thrown = ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testUpdateServiceContextWrongMethod() throws Exception {
         thrown.expect(UnsupportedOperationException.class);
-        thrown.expectMessage("stateKey is not required to update service context for the WebFinger service");
+        thrown.expectMessage("stateKey is not supported to update service context for the WebFinger service");
         AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
         webfinger.updateServiceContext(null, null);
     }
@@ -60,17 +57,16 @@ public class WebfingerTest {
     }
 
     @Test
-    public void testGetQueryWithUnknownSchema() throws Exception {
-        thrown.expect(WebFingerException.class);
-        thrown.expectMessage(containsString(" has an unknown schema"));
+    public void testGetQueryWithWWWSchema() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("www.yahoo.com");
+        Assert.fail();
     }
 
     @Test
     public void testGetQueryWithNullResource() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("unknown schema");
+        thrown.expectMessage("null or empty url");
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery(null);
     }
@@ -78,7 +74,7 @@ public class WebfingerTest {
     @Test
     public void testGetQueryWithEmptyResource() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("unknown schema");
+        thrown.expectMessage("null or empty url");
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("");
     }
@@ -94,6 +90,8 @@ public class WebfingerTest {
     @Test
     public void testGetRequestParametersNullResource() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
+        AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource("resource").buildAddedClaims();
+        webfinger.setAddedClaims(addedClaims);
         Map<String, String> requestArguments = new HashMap<String, String>();
         requestArguments.put("resource", null);
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
@@ -177,7 +175,7 @@ public class WebfingerTest {
         Map<String,String> requestArguments = new HashMap<>();
         requestArguments.put("resource", "foobar@example.org");
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
-        Assert.assertTrue(httpArguments.getUrl().equals("https://example.org/.well-known/webfinger?resource=acct%3Afoobar%40example.org&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://example.org/.well-known/webfinger?acct%3Afoobar%40example.org"));
 
         Message parsedResponse = webfinger.parseResponse("{\"subject\": \"acct:foobar@example.org\",\"links\": [{\"rel\": \"http://openid.net/specs/connect/1.0/issuer\",\"href\": \"https://example.org/op\"}],\"expires\": \"2018-02-04T11:08:41Z\"}");
         Assert.assertTrue(parsedResponse instanceof JsonResponseDescriptor);
