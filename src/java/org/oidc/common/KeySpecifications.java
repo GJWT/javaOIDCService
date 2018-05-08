@@ -12,9 +12,9 @@ public class KeySpecifications {
     /**
      * The algorithm that was used to encrypt the keys
      */
-    private String algorithm;
+    private Algorithm algorithm;
 
-    public KeySpecifications(String fileName, String algorithm) {
+    public KeySpecifications(String fileName, Algorithm algorithm) {
         this.fileName = fileName;
         this.algorithm = algorithm;
     }
@@ -23,7 +23,7 @@ public class KeySpecifications {
         return fileName;
     }
 
-    public String getAlgorithm() {
+    public Algorithm getAlgorithm() {
         return algorithm;
     }
 
@@ -31,7 +31,7 @@ public class KeySpecifications {
         this.fileName = fileName;
     }
 
-    public void setAlgorithm(String algorithm) {
+    public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 }

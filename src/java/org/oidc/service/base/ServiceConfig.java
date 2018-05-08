@@ -42,8 +42,23 @@ public class ServiceConfig {
      * Arguments to be used by the postConstruct methods
      */
     private Map<String,String> postConstruct;
+    /**
+     * The OIDC standard in many places states that you *MUST* use HTTPS and not HTTP.
+     * In a number of use cases, that causes a problem. Therefore, the libraries should still
+     * be used in those use cases, hence there has to be a way to turn off the default
+     * 'only HTTPS is allowed'.
+     */
+    private boolean shouldAllowHttp;
+    /**
+     * Allows for nonstandard behavior for schema and issuer
+     */
+    private boolean shouldAllowNonStandardIssuer;
 
-    public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod, HttpMethod httpMethod, SerializationType serializationType, SerializationType deSerializationType, Map<String, String> preConstruct, Map<String, String> postConstruct) {
+    public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod,
+                         HttpMethod httpMethod, SerializationType serializationType,
+                         SerializationType deSerializationType, Map<String, String> preConstruct,
+                         Map<String, String> postConstruct, boolean shouldAllowHttp,
+                         boolean shouldAllowNonStandardIssuer) {
         this.endpoint = endpoint;
         this.defaultAuthenticationMethod = defaultAuthenticationMethod;
         this.httpMethod = httpMethod;
@@ -51,6 +66,13 @@ public class ServiceConfig {
         this.deSerializationType = deSerializationType;
         this.preConstruct = preConstruct;
         this.postConstruct = postConstruct;
+        this.shouldAllowHttp = shouldAllowHttp;
+        this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
+    }
+
+    public ServiceConfig(boolean shouldAllowHttp, boolean shouldAllowNonStandardIssuer) {
+        this.shouldAllowHttp = shouldAllowHttp;
+        this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
     }
 
     public String getEndpoint() {
@@ -107,5 +129,21 @@ public class ServiceConfig {
 
     public void setPostConstruct(Map<String, String> postConstruct) {
         this.postConstruct = postConstruct;
+    }
+
+    public boolean isShouldAllowHttp() {
+        return shouldAllowHttp;
+    }
+
+    public void setShouldAllowHttp(boolean shouldAllowHttp) {
+        this.shouldAllowHttp = shouldAllowHttp;
+    }
+
+    public boolean isShouldAllowNonStandardIssuer() {
+        return shouldAllowNonStandardIssuer;
+    }
+
+    public void setShouldAllowNonStandardIssuer(boolean shouldAllowNonStandardIssuer) {
+        this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
     }
 }

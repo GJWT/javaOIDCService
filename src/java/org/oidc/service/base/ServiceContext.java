@@ -1,6 +1,6 @@
 package org.oidc.service.base;
 
-import com.auth0.msg.ClaimType;
+import com.auth0.msg.Claim;
 import com.auth0.msg.DataLocation;
 import com.auth0.msg.Jwk;
 import com.auth0.msg.Key;
@@ -17,9 +17,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.oidc.common.Algorithm;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
+import org.oidc.service.util.Constants;
 
 /**
  * This class keeps information that a client needs to be able to talk
@@ -116,7 +118,6 @@ public class ServiceContext {
      * Constants
      */
     private static final String SIG = "sig";
-    private static final String RSA = "rsa";
     private static final String SHA_256 = "SHA-256";
     private static final String ISSUER = "issuer";
 
@@ -145,10 +146,14 @@ public class ServiceContext {
         KeySpecifications keySpecificationsIndex;
         Key rsaKey;
         KeyBundle keyBundle;
+        Algorithm algorithm;
         for (FileOrUrl key : keys) {
             if (FileOrUrl.FILE.equals(key)) {
                 keySpecificationsIndex = keySpecifications.get(key);
-                if (RSA.equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
+                algorithm = keySpecificationsIndex.getAlgorithm();
+                if (Algorithm.RS256.equals(algorithm) ||
+                        Algorithm.RS384.equals(algorithm)
+                        || Algorithm.RS512.equals(algorithm)) {
                     rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()), SIG);
                     keyBundle = new KeyBundle();
                     keyBundle.addKey(rsaKey);
@@ -196,17 +201,22 @@ public class ServiceContext {
      * @param requestsDirectory the leading path
      * @return a list of one unique URL
      **/
-    public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException {
+    public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException, ValueException {
         MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
+        Claim issuerClaim = new Claim(Constants.ISSUER);
         if (this.providerConfigurationResponse.getClaims() != null
-                && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) != null
-                && this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER) instanceof List
-                && !((List) this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER)).isEmpty()) {
-            for (String issuer : ((List<String>) this.providerConfigurationResponse.getClaims().get(ClaimType.ISSUER))) {
+                && this.providerConfigurationResponse.getClaims().get(issuerClaim) != null
+                && this.providerConfigurationResponse.getClaims().get(issuerClaim) instanceof List
+                && !((List) this.providerConfigurationResponse.getClaims().get(issuerClaim)).isEmpty()) {
+            for (String issuer : ((List<String>) this.providerConfigurationResponse.getClaims().get(issuerClaim))) {
                 messageDigest.update(issuer.getBytes());
             }
         } else {
-            messageDigest.digest(this.issuer.getBytes());
+            if(!Strings.isNullOrEmpty(this.issuer)) {
+                messageDigest.digest(this.issuer.getBytes());
+            } else {
+                throw new ValueException("null or empty issuer");
+            }
         }
         messageDigest.digest(this.baseUrl.getBytes());
         if (!requestsDirectory.startsWith("/")) {

@@ -2,11 +2,9 @@ package org.oidc.service.util;
 
 import static org.hamcrest.core.StringContains.containsString;
 
-import com.auth0.msg.ClaimType;
 import com.auth0.msg.Message;
 import com.auth0.msg.ProviderConfigurationResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
@@ -23,14 +21,14 @@ public class ServiceUtilTest {
 
     @Test
     public void testGetQueryReferenceNullUrl() throws Exception{
-        thrown.expect(MalformedURLException.class);
+        thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("null or empty url");
         ServiceUtil.getUrlInfo(null);
     }
 
     @Test
     public void testGetQueryReferenceEmptyUrl() throws Exception{
-        thrown.expect(MalformedURLException.class);
+        thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("null or empty url");
         ServiceUtil.getUrlInfo("");
     }
@@ -52,28 +50,28 @@ public class ServiceUtilTest {
 
     @Test
     public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException, JsonProcessingException {
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuer");
+        Map<String,Object> claims = new HashMap<>();
+        claims.put(Constants.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.URL_ENCODED);
-        //Assert.assertTrue(httpBody.equals());
+        Assert.assertTrue(httpBody.equals("eyJjbGFpbXMiOnsiaXNzdWVyIjoiaXNzdWVyIn0sImVycm9yIjpudWxsfQ"));
     }
 
     @Test
     public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException, JsonProcessingException {
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuer");
+        Map<String,Object> claims = new HashMap<>();
+        claims.put(Constants.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.JSON);
-        //Assert.assertTrue(httpBody.equals());
+        Assert.assertTrue(httpBody.equals("{\"claims\":{\"issuer\":\"issuer\"},\"error\":null}"));
     }
 
     @Test
     public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException, JsonProcessingException {
         thrown.expect(UnsupportedSerializationTypeException.class);
-        thrown.expectMessage(containsString("Unsupported content type: "));
-        Map<ClaimType,Object> claims = new HashMap<>();
-        claims.put(ClaimType.ISSUER, "issuer");
+        thrown.expectMessage(containsString("Unsupported serialization type: "));
+        Map<String,Object> claims = new HashMap<>();
+        claims.put(Constants.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         ServiceUtil.getHttpBody(request, SerializationType.JWT);
     }
