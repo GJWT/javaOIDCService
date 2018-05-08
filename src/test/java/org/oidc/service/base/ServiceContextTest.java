@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,6 +34,7 @@ public class ServiceContextTest {
         serviceContext.importKeys(null);
     }
 
+    @Ignore
     @Test
     public void testImportKeysWithFile() {
         ServiceContext serviceContext = new ServiceContext();
@@ -46,19 +48,6 @@ public class ServiceContextTest {
         Map<FileOrUrl,KeySpecifications> keySpecificationsMap = new HashMap<>();
         KeySpecifications keySpecifications = new KeySpecifications("salesforce.key", "rsa");
         keySpecificationsMap.put(FileOrUrl.FILE, keySpecifications);
-        serviceContext.importKeys(keySpecificationsMap);
-        Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 1);
-    }
-
-    @Test
-    public void testImportKeysWithUrl() throws Exception {
-        ServiceContextConfig serviceContextConfig = new ServiceContextConfig.ServiceContextConfigBuilder().setBaseUrl("baseUrl")
-                .buildServiceContext();
-        ServiceContext serviceContext = new ServiceContext(keyJar, serviceContextConfig);
-        Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 0);
-        Map<FileOrUrl,KeySpecifications> keySpecificationsMap = new HashMap<>();
-        KeySpecifications keySpecifications = new KeySpecifications("www.yahoo.com", "rsa");
-        keySpecificationsMap.put(FileOrUrl.URL, keySpecifications);
         serviceContext.importKeys(keySpecificationsMap);
         Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 1);
     }

@@ -70,7 +70,7 @@ public class Webfinger extends AbstractService {
     public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException {
         List<LinkedHashMap> links = (List) response.getClaims().get("links");
         List<LinkInfo> linkInfoList = createLinkInfo(links);
-        System.out.println(links);
+
         if (links == null || links.isEmpty()) {
             throw new MissingRequiredAttributeException("links is null or empty");
         }
