@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.oidc.common.Algorithm;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
@@ -117,7 +118,6 @@ public class ServiceContext {
      * Constants
      */
     private static final String SIG = "sig";
-    private static final String RSA = "rsa";
     private static final String SHA_256 = "SHA-256";
     private static final String ISSUER = "issuer";
 
@@ -146,10 +146,14 @@ public class ServiceContext {
         KeySpecifications keySpecificationsIndex;
         Key rsaKey;
         KeyBundle keyBundle;
+        Algorithm algorithm;
         for (FileOrUrl key : keys) {
             if (FileOrUrl.FILE.equals(key)) {
                 keySpecificationsIndex = keySpecifications.get(key);
-                if (RSA.equalsIgnoreCase(keySpecificationsIndex.getAlgorithm())) {
+                algorithm = keySpecificationsIndex.getAlgorithm();
+                if (Algorithm.RS256.equals(algorithm) ||
+                        Algorithm.RS384.equals(algorithm)
+                        || Algorithm.RS512.equals(algorithm)) {
                     rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()), SIG);
                     keyBundle = new KeyBundle();
                     keyBundle.addKey(rsaKey);

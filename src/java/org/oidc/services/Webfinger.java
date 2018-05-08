@@ -71,8 +71,8 @@ public class Webfinger extends AbstractService {
         List<LinkedHashMap> links = (List) response.getClaims().get("links");
         List<LinkInfo> linkInfoList = createLinkInfo(links);
 
-        if (links == null || links.isEmpty()) {
-            throw new MissingRequiredAttributeException("links is null or empty");
+        if (linkInfoList == null || linkInfoList.isEmpty()) {
+            throw new MissingRequiredAttributeException("linkInfoList is null or empty");
         }
 
         String href;
@@ -91,7 +91,15 @@ public class Webfinger extends AbstractService {
         }
     }
 
-    private List<LinkInfo> createLinkInfo(List<LinkedHashMap> links) {
+    /**
+     * Used to create a List of LinkInfo objects from a List of LinkedHashMaps
+     * @param links
+     * @return
+     */
+    private List<LinkInfo> createLinkInfo(List<LinkedHashMap> links) throws MissingRequiredAttributeException {
+        if (links == null || links.isEmpty()) {
+            throw new MissingRequiredAttributeException("links is null or empty");
+        }
         List<LinkInfo> linkInfoList = new ArrayList<>();
         for(LinkedHashMap link : links) {
             linkInfoList.add(new LinkInfo((String) link.get("rel"), (String) link.get("hRef"), (String) link.get("type"), (Map<String,String>) link.get("titles"), (Map<String,String>) link.get("properties")));
@@ -153,9 +161,9 @@ public class Webfinger extends AbstractService {
 
     /**
      * Builds the request message and constructs the HTTP headers.
-     * <p>
+     *
      * This is the starting pont for a pipeline that will:
-     * <p>
+     *
      * - construct the request message
      * - add/remove information to/from the request message in the way a
      * specific client authentication method requires.

@@ -293,7 +293,7 @@ public abstract class AbstractService implements Service {
         HttpArguments httpArguments = new HttpArguments();
         httpArguments.setHttpMethod(httpMethod);
 
-        AddedClaims addedClaimsCopy = new AddedClaims.AddedClaimsBuilder().setAddedClaims(addedClaims);
+        AddedClaims addedClaimsCopy = addedClaims.clone();
         if (!Strings.isNullOrEmpty(this.serviceContext.getIssuer())) {
             addedClaimsCopy.buildAddedClaimsBuilder().setIssuer(this.serviceContext.getIssuer()).buildAddedClaims();
         }

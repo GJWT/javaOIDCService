@@ -14,6 +14,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.oidc.common.Algorithm;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
@@ -46,7 +47,7 @@ public class ServiceContextTest {
         serviceContext.setKeyJar(keyJar);
         Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 0);
         Map<FileOrUrl,KeySpecifications> keySpecificationsMap = new HashMap<>();
-        KeySpecifications keySpecifications = new KeySpecifications("salesforce.key", "rsa");
+        KeySpecifications keySpecifications = new KeySpecifications("salesforce.key", Algorithm.RS256);
         keySpecificationsMap.put(FileOrUrl.FILE, keySpecifications);
         serviceContext.importKeys(keySpecificationsMap);
         Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 1);

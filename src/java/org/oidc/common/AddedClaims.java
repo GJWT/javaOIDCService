@@ -1,13 +1,14 @@
 package org.oidc.common;
 
 import com.auth0.msg.KeyJar;
+import java.util.List;
 import org.oidc.service.data.State;
 
 /**
  * Commonly used claims.
  * May need to be extended to accommodate additional claims
  */
-public class AddedClaims {
+public class AddedClaims implements Cloneable{
 
     /**
      * The client identifier, which is always required.
@@ -28,8 +29,17 @@ public class AddedClaims {
     private boolean shouldVerify;
     /**
      * https://tools.ietf.org/html/rfc6749#section-3.3
+     *
+     * The OAuth2 protocol is a delegated authorization mechanism, where an
+     * application requests access to resources controlled by the user (the resource owner)
+     * and hosted by an API (the resource server), and the authorization server issues the application
+     * a more restricted set of credentials than those of the user.
+     *
+     * The scope parameter allows the application to express the desired scope of the access request.
+     * In turn, the scope parameter can be used by the authorization server in the response to indicate
+     * which scopes were actually granted (if they are different than the ones requested).
      */
-    private String scope;
+    private List<String> scope;
     /**
      * Resource
      */
@@ -46,7 +56,7 @@ public class AddedClaims {
     private State state;
 
     private AddedClaims(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify,
-                        String scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
+                        List<String> scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
                         State state) {
         this.clientId = clientId;
         this.issuer = issuer;
@@ -59,19 +69,16 @@ public class AddedClaims {
     }
 
     /**
-     * Constructor used to copy an AddedClaims object
-     * to another
-     * @param addedClaims
+     * Used to clone an AddedClaims object
+     * @return
      */
-    private AddedClaims(AddedClaims addedClaims) {
-        this.clientId = addedClaims.clientId;
-        this.issuer = addedClaims.issuer;
-        this.keyJar = addedClaims.keyJar;
-        this.shouldVerify = addedClaims.shouldVerify;
-        this.scope = addedClaims.scope;
-        this.resource = addedClaims.resource;
-        this.clientAuthenticationMethod = addedClaims.clientAuthenticationMethod;
-        this.state = addedClaims.state;
+    public AddedClaims clone() {
+        try {
+            return (AddedClaims) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 
     public String getClientId() {
@@ -90,7 +97,7 @@ public class AddedClaims {
         return shouldVerify;
     }
 
-    public String getScope() {
+    public List<String> getScope() {
         return scope;
     }
 
@@ -105,7 +112,8 @@ public class AddedClaims {
     }
 
     public AddedClaimsBuilder buildAddedClaimsBuilder() {
-        return new AddedClaimsBuilder();
+        return new AddedClaimsBuilder(this.clientId, this.issuer, this.keyJar, this.shouldVerify
+        , this.scope, this.resource, this.clientAuthenticationMethod, this.state);
     }
 
     public static class AddedClaimsBuilder {
@@ -113,10 +121,27 @@ public class AddedClaims {
         private String issuer;
         private KeyJar keyJar;
         private boolean shouldVerify;
-        private String scope;
+        private List<String> scope;
         private String resource;
         private ClientAuthenticationMethod clientAuthenticationMethod;
         private State state;
+
+        public AddedClaimsBuilder() {
+
+        }
+
+        public AddedClaimsBuilder(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify,
+                                  List<String> scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
+                                  State state) {
+            this.clientId = clientId;
+            this.issuer = issuer;
+            this.keyJar = keyJar;
+            this.shouldVerify = shouldVerify;
+            this.scope = scope;
+            this.resource = resource;
+            this.clientAuthenticationMethod = clientAuthenticationMethod;
+            this.state = state;
+        }
 
         public AddedClaimsBuilder setClientId(String clientId) {
             this.clientId = clientId;
@@ -138,7 +163,7 @@ public class AddedClaims {
             return this;
         }
 
-        public AddedClaimsBuilder setScope(String scope) {
+        public AddedClaimsBuilder setScope(List<String> scope) {
             this.scope = scope;
             return this;
         }
@@ -156,10 +181,6 @@ public class AddedClaims {
         public AddedClaimsBuilder setState(State state) {
             this.state = state;
             return this;
-        }
-
-        public AddedClaims setAddedClaims(AddedClaims addedClaims) {
-            return new AddedClaims(addedClaims);
         }
 
         public AddedClaims buildAddedClaims() {
