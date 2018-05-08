@@ -2,11 +2,14 @@ package org.oidc.services;
 
 import com.auth0.msg.JsonResponseDescriptor;
 import com.auth0.msg.Message;
+import com.auth0.msg.WebfingerRequestMessage;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.AddedClaims;
@@ -43,12 +46,16 @@ public class Webfinger extends AbstractService {
                      ServiceConfig config) {
         super(serviceContext, state, config);
         this.serviceName = ServiceName.WEB_FINGER;
-        //this.requestMessage = TODO: Leo to provide me class
+        this.requestMessage = new WebfingerRequestMessage();
         this.responseMessage = new JsonResponseDescriptor();
     }
 
     public Webfinger(ServiceContext serviceContext) {
         this(serviceContext, null, null);
+    }
+
+    public Webfinger(ServiceContext serviceContext, ServiceConfig serviceConfig) {
+        this(serviceContext, null, serviceConfig);
     }
 
     /**
@@ -61,13 +68,15 @@ public class Webfinger extends AbstractService {
      */
     @Override
     public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException {
-        List<LinkInfo> links = (List<LinkInfo>) response.getClaims().get("links");
+        List<LinkedHashMap> links = (List) response.getClaims().get("links");
+        List<LinkInfo> linkInfoList = createLinkInfo(links);
+        System.out.println(links);
         if (links == null || links.isEmpty()) {
             throw new MissingRequiredAttributeException("links is null or empty");
         }
 
         String href;
-        for (LinkInfo link : links) {
+        for (LinkInfo link : linkInfoList) {
             if (!Strings.isNullOrEmpty(link.getRel()) &&
                     link.getRel().equals(linkRelationType)) {
                 href = link.gethRef();
@@ -75,11 +84,19 @@ public class Webfinger extends AbstractService {
                 if (!serviceConfig.isShouldAllowHttp() || !serviceConfig.isShouldAllowNonStandardIssuer()) {
                     throw new ValueException("http link not allowed: " + href);
                 }
-                this.serviceContext.setIssuer(link.gethRef());
+                this.serviceContext.setIssuer(href);
                 //pick the first one
                 break;
             }
         }
+    }
+
+    private List<LinkInfo> createLinkInfo(List<LinkedHashMap> links) {
+        List<LinkInfo> linkInfoList = new ArrayList<>();
+        for(LinkedHashMap link : links) {
+            linkInfoList.add(new LinkInfo((String) link.get("rel"), (String) link.get("hRef"), (String) link.get("type"), (Map<String,String>) link.get("titles"), (Map<String,String>) link.get("properties")));
+        }
+        return linkInfoList;
     }
 
     public void updateServiceContext(Message response, String stateKey) {

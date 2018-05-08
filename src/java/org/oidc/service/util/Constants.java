@@ -14,4 +14,5 @@ public class Constants {
     public static final String SUBJECT = "subject";
     public static final String LINKS = "links";
     public static final String EXPIRES = "expires";
+    public static final String GRANT_TYPE = "grantType";
 }

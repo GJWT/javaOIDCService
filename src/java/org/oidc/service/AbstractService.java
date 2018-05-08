@@ -86,12 +86,6 @@ public abstract class AbstractService implements Service {
     protected SerializationType deserializationType = SerializationType.JSON;
 
     /**
-     * Additional configuration arguments that could be used to change default values
-     * like ClientAuthenticationMethod or add extra parameters to pre/postConstruct methods.
-     */
-    protected ServiceConfig config;
-
-    /**
      * The actual URL provided in provider information discovery.
      */
     private String endpoint = "";
@@ -118,6 +112,8 @@ public abstract class AbstractService implements Service {
 
     /**
      * Configuration that is specific to every service
+     * Additional configuration arguments that could be used to change default values
+     * like ClientAuthenticationMethod or add extra parameters to pre/postConstruct methods.
      */
     protected ServiceConfig serviceConfig;
 
@@ -143,14 +139,14 @@ public abstract class AbstractService implements Service {
      * @param serviceContext It contains information that a client needs to talk to a server.
      *                       This is shared by various services.
      * @param state          Serves as an in-memory cache
-     * @param config         Configuration that is specific to every service
+     * @param serviceConfig         Configuration that is specific to every service
      */
     public AbstractService(ServiceContext serviceContext,
                            State state,
-                           ServiceConfig config) {
+                           ServiceConfig serviceConfig) {
         this.serviceContext = serviceContext;
         this.state = state;
-        this.config = config;
+        this.serviceConfig = serviceConfig;
     }
 
     /**
@@ -400,14 +396,6 @@ public abstract class AbstractService implements Service {
 
     public void setDeserializationType(SerializationType deserializationType) {
         this.deserializationType = deserializationType;
-    }
-
-    public ServiceConfig getConfig() {
-        return config;
-    }
-
-    public void setConfig(ServiceConfig config) {
-        this.config = config;
     }
 
     public String getEndpoint() {

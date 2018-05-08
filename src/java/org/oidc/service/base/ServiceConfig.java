@@ -44,6 +44,9 @@ public class ServiceConfig {
     private Map<String,String> postConstruct;
 
     private boolean shouldAllowHttp;
+    /**
+     * Allows for nonstandard behavior for schema and issuer
+     */
     private boolean shouldAllowNonStandardIssuer;
 
     public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod,
@@ -58,6 +61,11 @@ public class ServiceConfig {
         this.deSerializationType = deSerializationType;
         this.preConstruct = preConstruct;
         this.postConstruct = postConstruct;
+        this.shouldAllowHttp = shouldAllowHttp;
+        this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
+    }
+
+    public ServiceConfig(boolean shouldAllowHttp, boolean shouldAllowNonStandardIssuer) {
         this.shouldAllowHttp = shouldAllowHttp;
         this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
     }

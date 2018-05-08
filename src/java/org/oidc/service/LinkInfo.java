@@ -15,6 +15,20 @@ public class LinkInfo {
     private Map<String,String> titles;
     private Map<String,String> properties;
 
+    public LinkInfo(String rel, String hRef, String type, Map<String, String> titles, Map<String, String> properties) {
+        this.rel = rel;
+        this.hRef = hRef;
+        this.type = type;
+        this.titles = titles;
+        this.properties = properties;
+    }
+
+    public LinkInfo(String rel, String hRef, String type) {
+        this.rel = rel;
+        this.hRef = hRef;
+        this.type = type;
+    }
+
     public String getRel() {
         return rel;
     }

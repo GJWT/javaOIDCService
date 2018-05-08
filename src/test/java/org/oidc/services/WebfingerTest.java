@@ -3,10 +3,15 @@ package org.oidc.services;
 import com.auth0.msg.Claim;
 import com.auth0.msg.JsonResponseDescriptor;
 import com.auth0.msg.Message;
+import com.auth0.msg.ProviderConfigurationResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Assert;
@@ -14,12 +19,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.oidc.common.AddedClaims;
+import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
 import org.oidc.service.AbstractService;
 import org.oidc.service.LinkInfo;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.util.Constants;
 
@@ -93,6 +100,8 @@ public class WebfingerTest {
         Map<String, String> requestArguments = new HashMap<String, String>();
         requestArguments.put("resource", null);
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+        Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://resource/.well-known/webfinger?https%3A%2F%2Fresource"));
     }
 
     @Test
@@ -105,6 +114,8 @@ public class WebfingerTest {
         Map<String, String> requestArguments = new HashMap<String, String>();
         requestArguments.put("resource", null);
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+        Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://baseUrl/.well-known/webfinger?https%3A%2F%2FbaseUrl"));
     }
 
     @Test
@@ -192,26 +203,45 @@ public class WebfingerTest {
 
     @Test
     public void testWebfingerEndToEnd() throws Exception {
-        Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
+        ServiceConfig serviceConfig = new ServiceConfig(true, true);
+        Webfinger webfinger = new Webfinger(SERVICE_CONTEXT, serviceConfig);
         Map<String,String> requestArguments = new HashMap<>();
         requestArguments.put("resource", "foobar@example.org");
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
         Assert.assertTrue(httpArguments.getUrl().equals("https://example.org/.well-known/webfinger?acct%3Afoobar%40example.org"));
-
-        Message parsedResponse = webfinger.parseResponse("{\"subject\": \"acct:foobar@example.org\",\"links\": [{\"rel\": \"http://openid.net/specs/connect/1.0/issuer\",\"href\": \"https://example.org/op\"}],\"expires\": \"2018-02-04T11:08:41Z\"}");
+        HashMap<String, Object> claims = new HashMap<>();
+        String grantType = "GRANT_TYPE";
+        String refreshToken = "refresh_token";
+        String links = "links";
+        claims.put(grantType, refreshToken);
+        LinkInfo linkInfo = new LinkInfo("rel", "hRef", "type");
+        LinkInfo secondLinkInfo = new LinkInfo("http://openid.net/specs/connect/1.0/issuer", OP_BASEURL, "type2");
+        claims.put(links, Arrays.asList(linkInfo, secondLinkInfo));
+        ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
+        String pcrJson = pcr.toJson();
+        Message parsedResponse = webfinger.parseResponse(pcrJson);
         Assert.assertTrue(parsedResponse instanceof JsonResponseDescriptor);
-        Claim subject = new Claim(Constants.SUBJECT);
-        Claim links = new Claim(Constants.LINKS);
-        Claim expires = new Claim(Constants.EXPIRES);
+        Claim grantTypeClaim = new Claim(grantType);
+        Claim linksClaims = new Claim(links);
         Set<Claim> setOfClaims = new HashSet<>();
-        setOfClaims.add(subject);
-        setOfClaims.add(links);
-        setOfClaims.add(expires);
-        Assert.assertTrue(parsedResponse.getClaims().keySet().equals(setOfClaims));
-        LinkInfo linkInfo = (LinkInfo) parsedResponse.getClaims().get(links);
-        Assert.assertTrue(linkInfo.getRel().equals("http://openid.net/specs/connect/1.0/issuer"));
-        Assert.assertTrue(linkInfo.gethRef().equals("https://example.org/op"));
+        setOfClaims.add(grantTypeClaim);
+        setOfClaims.add(linksClaims);
+        Map<String,Object> parsedResponseClaims = parsedResponse.getClaims();
+        Assert.assertTrue(parsedResponseClaims.get(grantType).equals(refreshToken));
+        Map<String,String> expectedClaims = new LinkedHashMap<>();
+        expectedClaims.put("rel", "rel");
+        expectedClaims.put("hRef", "hRef");
+        expectedClaims.put("type", "type");
+        expectedClaims.put("titles", null);
+        expectedClaims.put("properties", null);
+        Map<String,String> secondExpectedClaims = new HashMap<>();
+        secondExpectedClaims.put("rel", "http://openid.net/specs/connect/1.0/issuer");
+        secondExpectedClaims.put("hRef", OP_BASEURL);
+        secondExpectedClaims.put("type", "type2");
+        secondExpectedClaims.put("titles", null);
+        secondExpectedClaims.put("properties", null);
+        Assert.assertTrue(parsedResponseClaims.get(links).equals(Arrays.asList(expectedClaims, secondExpectedClaims)));
         webfinger.updateServiceContext(parsedResponse);
-        Assert.assertTrue(SERVICE_CONTEXT.getIssuer().equals(OP_BASEURL));
+        Assert.assertTrue(webfinger.getServiceContext().getIssuer().equals(OP_BASEURL));
     }
 }
