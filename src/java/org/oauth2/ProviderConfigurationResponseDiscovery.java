@@ -1,26 +1,34 @@
 package org.oauth2;
 
+import com.auth0.msg.InvalidClaimException;
+import com.auth0.msg.Key;
 import com.auth0.msg.KeyJar;
 import com.auth0.msg.Message;
 import com.auth0.msg.ProviderConfigurationResponse;
 import com.google.common.base.Strings;
 import java.util.Map;
 import org.oidc.common.HttpMethod;
+import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.OidcServiceException;
 import org.oidc.common.ServiceName;
+import org.oidc.common.ValueException;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
+import org.oidc.services.ProviderConfigResponseDiscoveryServiceConfig;
 
 public class ProviderConfigurationResponseDiscovery extends AbstractService{
 
+    protected ProviderConfigResponseDiscoveryServiceConfig config;
+
     public ProviderConfigurationResponseDiscovery(ServiceContext serviceContext,
                                                   State state,
-                                                  ServiceConfig config) {
-        super(serviceContext, state, config);
+                                                  ProviderConfigResponseDiscoveryServiceConfig config) {
+        super(serviceContext, state);
+        this.config = config;
         this.serviceName = ServiceName.PROVIDER_INFO_DISCOVERY;
         //this.requestMessage = ;
         this.responseMessage = new ASConfigurationResponse();
@@ -60,9 +68,8 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
      *
      * @param response the response as a ProviderConfigurationResponse instance
      */
-    @Override
-    public void updateServiceContext(Message response) throws OidcServiceException {
-        //todo: should we throw exception if not instance of ProviderConfigurationResponse?
+    public void updateServiceContext(ProviderConfigurationResponse response) throws OidcServiceException, InvalidClaimException {
+
         String issuer = this.serviceContext.getIssuer();
 
         String issuerFromResponse = (String) response.getClaims().get(Constants.ISSUER);
@@ -87,12 +94,16 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
             this.serviceContext.setIssuer(issuer);
         }
 
-        this.serviceContext.setProviderConfigurationResponse((ProviderConfigurationResponse) response);
+        this.serviceContext.setProviderConfigurationResponse(response);
 
         ProviderConfigurationResponse pcr = this.serviceContext.getProviderConfigurationResponse();
         Map<String,Object> pcrClaims = pcr.getClaims();
         for(String key : pcrClaims.keySet()) {
-            if(!Strings.isNullOrEmpty(key) && key.endsWith("Endpoint")) {
+            if(!Strings.isNullOrEmpty(key) && pcrClaims.get(key) instanceof ServiceName) {
+
+
+
+                //service is ServiceName is enum from AbstractService
                 /* todo
                    for _srv in self.service_context.service.values():
                     if _srv.endpoint_name == key:
@@ -106,6 +117,8 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
             keyJar = new KeyJar();
         }
 
+        keyJar.addKeyBundle();
+        keyJar.getKeyBundle().addKey(new Key());
         //todo: where are we loading keys?
         //kj.load_keys(resp, _pcr_issuer)
         this.serviceContext.setKeyJar(keyJar);
@@ -114,5 +127,10 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
     public void updateServiceContext(Message response, String stateKey) {
         throw new UnsupportedOperationException("stateKey is not supported to update service context" +
                 " for the WebFinger service");
+    }
+
+    @Override
+    public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, OidcServiceException, InvalidClaimException {
+        throw new UnsupportedOperationException();
     }
 }

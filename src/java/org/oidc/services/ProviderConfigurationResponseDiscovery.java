@@ -1,13 +1,14 @@
 package org.oidc.services;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.ProviderConfigurationResponse;
 import com.auth0.msg.RegistrationRequest;
+import com.auth0.msg.RegistrationResponse;
 import com.google.common.base.Strings;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import javax.naming.ConfigurationException;
 import org.oidc.common.OidcServiceException;
-import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
@@ -16,9 +17,12 @@ public class ProviderConfigurationResponseDiscovery extends org.oauth2.ProviderC
 
     public ProviderConfigurationResponseDiscovery(ServiceContext serviceContext,
                                                   State state,
-                                                  ServiceConfig config) {
+                                                  ProviderConfigResponseDiscoveryServiceConfig config) {
         super(serviceContext, state, config);
-        this.responseMessage = new ProviderConfigurationResponse();
+    }
+
+    public ProviderConfigurationResponseDiscovery(ServiceContext serviceContext) {
+        this(serviceContext, null, null);
     }
 
     /**
@@ -29,13 +33,13 @@ public class ProviderConfigurationResponseDiscovery extends org.oauth2.ProviderC
      *
      * @param response the response as a ProviderConfigurationResponse instance
      */
-    public void updateServiceContext(ProviderConfigurationResponse response) throws OidcServiceException, ConfigurationException {
+    public void updateServiceContext(ProviderConfigurationResponse response) throws OidcServiceException, ConfigurationException, InvalidClaimException {
         super.updateServiceContext(response);
         this.matchPreferences(response);
-        //TODO: Roland
-        //if 'pre_load_keys' in self.conf and self.conf['pre_load_keys']: {
-            this.serviceContext.getKeyJar().exportsJwksAsJson(this.responseMessage.getClaims().get("issuer"))
-
+        Jwks jwks;
+        if(config.getPreLoadKeys() != null && !config.getPreLoadKeys().isEmpty()) {
+            jwks = this.serviceContext.getKeyJar().exportJwksAsJson((String) this.responseMessage.getClaims().get("issuer"));
+        }
     }
 
     public String getEndpoint() {
@@ -51,7 +55,7 @@ public class ProviderConfigurationResponseDiscovery extends org.oauth2.ProviderC
         return String.format(Constants.OIDC_PATTERN, issuer);
     }
 
-    public void matchPreferences(ProviderConfigurationResponse response) throws ConfigurationException {
+    public void matchPreferences(ProviderConfigurationResponse response) throws ConfigurationException, InvalidClaimException {
         if(response == null) {
             response = this.serviceContext.getProviderConfigurationResponse();
         }
@@ -77,10 +81,13 @@ public class ProviderConfigurationResponseDiscovery extends org.oauth2.ProviderC
             Object values = this.serviceContext.getClientPreferences().getClaims().get(key);
             if(values instanceof String) {
                 if(pcrValues.contains((String) values)) {
-                    this.serviceContext.setBehavior();
+                    Map<String,Object> claims = new HashMap<>();
+                    claims.put(key, Constants.PREFERENCE_TO_PROVIDER.get(key));
+                    RegistrationResponse registrationResponse = new RegistrationResponse(claims);
+                    this.serviceContext.setBehavior(registrationResponse);
                 }
             } else {
-                registrationRequest.getClaims().get(key);
+                Object value = registrationRequest.getClaims().get(key);
             }
         }
 

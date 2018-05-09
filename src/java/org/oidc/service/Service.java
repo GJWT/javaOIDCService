@@ -1,5 +1,6 @@
 package org.oidc.service;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
@@ -102,5 +103,5 @@ public interface Service {
      * services that are not expected to store state in the state DB.
      * @param response The response as a Message instance
      */
-    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, OidcServiceException;
+    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, OidcServiceException, InvalidClaimException;
 }

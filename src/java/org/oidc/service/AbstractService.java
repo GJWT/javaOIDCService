@@ -1,5 +1,6 @@
 package org.oidc.service;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -150,6 +151,11 @@ public abstract class AbstractService implements Service {
         this.serviceConfig = serviceConfig;
     }
 
+    public AbstractService(ServiceContext serviceContext, State state) {
+        this.serviceContext = serviceContext;
+        this.state = state;
+    }
+
     /**
      * This method will run after the response has been parsed and verified.  It requires response and
      * stateKey in order for the service context to be updated.  StateKey is used to fetch and update
@@ -171,7 +177,7 @@ public abstract class AbstractService implements Service {
      *
      * @param response the response as a Message instance
      */
-    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, OidcServiceException;
+    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, OidcServiceException, InvalidClaimException;
 
     /**
      * This the start of a pipeline that will:
