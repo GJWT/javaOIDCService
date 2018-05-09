@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.OidcServiceException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
@@ -101,5 +102,5 @@ public interface Service {
      * services that are not expected to store state in the state DB.
      * @param response The response as a Message instance
      */
-    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException;
+    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, OidcServiceException;
 }
