@@ -36,7 +36,7 @@ public class ProviderConfigurationResponseDiscovery extends org.oauth2.ProviderC
     public void updateServiceContext(ProviderConfigurationResponse response) throws OidcServiceException, ConfigurationException, InvalidClaimException {
         super.updateServiceContext(response);
         this.matchPreferences(response);
-        Jwks jwks;
+        Jwks jwks; //todo: whats contained in a jwks?
         if(config.getPreLoadKeys() != null && !config.getPreLoadKeys().isEmpty()) {
             jwks = this.serviceContext.getKeyJar().exportJwksAsJson((String) this.responseMessage.getClaims().get("issuer"));
         }
@@ -61,6 +61,7 @@ public class ProviderConfigurationResponseDiscovery extends org.oauth2.ProviderC
         }
 
         //todo: how are we going to add the claims with this current implementation?
+        //RegistrationRequest has a ton of claims that need to be added
         RegistrationRequest registrationRequest = new RegistrationRequest();
         String pcrValues = null;
         for(String key : Constants.PREFERENCE_TO_PROVIDER.keySet()) {
@@ -73,7 +74,8 @@ public class ProviderConfigurationResponseDiscovery extends org.oauth2.ProviderC
             }
 
             if(pcrValues == null) {
-                if(this.serviceContext.get) {
+                //todo: replacement for strictOnPrefs?
+                if(this.serviceContext) {
                     throw new ConfigurationException("OP couldn't match preferences: " + key);
                 }
             }

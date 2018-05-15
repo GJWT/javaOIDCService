@@ -100,8 +100,7 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
         Map<String,Object> pcrClaims = pcr.getClaims();
         for(String key : pcrClaims.keySet()) {
             if(!Strings.isNullOrEmpty(key) && pcrClaims.get(key) instanceof ServiceName) {
-
-
+                //todo: where are we getting the service from the SC from?
 
                 //service is ServiceName is enum from AbstractService
                 /* todo
@@ -131,6 +130,7 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
 
     @Override
     public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, OidcServiceException, InvalidClaimException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("updateServiceContext(ProviderConfigurationResponse) should" +
+                "be called instead");
     }
 }
