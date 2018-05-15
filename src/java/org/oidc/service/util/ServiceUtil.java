@@ -1,12 +1,16 @@
 package org.oidc.service.util;
 
 import com.auth0.msg.Message;
+import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
+import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.service.base.ServiceConfig;
 
 /**
  * This class has utility methods for various services
@@ -46,7 +50,7 @@ public class ServiceUtil {
      * @return the request serialized according to the passed in serialization type
      * @throws UnsupportedSerializationTypeException
      */
-    public static String getHttpBody(Message request, SerializationType serializationType) throws UnsupportedSerializationTypeException, JsonProcessingException {
+    public static String getHttpBody(Message request, SerializationType serializationType) throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
         if (SerializationType.URL_ENCODED.equals(serializationType)) {
             return request.toUrlEncoded();
         } else if (SerializationType.JSON.equals(serializationType)) {
@@ -54,5 +58,17 @@ public class ServiceUtil {
         } else {
             throw new UnsupportedSerializationTypeException("Unsupported serialization type: " + serializationType);
         }
+    }
+
+    public static String getState(Map<String,String> requestArguments, ServiceConfig serviceConfig) throws MissingRequiredAttributeException {
+        String state = serviceConfig.getState();
+        if(Strings.isNullOrEmpty(state)) {
+            state = requestArguments.get("state");
+            if(Strings.isNullOrEmpty(state)) {
+                throw new MissingRequiredAttributeException("state");
+            }
+        }
+
+        return state;
     }
 }

@@ -1,5 +1,8 @@
 package org.oidc.service.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Constants {
     public static final String OIDC_ISSUER = "http://openid.net/specs/connect/1.0/issuer";
     public static final String WEB_FINGER_URL = "https://%s/.well-known/webfinger";
@@ -15,4 +18,11 @@ public class Constants {
     public static final String LINKS = "links";
     public static final String EXPIRES = "expires";
     public static final String GRANT_TYPE = "grantType";
+
+    public static final Map<String,String> IDT2REG = new HashMap<String,String>() {{
+        put("sigalg", "idTokenSignedResponseAlg"); 
+        put("encalg", "idTokenEncryptedResponseAlg");
+        put("encenc", "idTokenEncryptedResponseEnc");
+    }};
+
 }

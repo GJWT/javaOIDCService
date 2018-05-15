@@ -1,11 +1,14 @@
 package org.oidc.service;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Message;
+import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.ParameterException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
@@ -32,7 +35,7 @@ public interface Service {
      * @param requestArguments
      * @return HttpArguments
      */
-    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException, MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException, UnsupportedEncodingException;
+    HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException, JsonProcessingException, MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException, UnsupportedEncodingException, SerializationException;
 
     /**
      This the start of a pipeline that will:
@@ -91,7 +94,7 @@ public interface Service {
      * @param response The response as a Message instance
      * @param stateKey The key that corresponds to the appropriate State object
      */
-    void updateServiceContext(Message response, String stateKey);
+    void updateServiceContext(Message response, String stateKey) throws InvalidClaimException, ParameterException;
 
     /**
      * This method will run after the response has been parsed and verified.

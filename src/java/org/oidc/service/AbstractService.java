@@ -1,6 +1,8 @@
 package org.oidc.service;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Message;
+import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
@@ -11,6 +13,7 @@ import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.ParameterException;
 import org.oidc.common.ResponseException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
@@ -160,7 +163,7 @@ public abstract class AbstractService implements Service {
      **/
     public abstract void updateServiceContext(
             Message response,
-            String stateKey);
+            String stateKey) throws InvalidClaimException, ParameterException;
 
     /**
      * This method will run after the response has been parsed and verified.  It requires response
@@ -271,7 +274,7 @@ public abstract class AbstractService implements Service {
      */
     public HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException,
             JsonProcessingException, MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-            UnsupportedEncodingException {
+            UnsupportedEncodingException, SerializationException {
         if (requestArguments == null) {
             throw new IllegalArgumentException("null requestArguments");
         }
