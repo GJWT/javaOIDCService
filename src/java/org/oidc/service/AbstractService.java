@@ -173,7 +173,7 @@ public abstract class AbstractService implements Service {
      *
      * @param response the response as a Message instance
      */
-    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException;
+    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
 
     /**
      * This the start of a pipeline that will:

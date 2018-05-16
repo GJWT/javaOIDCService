@@ -1,16 +1,27 @@
 package org.oidc.service.util;
 
+import com.auth0.msg.InvalidClaimException;
+import com.auth0.msg.Key;
+import com.auth0.msg.KeyJar;
 import com.auth0.msg.Message;
 import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.oidc.common.AddedClaims;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.service.base.ServiceConfig;
+import org.oidc.service.base.ServiceContext;
+import org.oidc.services.Authorization;
 
 /**
  * This class has utility methods for various services
@@ -70,5 +81,92 @@ public class ServiceUtil {
         }
 
         return state;
+    }
+
+    public static Message getEncryptedKeys(Message message, ServiceContext serviceContext, AddedClaims addedClaims) throws InvalidClaimException, MissingRequiredAttributeException {
+        String encryptionAlgorithm = addedClaims.getRequestObjectEncryptionAlg();
+        if(Strings.isNullOrEmpty(encryptionAlgorithm)) {
+            encryptionAlgorithm = (String) serviceContext.getBehavior().getClaims().get("requestObjectEncryptionAlg");
+        }
+
+        if(Strings.isNullOrEmpty(encryptionAlgorithm)) {
+            return message;
+        }
+
+        String encryptionEncryption = addedClaims.getRequestObjectEncryptionEnc();
+        if(Strings.isNullOrEmpty(encryptionEncryption)) {
+            encryptionEncryption = (String) serviceContext.getBehavior().getClaims().get("requestObjectEncryptionEnc");
+        }
+
+        if(Strings.isNullOrEmpty(encryptionEncryption)) {
+            throw new MissingRequiredAttributeException("No requestObjectEncryptionEnc value specified");
+        }
+
+        Jwe jwe = new Jwe(message, encryptionAlgorithm, encryptionEncryption);
+        String keyType = AlgorithmUtil.algorithmToKeyType(encryptionAlgorithm);
+
+        String keyId = addedClaims.getEncryptionKid();
+
+        if(Strings.isNullOrEmpty(addedClaims.getTarget())) {
+            throw new MissingRequiredAttributeException("No target specified");
+        }
+
+        List<Key> keys;
+        if(!Strings.isNullOrEmpty(keyId)) {
+            keys = serviceContext.getKeyJar().getEncryptionKeys(keyType, addedClaims.getTarget(), keyId);
+            jwe.setKeyId(keyId);
+        } else {
+            keys = serviceContext.getKeyJar().getEncryptionKeys(keyType, addedClaims.getTarget());
+        }
+
+        return jwe.encrypt(keys);
+    }
+
+    public static Message getOpenIdRequest(Authorization request, KeyJar keyJar, Map<String,Object> userInfoClaims,
+                                           Map<String,Object> idTokenClaims, String requestObjectSigningAlg) {
+        Map<String,Object> openIdRequestClaims = new HashMap<>();
+        for(String key : new OpenIdRequest().getClaims().keySet()) {
+            openIdRequestClaims.put(key, request.getAddedClaims().get);
+        }
+
+        for(String attribute : Arrays.asList("scope", "responseType")) {
+            if(openIdRequestClaims.containsKey(attribute)) {
+                openIdRequestClaims.put(attribute, " " + openIdRequestClaims.get(attribute));
+            }
+        }
+
+        Map<String,String> claimsArguments = new HashMap<>();
+        if(userInfoClaims != null) {
+            claimsArguments.put("userInfo", new Claims(userInfoClaims));
+        }
+        
+        if(idTokenClaims != null) {
+            claimsArguments.put("idToken", new Claims(idTokenClaims));
+        }
+        
+        if(claimsArguments != null) {
+            openIdRequestClaims.put("claims", new ClaimsRequest(claimsArguments));
+        }
+        
+        OpenIdRequest openIdRequest = new OpenIdRequest(openIdRequestClaims);
+
+        return openIdRequest.toJwt(keys, requestObjectSigningAlg);
+    }
+
+    public static List<String> getRequestUri(String localDirectoryPath, String basePath) {
+        File file = new File(localDirectoryPath);
+        if(!file.isDirectory()) {
+            file.mkdirs();
+        }
+        String fileName = RandomStringUtils.randomAlphabetic(10) + ".jwt";
+        fileName = localDirectoryPath + "/" + fileName;
+
+        while(file.exists()) {
+            fileName = RandomStringUtils.randomAlphabetic(10);
+            fileName = localDirectoryPath + "/" + fileName;
+            file = new File(fileName);
+        }
+        String webName = basePath + fileName;
+        return Arrays.asList(fileName, webName);
     }
 }

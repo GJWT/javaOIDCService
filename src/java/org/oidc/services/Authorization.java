@@ -1,5 +1,6 @@
 package org.oidc.services;
 
+import com.auth0.msg.DataLocation;
 import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Message;
 import com.auth0.msg.SerializationException;
@@ -15,13 +16,16 @@ import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.MessageType;
+import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ParameterException;
 import org.oidc.common.ValueException;
+import org.oidc.service.AbstractService;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.AlgorithmUtil;
 import org.oidc.service.util.Constants;
+import org.oidc.service.util.ServiceUtil;
 
 public class Authorization extends org.oauth2.services.Authorization{
 
@@ -29,11 +33,6 @@ public class Authorization extends org.oauth2.services.Authorization{
                          State state,
                          ServiceConfig config) {
         super(serviceContext, state, config);
-        /**
-         *         self.pre_construct = [self.set_state, pick_redirect_uris,
-         self.oidc_pre_construct]
-         self.post_construct = [self.oidc_post_construct]
-         */
     }
 
     public Authorization(ServiceContext serviceContext) {
@@ -41,7 +40,7 @@ public class Authorization extends org.oauth2.services.Authorization{
     }
 
     public void setState(Map<String,String> requestArguments) {
-        String state = serviceConfig.getState();
+        String state = getAddedClaims().getState().toString();
         if(Strings.isNullOrEmpty(state)) {
             state = requestArguments.get("state");
             if(Strings.isNullOrEmpty(state)) {
@@ -67,14 +66,25 @@ public class Authorization extends org.oauth2.services.Authorization{
         state.storeItem(response, stateKey, MessageType.AUTHORIZATION_RESPONSE);
     }
 
-    public List<Map<String, Object>> oidcPreConstruct(Map<String,Object> requestArguments) throws InvalidClaimException {
+    public List<Map<String, Object>> oidcPreConstruct(Map<String,Object> requestArguments) throws InvalidClaimException, ValueException {
         if(requestArguments == null) {
             requestArguments = new HashMap<>();
         }
 
         String responseType = (String) requestArguments.get("responseType");
+        Object responseTypes;
         if(Strings.isNullOrEmpty(responseType)) {
-            responseType = ((List<String>) this.serviceContext.getBehavior().getClaims().get("responseTypes")).get(0);
+            responseTypes = this.serviceContext.getBehavior().getClaims().get("responseTypes");
+            if(responseTypes == null) {
+                throw new ValueException("responseTypes is null");
+            }
+            if(!(responseTypes instanceof List)) {
+                throw new ValueException("responseTypes is not an instanceof List");
+            }
+            if(((List) responseTypes).isEmpty()) {
+                throw new ValueException("responseTypes is empty");
+            }
+            responseType = ((List<String>) responseTypes).get(0);
             requestArguments.put("responseType", responseType);
         }
 
@@ -107,15 +117,32 @@ public class Authorization extends org.oauth2.services.Authorization{
         }
 
         List<Map<String,Object>> listOfArguments = new ArrayList<Map<String, Object>>();
-            listOfArguments.add(requestArguments);
+        listOfArguments.add(requestArguments);
         listOfArguments.add(postArguments);
 
         return listOfArguments;
     }
 
-    public Message oidcPostConstruct(Message request) throws InvalidClaimException, ValueException, SerializationException, IOException {
+    public Message oidcPostConstruct(Message request) throws InvalidClaimException, ValueException, SerializationException, IOException, MissingRequiredAttributeException {
+        if(request == null) {
+            throw new IllegalArgumentException("null request");
+        }
+
+        if(request.getClaims() == null) {
+            throw new IllegalArgumentException("null claims");
+        }
+
+        Object scope = request.getClaims().get("scope");
+        if(scope == null) {
+            throw new ValueException("null scope");
+        }
+
+        if(scope instanceof List) {
+            throw new ValueException("scope isn't an instanceof List");
+        }
         String algorithm = "RS256";
-        if(((List<String>) request.getClaims().get("scope")).contains("openId")) {
+
+        if(((List<String>) scope).contains("openId")) {
             String responseType = ((List<String>) request.getClaims().get("responseType")).get(0);
             if(!Strings.isNullOrEmpty(responseType) && responseType.contains("idToken") && responseType.contains("code")) {
                 String nonce = (String) request.getClaims().get("nonce");
@@ -156,9 +183,9 @@ public class Authorization extends org.oauth2.services.Authorization{
             kwargs.put("keys", this.serviceContext.getKeyJar().getSigningKey(keyType, kid));
         }
 
-        Message openIdRequest = makeOpenIdRequest(request);
+        Message openIdRequest = ServiceUtil.getOpenIdRequest(request);
 
-        openIdRequest = requestObjectEncryption(openIdRequest, this.serviceContext);
+        openIdRequest = ServiceUtil.getEncryptedKeys(openIdRequest, this.serviceContext, getAddedClaims());
 
         if(!Strings.isNullOrEmpty(requestMethod) && "request".equals(requestMethod)) {
             openIdRequest.addClaim("request", openIdRequest);
@@ -170,9 +197,13 @@ public class Authorization extends org.oauth2.services.Authorization{
             String webName = webNames.get(0);
 
             String fileName = this.serviceContext.fileNameFromWebname(webName);
+            List<String> fileNameAndWebName = null;
             if(Strings.isNullOrEmpty(fileName)) {
-                constructRequestUri(getAddedClaims());
+                fileNameAndWebName = ServiceUtil.getRequestUri();
+                fileName = fileNameAndWebName.get(0);
+                webName = fileNameAndWebName.get(1);
             }
+
             BufferedWriter out = null;
             try
             {
@@ -203,5 +234,44 @@ public class Authorization extends org.oauth2.services.Authorization{
         }
 
         kwargs.put("allowMissingKid", serviceContext.getAllow().get("missingKid"));
+    }
+
+    public Map<String, String> getRedirectUris(Map<String,String> requestArguments, AbstractService service) throws InvalidClaimException, ValueException {
+        ServiceContext serviceContext = service.getServiceContext();
+
+        if(!requestArguments.containsKey("redirectUri")) {
+            if(serviceContext.getCallBack() != null) {
+                String responseType = requestArguments.get("responseType");
+                if(Strings.isNullOrEmpty(responseType)) {
+                    List<String> responseTypes = (List<String>) serviceContext.getBehavior().getClaims().get("responseTypes");
+                    if(responseTypes == null || responseTypes.isEmpty()) {
+                        throw new IllegalArgumentException("null or empty responseTypes");
+                    }
+                    responseType = responseTypes.get(0);
+                    requestArguments.put("responseType", responseType);
+                }
+
+                String responseMode = requestArguments.get("responseMode");
+
+                if(Strings.isNullOrEmpty(responseMode)) {
+                    responseMode = "";
+                }
+
+                if("formPost".equals(responseMode)) {
+                    requestArguments.put("redirectUri", serviceContext.getCallBack().get(DataLocation.FORM_POST));
+                } else if("code".equals(responseMode)) {
+                    requestArguments.put("redirectUri", serviceContext.getCallBack().get(DataLocation.CODE));
+                } else {
+                    requestArguments.put("redirectUri", serviceContext.getCallBack().get(DataLocation.IMPLICIT));
+                }
+            } else {
+                if(serviceContext.getRedirectUris() == null || serviceContext.getRedirectUris().isEmpty()) {
+                    throw new ValueException("redirectUris is null or empty");
+                }
+                requestArguments.put("redirectUri", serviceContext.getRedirectUris().get(0));
+            }
+        }
+
+        return requestArguments;
     }
 }

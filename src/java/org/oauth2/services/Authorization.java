@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Map;
 import org.oidc.common.EndpointName;
 import org.oidc.common.MessageType;
@@ -66,8 +67,13 @@ public class Authorization extends AbstractService {
 
     public HttpArguments getRequestParams(Map<String, String> requestArguments) throws JsonProcessingException, UnsupportedSerializationTypeException, WebFingerException, MalformedURLException, UnsupportedEncodingException, ValueException, MissingRequiredAttributeException, SerializationException {
         HttpArguments httpArguments = super.getRequestParameters(requestArguments);
+        List<String> redirectUris;
         if(Strings.isNullOrEmpty(httpArguments.getUrl())) {
-            httpArguments.setUrl(this.serviceContext.getRedirectUris().get(0));
+            redirectUris = this.serviceContext.getRedirectUris();
+            if(redirectUris == null || redirectUris.isEmpty()) {
+                throw new ValueException("null or empty redirect uris");
+            }
+            httpArguments.setUrl(redirectUris.get(0));
         }
 
         return httpArguments;
@@ -79,14 +85,23 @@ public class Authorization extends AbstractService {
     }
 
     public Message postParseResponse(Message response) throws InvalidClaimException {
+        if(response == null) {
+            throw new IllegalArgumentException("null response");
+        }
         String stateKey = null;
         Message message;
-        if(!response.getClaims().containsKey("scope")) {
+        if(response.getClaims() != null && !response.getClaims().containsKey("scope")) {
             //todo: state comes from where?
             stateKey = serviceConfig.getState();
             if(!Strings.isNullOrEmpty(stateKey)) {
                 State state = getState();
+                if(state == null) {
+                    throw new IllegalArgumentException("null state");
+                }
                 message = state.getItem(stateKey, MessageType.AUTHORIZATION_REQUEST);
+                if(message.getClaims() == null) {
+                    throw new IllegalArgumentException("null message claims");
+                }
                 response.addClaim("scope", message.getClaims().get("scope"));
             }
         }

@@ -104,5 +104,5 @@ public interface Service {
      * services that are not expected to store state in the state DB.
      * @param response The response as a Message instance
      */
-    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException;
+    void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
 }
