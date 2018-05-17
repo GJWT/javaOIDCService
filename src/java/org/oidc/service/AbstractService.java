@@ -2,6 +2,7 @@ package org.oidc.service;
 
 import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Message;
+import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
@@ -278,7 +279,7 @@ public abstract class AbstractService implements Service {
      */
     public HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException,
             JsonProcessingException, MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-            UnsupportedEncodingException {
+            UnsupportedEncodingException, SerializationException {
         if (requestArguments == null) {
             throw new IllegalArgumentException("null requestArguments");
         }

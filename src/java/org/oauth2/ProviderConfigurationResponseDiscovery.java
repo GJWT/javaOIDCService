@@ -6,8 +6,13 @@ import com.auth0.msg.Key;
 import com.auth0.msg.KeyJar;
 import com.auth0.msg.Message;
 import com.auth0.msg.ProviderConfigurationResponse;
+import com.auth0.msg.ProviderConfigurationResponseDiscoveryRequestMessage;
 import com.google.common.base.Strings;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import javax.naming.ConfigurationException;
+import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.OidcServiceException;
@@ -31,7 +36,7 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
         super(serviceContext, state);
         this.config = config;
         this.serviceName = ServiceName.PROVIDER_INFO_DISCOVERY;
-        //this.requestMessage = ;
+        this.requestMessage = new ProviderConfigurationResponseDiscoveryRequestMessage();
         this.responseMessage = new ASConfigurationResponse();
     }
 
@@ -39,6 +44,16 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
         this(serviceContext, null, null);
     }
 
+    /**
+     * Builds the request message and constructs the HTTP headers.
+     * <p>
+     * This is the starting pont for a pipeline that will:
+     * <p>
+     * - gather a set of HTTP headers like url and http method
+     *
+     * @param httpMethod
+     * @return HttpArguments
+     */
     public HttpArguments getRequestParameters(HttpMethod httpMethod) {
         String issuer = this.serviceContext.getIssuer();
 
@@ -69,7 +84,7 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
      *
      * @param response the response as a ProviderConfigurationResponse instance
      */
-    public void updateServiceContext(ProviderConfigurationResponse response) throws OidcServiceException, InvalidClaimException {
+    public void updateServiceContext(ProviderConfigurationResponse response) throws OidcServiceException, InvalidClaimException, ConfigurationException {
 
         String issuer = this.serviceContext.getIssuer();
 
@@ -99,16 +114,10 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
 
         ProviderConfigurationResponse pcr = this.serviceContext.getProviderConfigurationResponse();
         Map<String,Object> pcrClaims = pcr.getClaims();
-        for(String key : pcrClaims.keySet()) {
-            if(!Strings.isNullOrEmpty(key) && pcrClaims.get(key) instanceof ServiceName) {
-                //todo: where are we getting the service from the SC from?
-
-                //service is ServiceName is enum from AbstractService
-                /* todo
-                   for _srv in self.service_context.service.values():
-                    if _srv.endpoint_name == key:
-                        _srv.endpoint = val
-                 */
+        List<EndpointName> endpointList = Arrays.asList(EndpointName.AUTHORIZATION, EndpointName.TOKEN, EndpointName.USER_INFO, EndpointName.REGISTRATION, EndpointName.USER_INFO, EndpointName.END_SESSION);
+        for(EndpointName endpoint : endpointList) {
+            if(this.getEndpointName().equals(endpoint)) {
+                this.setEndpoint((String) pcrClaims.get(endpoint));
             }
         }
 
@@ -117,10 +126,7 @@ public class ProviderConfigurationResponseDiscovery extends AbstractService{
             keyJar = new KeyJar();
         }
 
-        keyJar.addKeyBundle();
-        keyJar.getKeyBundle().addKey(new Key());
-        //todo: where are we loading keys?
-        //kj.load_keys(resp, _pcr_issuer)
+        keyJar.loadKeys(response, this.serviceContext.getIssuer());
         this.serviceContext.setKeyJar(keyJar);
     }
 

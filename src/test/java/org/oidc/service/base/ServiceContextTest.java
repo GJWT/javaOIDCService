@@ -1,5 +1,6 @@
 package org.oidc.service.base;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
@@ -101,7 +102,7 @@ public class ServiceContextTest {
     }
 
     @Test
-    public void testGenerateRequestUrisWithNullIssuer() throws NoSuchAlgorithmException, ValueException {
+    public void testGenerateRequestUrisWithNullIssuer() throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
         ServiceContext serviceContext = new ServiceContext();
         serviceContext.setIssuer("issuer");
         serviceContext.setBaseUrl("baseUrl");
@@ -115,7 +116,7 @@ public class ServiceContextTest {
     }
 
     @Test
-    public void testGenerateRequestUrisWithForwardSlash() throws NoSuchAlgorithmException, ValueException {
+    public void testGenerateRequestUrisWithForwardSlash() throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
         ServiceContext serviceContext = new ServiceContext();
         serviceContext.setIssuer("issuer");
         serviceContext.setBaseUrl("baseUrl");
@@ -133,7 +134,7 @@ public class ServiceContextTest {
      * @throws NoSuchAlgorithmException
      */
     @Test
-    public void testGenerateRequestUrisWithMultipleClaimsForPCR() throws NoSuchAlgorithmException, ValueException {
+    public void testGenerateRequestUrisWithMultipleClaimsForPCR() throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
         ServiceContext serviceContext = new ServiceContext();
         serviceContext.setIssuer("issuer");
         serviceContext.setBaseUrl("baseUrl");
@@ -147,7 +148,7 @@ public class ServiceContextTest {
     }
 
     @Test
-    public void testGenerateRequestUrisWithoutForwardSlash() throws NoSuchAlgorithmException, ValueException {
+    public void testGenerateRequestUrisWithoutForwardSlash() throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
         ServiceContext serviceContext = new ServiceContext();
         serviceContext.setIssuer("issuer");
         serviceContext.setBaseUrl("baseUrl");
