@@ -1,6 +1,7 @@
 package org.oidc.services;
 
 import com.auth0.msg.InvalidClaimException;
+import com.auth0.msg.Jwks;
 import com.auth0.msg.ProviderConfigurationResponse;
 import com.auth0.msg.RegistrationRequest;
 import com.auth0.msg.RegistrationResponse;

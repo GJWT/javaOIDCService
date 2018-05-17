@@ -1,5 +1,6 @@
 package org.oauth2;
 
+import com.auth0.msg.ASConfigurationResponse;
 import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyJar;
