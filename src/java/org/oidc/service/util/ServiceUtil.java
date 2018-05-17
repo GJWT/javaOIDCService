@@ -1,9 +1,13 @@
 package org.oidc.service.util;
 
+import com.auth0.msg.Claims;
+import com.auth0.msg.ClaimsRequest;
 import com.auth0.msg.InvalidClaimException;
+import com.auth0.msg.Jwe;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyJar;
 import com.auth0.msg.Message;
+import com.auth0.msg.OpenIdRequest;
 import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -123,7 +127,7 @@ public class ServiceUtil {
     }
 
     public static Message getOpenIdRequest(Authorization request, KeyJar keyJar, Map<String,Object> userInfoClaims,
-                                           Map<String,Object> idTokenClaims, String requestObjectSigningAlg) {
+                                           Map<String,Object> idTokenClaims, String requestObjectSigningAlg) throws InvalidClaimException {
         Map<String,Object> openIdRequestClaims = new HashMap<>();
         for(String key : new OpenIdRequest().getClaims().keySet()) {
             openIdRequestClaims.put(key, request.getAddedClaims().get);
@@ -135,7 +139,7 @@ public class ServiceUtil {
             }
         }
 
-        Map<String,String> claimsArguments = new HashMap<>();
+        Map<String,Object> claimsArguments = new HashMap<>();
         if(userInfoClaims != null) {
             claimsArguments.put("userInfo", new Claims(userInfoClaims));
         }
@@ -150,7 +154,7 @@ public class ServiceUtil {
         
         OpenIdRequest openIdRequest = new OpenIdRequest(openIdRequestClaims);
 
-        return openIdRequest.toJwt(keys, requestObjectSigningAlg);
+        return openIdRequest.toJwt(keyJar, requestObjectSigningAlg);
     }
 
     public static List<String> getRequestUri(String localDirectoryPath, String basePath) {
