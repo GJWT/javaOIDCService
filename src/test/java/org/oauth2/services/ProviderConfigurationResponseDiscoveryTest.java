@@ -16,6 +16,7 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.OidcServiceException;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.base.ServiceContextConfig;
 
 public class ProviderConfigurationResponseDiscoveryTest {
 
@@ -39,7 +40,7 @@ public class ProviderConfigurationResponseDiscoveryTest {
         serviceContext.setIssuer("issuer/");
         ProviderConfigurationResponseDiscovery pcrd = new ProviderConfigurationResponseDiscovery(serviceContext);
         HttpArguments httpArguments = pcrd.getRequestParameters();
-        //Assert.assertTrue(httpArguments.getUrl().equals());
+        Assert.assertTrue(httpArguments.getUrl().equals("issuer/.well-known/openid-configuration"));
         Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
     }
 
