@@ -6,6 +6,7 @@ import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.security.KeyException;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ParameterException;
@@ -94,7 +95,7 @@ public interface Service {
      * @param response The response as a Message instance
      * @param stateKey The key that corresponds to the appropriate State object
      */
-    void updateServiceContext(Message response, String stateKey) throws InvalidClaimException, ParameterException;
+    void updateServiceContext(Message response, String stateKey) throws InvalidClaimException, ParameterException, KeyException, JsonProcessingException, SerializationException;
 
     /**
      * This method will run after the response has been parsed and verified.

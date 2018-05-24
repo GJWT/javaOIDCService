@@ -1,5 +1,7 @@
 package org.oidc.service.util;
 
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.msg.AuthorizationRequest;
 import com.auth0.msg.Claims;
 import com.auth0.msg.ClaimsRequest;
 import com.auth0.msg.InvalidClaimException;
@@ -23,9 +25,7 @@ import org.oidc.common.AddedClaims;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
-import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
-import org.oidc.services.Authorization;
 
 /**
  * This class has utility methods for various services
@@ -75,8 +75,8 @@ public class ServiceUtil {
         }
     }
 
-    public static String getState(Map<String,String> requestArguments, ServiceConfig serviceConfig) throws MissingRequiredAttributeException {
-        String state = serviceConfig.getState();
+    public static String getState(Map<String,String> requestArguments, AddedClaims addedClaims) throws MissingRequiredAttributeException {
+        String state = addedClaims.getState().toString();
         if(Strings.isNullOrEmpty(state)) {
             state = requestArguments.get("state");
             if(Strings.isNullOrEmpty(state)) {
@@ -126,11 +126,11 @@ public class ServiceUtil {
         return jwe.encrypt(keys);
     }
 
-    public static Message getOpenIdRequest(Authorization request, KeyJar keyJar, Map<String,Object> userInfoClaims,
-                                           Map<String,Object> idTokenClaims, String requestObjectSigningAlg) throws InvalidClaimException {
+    public static Message getOpenIdRequest(AuthorizationRequest request, KeyJar keyJar, Map<String,Object> userInfoClaims,
+                                           Map<String,Object> idTokenClaims, Algorithm requestObjectSigningAlg) throws InvalidClaimException, JsonProcessingException, SerializationException {
         Map<String,Object> openIdRequestClaims = new HashMap<>();
         for(String key : new OpenIdRequest().getClaims().keySet()) {
-            openIdRequestClaims.put(key, request.getAddedClaims().get);
+            openIdRequestClaims.put(key, request.getClaims().get(key));
         }
 
         for(String attribute : Arrays.asList("scope", "responseType")) {
@@ -155,6 +155,10 @@ public class ServiceUtil {
         OpenIdRequest openIdRequest = new OpenIdRequest(openIdRequestClaims);
 
         return openIdRequest.toJwt(keyJar, requestObjectSigningAlg);
+    }
+
+    public static Message getOpenIdRequest(AuthorizationRequest request) throws InvalidClaimException, JsonProcessingException, SerializationException {
+        return getOpenIdRequest(request, null, null, null, null);
     }
 
     public static List<String> getRequestUri(String localDirectoryPath, String basePath) {

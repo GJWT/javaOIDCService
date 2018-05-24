@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.security.KeyException;
 import java.util.Map;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.ClientAuthenticationMethod;
@@ -163,7 +164,7 @@ public abstract class AbstractService implements Service {
      **/
     public abstract void updateServiceContext(
             Message response,
-            String stateKey) throws InvalidClaimException, ParameterException;
+            String stateKey) throws InvalidClaimException, ParameterException, KeyException, JsonProcessingException, SerializationException;
 
     /**
      * This method will run after the response has been parsed and verified.  It requires response

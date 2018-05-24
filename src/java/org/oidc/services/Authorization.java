@@ -1,13 +1,17 @@
 package org.oidc.services;
 
+import com.auth0.msg.AuthorizationRequest;
 import com.auth0.msg.DataLocation;
 import com.auth0.msg.InvalidClaimException;
+import com.auth0.msg.Key;
 import com.auth0.msg.Message;
 import com.auth0.msg.SerializationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.KeyException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,6 +27,9 @@ import org.oidc.service.AbstractService;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
+import org.oidc.service.data.StateImpl;
+import org.oidc.service.data.StateInterface;
+import org.oidc.service.data.StateMap;
 import org.oidc.service.util.AlgorithmUtil;
 import org.oidc.service.util.Constants;
 import org.oidc.service.util.ServiceUtil;
@@ -49,13 +56,17 @@ public class Authorization extends org.oauth2.services.Authorization{
         }
 
         requestArguments.put("state", state);
+        StateInterface stateObject = new StateImpl(this.serviceContext.getIssuer());
+        StateMap stateMap = StateMap.getInstance();
+        Map<String,State> map = stateMap.getStateMap();
+        map.put(state, stateObject);
         //_item = State(iss=self.service_context.issuer)
         //self.state_db.set(_state, _item.to_json())
     }
 
-    public void updateServiceContext(Message response, String stateKey) throws InvalidClaimException, ParameterException {
+    public void updateServiceContext(Message response, String stateKey) throws InvalidClaimException, ParameterException, KeyException, JsonProcessingException, SerializationException {
         Message idt = (Message) response.getClaims().get("verifiedIdToken");
-        State state = getState(stateKey);
+        StateImpl state = new StateImpl((String) idt.getClaims().get("iss"));
         if(!(state.getStateKeyByNonce((String) idt.getClaims().get("nonce"))).equals(stateKey)) {
             throw new ParameterException("The 'nonce' has been tampered with");
         }
@@ -103,13 +114,13 @@ public class Authorization extends org.oauth2.services.Authorization{
         }
 
         Map<String,Object> postArguments = new HashMap<>();
-        List<String> attributesList = Arrays.asList("requestObjectSigningAlgorithm", "algorithm", "sigKid");
-        for(String attribute : attributesList) {
-            postArguments.put(attribute, kwargs.get(attribute));
-        }
+        AddedClaims addedClaims = getAddedClaims();
+        postArguments.put("requestObjectSigningAlgorithm", addedClaims.getRequestObjectSigningAlgorithm());
+        postArguments.put("algorithm", addedClaims.getAlgorithm());
+        postArguments.put("sigKid", addedClaims.getSigKid());
 
-        if(kwargs.containsKey("requestMethod")) {
-            if(kwargs.get("requestMethod").equals("reference")) {
+        if(Strings.isNullOrEmpty(addedClaims.getRequestMethod())) {
+            if("reference".equals(addedClaims.getRequestMethod())) {
                 postArguments.put("requestParam", "requestUri");
             } else {
                 postArguments.put("requestParam", "request");
@@ -123,7 +134,7 @@ public class Authorization extends org.oauth2.services.Authorization{
         return listOfArguments;
     }
 
-    public Message oidcPostConstruct(Message request) throws InvalidClaimException, ValueException, SerializationException, IOException, MissingRequiredAttributeException {
+    public Message oidcPostConstruct(AuthorizationRequest request) throws InvalidClaimException, ValueException, SerializationException, IOException, MissingRequiredAttributeException {
         if(request == null) {
             throw new IllegalArgumentException("null request");
         }
@@ -154,13 +165,15 @@ public class Authorization extends org.oauth2.services.Authorization{
             }
         }
 
-        String requestMethod = kwargs.get("requestMethod");
+        AddedClaims addedClaims = getAddedClaims();
+        String requestMethod = addedClaims.getRequestMethod();
 
         if(Strings.isNullOrEmpty(requestMethod)) {
 
-            List<String> arguments = Arrays.asList("requestObjectSigningAlg", "algorithm");
-            for (String argument : arguments) {
-                algorithm = kwargs.get(argument);
+            algorithm = addedClaims.getRequestObjectSigningAlgorithm();
+            String tempAlgorithm = addedClaims.getAlgorithm();
+            if(!Strings.isNullOrEmpty(tempAlgorithm)) {
+                algorithm = tempAlgorithm;
             }
 
             if (Strings.isNullOrEmpty(algorithm)) {
@@ -170,17 +183,19 @@ public class Authorization extends org.oauth2.services.Authorization{
                 }
             }
 
-            kwargs.put("requestObjectSigningAlg", algorithm);
+            setAddedClaims(addedClaims.buildAddedClaimsBuilder().setRequestObjectSigningAlgorithm(algorithm).buildAddedClaims());
         }
 
-        if(!kwargs.containsKey("keys") && !Strings.isNullOrEmpty(algorithm) && !algorithm.equals("none")) {
+        List<Key> keyList = addedClaims.getKeys();
+        if(keyList != null && !keyList.isEmpty() && !Strings.isNullOrEmpty(algorithm) && !algorithm.equals("none")) {
             String keyType = AlgorithmUtil.algorithmToKeyType(algorithm);
-            String kid = kwargs.get("sigKid");
+            String kid = addedClaims.getSigKid();
             if(Strings.isNullOrEmpty(kid)) {
-                kid = this.serviceContext.
+                //_kid = self.service_context.kid["sig"].get(_kty, None)
+                //todo: we never added kid to serviceContext
             }
 
-            kwargs.put("keys", this.serviceContext.getKeyJar().getSigningKey(keyType, kid));
+            setAddedClaims(addedClaims.buildAddedClaimsBuilder().setKeys(Arrays.asList(this.serviceContext.getKeyJar().getSigningKey(keyType, kid))).buildAddedClaims());
         }
 
         Message openIdRequest = ServiceUtil.getOpenIdRequest(request);
@@ -199,6 +214,7 @@ public class Authorization extends org.oauth2.services.Authorization{
             String fileName = this.serviceContext.fileNameFromWebname(webName);
             List<String> fileNameAndWebName = null;
             if(Strings.isNullOrEmpty(fileName)) {
+                //todo: kwargs isnt even used in python method, so where are local dir and base path being used?
                 fileNameAndWebName = ServiceUtil.getRequestUri();
                 fileName = fileNameAndWebName.get(0);
                 webName = fileNameAndWebName.get(1);
@@ -223,7 +239,7 @@ public class Authorization extends org.oauth2.services.Authorization{
         return request;
     }
 
-    public void gatherVerifyArguments() throws InvalidClaimException {
+    public AddedClaims gatherVerifyArguments() throws InvalidClaimException {
         AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setClientId(this.serviceContext.getClientId())
                 .setIssuer(this.serviceContext.getIssuer()).setKeyJar(this.serviceContext.getKeyJar())
                 .setShouldVerify(true).buildAddedClaims();
@@ -233,7 +249,8 @@ public class Authorization extends org.oauth2.services.Authorization{
             serviceContext.getRegistrationResponse().getClaims().get(Constants.IDT2REG.get(key));
         }
 
-        kwargs.put("allowMissingKid", serviceContext.getAllow().get("missingKid"));
+        addedClaims = addedClaims.buildAddedClaimsBuilder().setShouldAllowMissingKid(serviceContext.getAllow().get("missingKid")).buildAddedClaims();
+        return addedClaims;
     }
 
     public Map<String, String> getRedirectUris(Map<String,String> requestArguments, AbstractService service) throws InvalidClaimException, ValueException {

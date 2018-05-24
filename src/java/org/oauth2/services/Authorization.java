@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.security.KeyException;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.EndpointName;
@@ -50,7 +51,7 @@ public class Authorization extends AbstractService {
     }
 
     @Override
-    public void updateServiceContext(Message response, String stateKey) throws InvalidClaimException, ParameterException {
+    public void updateServiceContext(Message response, String stateKey) throws InvalidClaimException, ParameterException, KeyException, JsonProcessingException, SerializationException {
         if(response.getClaims().containsKey("expiresIn")) {
             response.addClaim("expiresAt", System.currentTimeMillis() + (long) response.getClaims().get("expiresIn"));
         }
@@ -60,7 +61,7 @@ public class Authorization extends AbstractService {
     }
 
     public void storeAuthorizationRequest(Map<String,String> requestArgs) throws MissingRequiredAttributeException {
-        String stateKey = ServiceUtil.getState(requestArgs, serviceConfig);
+        String stateKey = ServiceUtil.getState(requestArgs, getAddedClaims());
         State state = getState();
         state.storeItem(responseMessage, stateKey, MessageType.AUTHORIZATION_REQUEST);
     }
@@ -80,7 +81,7 @@ public class Authorization extends AbstractService {
     }
 
     @Override
-    public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException {
+    public void updateServiceContext(Message response) {
         throw new UnsupportedOperationException("StateKey is required in order to update service context");
     }
 

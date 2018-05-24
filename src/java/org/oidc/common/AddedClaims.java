@@ -1,5 +1,6 @@
 package org.oidc.common;
 
+import com.auth0.msg.Key;
 import com.auth0.msg.KeyJar;
 import java.util.List;
 import org.oidc.service.data.State;
@@ -55,9 +56,32 @@ public class AddedClaims implements Cloneable{
      */
     private State state;
 
-    private AddedClaims(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify,
-                        List<String> scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
-                        State state) {
+    private String requestObjectSigningAlgorithm;
+
+    private String algorithm;
+
+    private String sigKid;
+
+    private String requestMethod;
+
+    private List<Key> keys;
+
+    private boolean shouldAllowMissingKid;
+
+    private String requestObjectEncryptionAlg;
+
+    private String requestObjectEncryptionEnc;
+
+    private String encryptionKid;
+
+    private String target;
+
+    public AddedClaims(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify,
+                       List<String> scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
+                       State state, String requestObjectSigningAlgorithm, String algorithm, String sigKid,
+                       String requestMethod, List<Key> keys, boolean shouldAllowMissingKid,
+                       String requestObjectEncryptionAlg, String requestObjectEncryptionEnc, String encryptionKid,
+                       String target) {
         this.clientId = clientId;
         this.issuer = issuer;
         this.keyJar = keyJar;
@@ -66,6 +90,16 @@ public class AddedClaims implements Cloneable{
         this.resource = resource;
         this.clientAuthenticationMethod = clientAuthenticationMethod;
         this.state = state;
+        this.requestObjectSigningAlgorithm = requestObjectSigningAlgorithm;
+        this.algorithm = algorithm;
+        this.sigKid = sigKid;
+        this.requestMethod = requestMethod;
+        this.keys = keys;
+        this.shouldAllowMissingKid = shouldAllowMissingKid;
+        this.requestObjectEncryptionAlg = requestObjectEncryptionAlg;
+        this.requestObjectEncryptionEnc = requestObjectEncryptionEnc;
+        this.encryptionKid = encryptionKid;
+        this.target = target;
     }
 
     /**
@@ -111,9 +145,50 @@ public class AddedClaims implements Cloneable{
         return state;
     }
 
+    public String getRequestObjectSigningAlgorithm() {
+        return requestObjectSigningAlgorithm;
+    }
+
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    public String getSigKid() {
+        return sigKid;
+    }
+
+    public String getRequestMethod() {
+        return requestMethod;
+    }
+
+    public List<Key> getKeys() {
+        return keys;
+    }
+
+    public boolean isShouldAllowMissingKid() {
+        return shouldAllowMissingKid;
+    }
+
+    public String getRequestObjectEncryptionAlg() {
+        return requestObjectEncryptionAlg;
+    }
+
+    public String getRequestObjectEncryptionEnc() {
+        return requestObjectEncryptionEnc;
+    }
+
+    public String getEncryptionKid() {
+        return encryptionKid;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
     public AddedClaimsBuilder buildAddedClaimsBuilder() {
-        return new AddedClaimsBuilder(this.clientId, this.issuer, this.keyJar, this.shouldVerify
-        , this.scope, this.resource, this.clientAuthenticationMethod, this.state);
+        return new AddedClaimsBuilder(clientId, issuer, keyJar, shouldVerify, scope, resource, clientAuthenticationMethod, state,
+                requestObjectSigningAlgorithm, algorithm, sigKid, requestMethod, keys, shouldAllowMissingKid, requestObjectEncryptionAlg,
+                requestObjectEncryptionEnc, encryptionKid, target);
     }
 
     public static class AddedClaimsBuilder {
@@ -125,14 +200,26 @@ public class AddedClaims implements Cloneable{
         private String resource;
         private ClientAuthenticationMethod clientAuthenticationMethod;
         private State state;
+        private String requestObjectSigningAlgorithm;
+        private String algorithm;
+        private String sigKid;
+        private String requestMethod;
+        private List<Key> keys;
+        private boolean shouldAllowMissingKid;
+        private String requestObjectEncryptionAlg;
+        private String requestObjectEncryptionEnc;
+        private String encryptionKid;
+        private String target;
 
         public AddedClaimsBuilder() {
 
         }
 
         public AddedClaimsBuilder(String clientId, String issuer, KeyJar keyJar, boolean shouldVerify,
-                                  List<String> scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
-                                  State state) {
+                           List<String> scope, String resource, ClientAuthenticationMethod clientAuthenticationMethod,
+                           State state, String requestObjectSigningAlgorithm, String algorithm, String sigKid,
+                           String requestMethod, List<Key> keys, boolean shouldAllowMissingKid, String requestObjectEncryptionAlg,
+                           String requestObjectEncryptionEnc, String encryptionKid, String target) {
             this.clientId = clientId;
             this.issuer = issuer;
             this.keyJar = keyJar;
@@ -141,6 +228,16 @@ public class AddedClaims implements Cloneable{
             this.resource = resource;
             this.clientAuthenticationMethod = clientAuthenticationMethod;
             this.state = state;
+            this.requestObjectSigningAlgorithm = requestObjectSigningAlgorithm;
+            this.algorithm = algorithm;
+            this.sigKid = sigKid;
+            this.requestMethod = requestMethod;
+            this.keys = keys;
+            this.shouldAllowMissingKid = shouldAllowMissingKid;
+            this.requestObjectEncryptionAlg = requestObjectEncryptionAlg;
+            this.requestObjectEncryptionEnc = requestObjectEncryptionEnc;
+            this.encryptionKid = encryptionKid;
+            this.target = target;
         }
 
         public AddedClaimsBuilder setClientId(String clientId) {
@@ -183,8 +280,60 @@ public class AddedClaims implements Cloneable{
             return this;
         }
 
+        public AddedClaimsBuilder setRequestObjectSigningAlgorithm(String requestObjectSigningAlgorithm) {
+            this.requestObjectSigningAlgorithm = requestObjectSigningAlgorithm;
+            return this;
+        }
+
+        public AddedClaimsBuilder setAlgorithm(String algorithm) {
+            this.algorithm = algorithm;
+            return this;
+        }
+
+        public AddedClaimsBuilder setSigKid(String sigKid) {
+            this.sigKid = sigKid;
+            return this;
+        }
+
+        public AddedClaimsBuilder setRequestMethod(String requestMethod) {
+            this.requestMethod = requestMethod;
+            return this;
+        }
+
+        public AddedClaimsBuilder setKeys(List<Key> keys) {
+            this.keys = keys;
+            return this;
+        }
+
+        public AddedClaimsBuilder setShouldAllowMissingKid(boolean shouldAllowMissingKid) {
+            this.shouldAllowMissingKid = shouldAllowMissingKid;
+            return this;
+        }
+
+        public AddedClaimsBuilder setRequestObjectEncryptionAlg(String requestObjectEncryptionAlg) {
+            this.requestObjectEncryptionAlg = requestObjectEncryptionAlg;
+            return this;
+        }
+
+        public AddedClaimsBuilder setRequestObjectEncryptionEnc(String requestObjectEncryptionEnc) {
+            this.requestObjectEncryptionEnc = requestObjectEncryptionEnc;
+            return this;
+        }
+
+        public AddedClaimsBuilder setEncryptionKid(String encryptionKid) {
+            this.encryptionKid = encryptionKid;
+            return this;
+        }
+
+        public AddedClaimsBuilder setTarget(String target) {
+            this.target = target;
+            return this;
+        }
+
         public AddedClaims buildAddedClaims() {
-            return new AddedClaims(clientId, issuer, keyJar, shouldVerify, scope, resource, clientAuthenticationMethod, state);
+            return new AddedClaims(clientId, issuer, keyJar, shouldVerify, scope, resource, clientAuthenticationMethod, state,
+                    requestObjectSigningAlgorithm, algorithm, sigKid, requestMethod, keys, shouldAllowMissingKid, requestObjectEncryptionAlg,
+                    requestObjectEncryptionEnc, encryptionKid, target);
         }
     }
 }
