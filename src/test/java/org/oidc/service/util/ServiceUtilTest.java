@@ -4,6 +4,7 @@ import static org.hamcrest.core.StringContains.containsString;
 
 import com.auth0.msg.Message;
 import com.auth0.msg.ProviderConfigurationResponse;
+import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class ServiceUtilTest {
     }
 
     @Test
-    public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException, JsonProcessingException {
+    public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
         Map<String,Object> claims = new HashMap<>();
         claims.put(Constants.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
@@ -58,7 +59,7 @@ public class ServiceUtilTest {
     }
 
     @Test
-    public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException, JsonProcessingException {
+    public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
         Map<String,Object> claims = new HashMap<>();
         claims.put(Constants.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
@@ -67,7 +68,7 @@ public class ServiceUtilTest {
     }
 
     @Test
-    public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException, JsonProcessingException {
+    public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
         thrown.expect(UnsupportedSerializationTypeException.class);
         thrown.expectMessage(containsString("Unsupported serialization type: "));
         Map<String,Object> claims = new HashMap<>();

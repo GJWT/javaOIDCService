@@ -1,5 +1,6 @@
 package org.oidc.services;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.JsonResponseDescriptor;
 import com.auth0.msg.Message;
 import com.auth0.msg.WebfingerRequestMessage;
@@ -65,9 +66,10 @@ public class Webfinger extends AbstractService {
      * a stateKey since it is used for services that are not expected to store state in the state DB.
      *
      * @param response the response as a Message instance
+     * @throws InvalidClaimException 
      */
     @Override
-    public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException {
+    public void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
         List<LinkedHashMap> links = (List) response.getClaims().get("links");
         List<LinkInfo> linkInfoList = createLinkInfo(links);
 

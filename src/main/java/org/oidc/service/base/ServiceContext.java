@@ -2,6 +2,7 @@ package org.oidc.service.base;
 
 import com.auth0.msg.Claim;
 import com.auth0.msg.DataLocation;
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Jwk;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyBundle;
@@ -200,8 +201,9 @@ public class ServiceContext {
      *
      * @param requestsDirectory the leading path
      * @return a list of one unique URL
+     * @throws InvalidClaimException 
      **/
-    public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException, ValueException {
+    public List<String> generateRequestUris(String requestsDirectory) throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
         MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
         Claim issuerClaim = new Claim(Constants.ISSUER);
         if (this.providerConfigurationResponse.getClaims() != null

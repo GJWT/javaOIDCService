@@ -1,6 +1,7 @@
 package org.oidc.service.util;
 
 import com.auth0.msg.Message;
+import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.net.MalformedURLException;
@@ -45,8 +46,9 @@ public class ServiceUtil {
      * @param serializationType the manner in which the request message should be serialized
      * @return the request serialized according to the passed in serialization type
      * @throws UnsupportedSerializationTypeException
+     * @throws SerializationException 
      */
-    public static String getHttpBody(Message request, SerializationType serializationType) throws UnsupportedSerializationTypeException, JsonProcessingException {
+    public static String getHttpBody(Message request, SerializationType serializationType) throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
         if (SerializationType.URL_ENCODED.equals(serializationType)) {
             return request.toUrlEncoded();
         } else if (SerializationType.JSON.equals(serializationType)) {

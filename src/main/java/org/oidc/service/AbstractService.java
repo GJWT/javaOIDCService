@@ -1,6 +1,8 @@
 package org.oidc.service;
 
+import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Message;
+import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
@@ -170,7 +172,7 @@ public abstract class AbstractService implements Service {
      *
      * @param response the response as a Message instance
      */
-    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException;
+    public abstract void updateServiceContext(Message response) throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
 
     /**
      * This the start of a pipeline that will:
@@ -268,10 +270,11 @@ public abstract class AbstractService implements Service {
      *
      * @param requestArguments
      * @return HttpArguments
+     * @throws SerializationException 
      */
     public HttpArguments getRequestParameters(Map<String, String> requestArguments) throws UnsupportedSerializationTypeException,
             JsonProcessingException, MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-            UnsupportedEncodingException {
+            UnsupportedEncodingException, SerializationException {
         if (requestArguments == null) {
             throw new IllegalArgumentException("null requestArguments");
         }
