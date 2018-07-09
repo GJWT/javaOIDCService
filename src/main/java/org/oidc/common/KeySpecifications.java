@@ -5,33 +5,33 @@ package org.oidc.common;
  **/
 public class KeySpecifications {
 
-    /**
-     * Name of the file that contains the keys
-     */
-    private String fileName;
-    /**
-     * The algorithm that was used to encrypt the keys
-     */
-    private Algorithm algorithm;
+  /**
+   * Name of the file that contains the keys
+   */
+  private String fileName;
+  /**
+   * The algorithm that was used to encrypt the keys
+   */
+  private Algorithm algorithm;
 
-    public KeySpecifications(String fileName, Algorithm algorithm) {
-        this.fileName = fileName;
-        this.algorithm = algorithm;
-    }
+  public KeySpecifications(String fileName, Algorithm algorithm) {
+    this.fileName = fileName;
+    this.algorithm = algorithm;
+  }
 
-    public String getFileName() {
-        return fileName;
-    }
+  public String getFileName() {
+    return fileName;
+  }
 
-    public Algorithm getAlgorithm() {
-        return algorithm;
-    }
+  public Algorithm getAlgorithm() {
+    return algorithm;
+  }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
+  }
 
-    public void setAlgorithm(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
+  public void setAlgorithm(Algorithm algorithm) {
+    this.algorithm = algorithm;
+  }
 }
