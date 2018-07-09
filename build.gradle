@@ -3,6 +3,7 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'checkstyle'
 
 sourceCompatibility = 1.7
 
@@ -19,4 +20,8 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.2'
     compile 'commons-validator:commons-validator:1.6'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.11'
+}
+
+checkstyle {
+    toolVersion = "8.11"
 }
