@@ -24,4 +24,5 @@ dependencies {
 
 checkstyle {
     toolVersion = "8.11"
+    sourceSets = [project.sourceSets.main]
 }
