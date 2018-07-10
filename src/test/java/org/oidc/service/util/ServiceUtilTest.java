@@ -55,7 +55,7 @@ public class ServiceUtilTest {
         claims.put(Constants.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.URL_ENCODED);
-        Assert.assertTrue(httpBody.equals("eyJjbGFpbXMiOnsiaXNzdWVyIjoiaXNzdWVyIn0sImVycm9yIjpudWxsfQ"));
+        Assert.assertTrue(httpBody.equals("eyJpc3N1ZXIiOiJpc3N1ZXIifQ"));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ServiceUtilTest {
         claims.put(Constants.ISSUER, "issuer");
         Message request = new ProviderConfigurationResponse(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.JSON);
-        Assert.assertTrue(httpBody.equals("{\"claims\":{\"issuer\":\"issuer\"},\"error\":null}"));
+        Assert.assertTrue(httpBody.equals("{\"issuer\":\"issuer\"}"));
     }
 
     @Test
