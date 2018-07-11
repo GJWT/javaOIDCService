@@ -69,7 +69,7 @@ public class Webfinger extends AbstractService {
   @Override
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    List<LinkedHashMap> links = (List) response.getClaims().get("links");
+    List<LinkedHashMap> links = (List) response.getClaims().get(Constants.WEBFINGER_LINKS);
     List<LinkInfo> linkInfoList = createLinkInfo(links);
 
     if (linkInfoList == null || linkInfoList.isEmpty()) {
@@ -104,9 +104,10 @@ public class Webfinger extends AbstractService {
     }
     List<LinkInfo> linkInfoList = new ArrayList<>();
     for (LinkedHashMap link : links) {
-      linkInfoList.add(new LinkInfo((String) link.get("rel"), (String) link.get("href"),
-          (String) link.get("type"), (Map<String, String>) link.get("titles"),
-          (Map<String, String>) link.get("properties")));
+      linkInfoList.add(new LinkInfo((String) link.get(Constants.WEBFINGER_REL), 
+          (String) link.get(Constants.WEBFINGER_HREF),
+          (String) link.get(Constants.WEBFINGER_TYPE), (Map<String, String>) link.get(Constants.WEBFINGER_TITLES),
+          (Map<String, String>) link.get(Constants.WEBFINGER_PROPERTIES)));
     }
     return linkInfoList;
   }
@@ -185,7 +186,7 @@ public class Webfinger extends AbstractService {
       throw new IllegalArgumentException("null requestArguments");
     }
 
-    String resource = requestArguments.get("resource");
+    String resource = requestArguments.get(Constants.WEBFINGER_RESOURCE);
     AddedClaims addedClaims = getAddedClaims();
     if (Strings.isNullOrEmpty(resource)) {
       resource = addedClaims.getResource();
