@@ -15,4 +15,13 @@ public class Constants {
   public static final String LINKS = "links";
   public static final String EXPIRES = "expires";
   public static final String GRANT_TYPE = "grantType";
+  
+  public static final String WEBFINGER_SUBJECT = "subject";
+  public static final String WEBFINGER_ALIASES = "aliases";
+  public static final String WEBFINGER_PROPERTIES = "properties";
+  public static final String WEBFINGER_LINKS = "links";
+  public static final String WEBFINGER_REL = "rel";
+  public static final String WEBFINGER_TYPE = "type";
+  public static final String WEBFINGER_HREF = "href";
+  public static final String WEBFINGER_TITLES = "titles";
 }
