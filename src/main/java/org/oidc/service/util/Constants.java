@@ -24,4 +24,5 @@ public class Constants {
   public static final String WEBFINGER_TYPE = "type";
   public static final String WEBFINGER_HREF = "href";
   public static final String WEBFINGER_TITLES = "titles";
+  public static final String WEBFINGER_RESOURCE = "resource";
 }
