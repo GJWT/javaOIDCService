@@ -38,11 +38,11 @@ public class LinkInfo {
     this.rel = rel;
   }
 
-  public String gethRef() {
+  public String getHref() {
     return hRef;
   }
 
-  public void sethRef(String hRef) {
+  public void setHref(String hRef) {
     this.hRef = hRef;
   }
 

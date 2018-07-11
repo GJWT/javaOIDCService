@@ -79,7 +79,7 @@ public class Webfinger extends AbstractService {
     String href;
     for (LinkInfo link : linkInfoList) {
       if (!Strings.isNullOrEmpty(link.getRel()) && link.getRel().equals(linkRelationType)) {
-        href = link.gethRef();
+        href = link.getHref();
         // allows for non-standard behavior for schema and issuer
         if (!serviceConfig.isShouldAllowHttp() || !serviceConfig.isShouldAllowNonStandardIssuer()) {
           throw new ValueException("http link not allowed: " + href);
@@ -104,7 +104,7 @@ public class Webfinger extends AbstractService {
     }
     List<LinkInfo> linkInfoList = new ArrayList<>();
     for (LinkedHashMap link : links) {
-      linkInfoList.add(new LinkInfo((String) link.get("rel"), (String) link.get("hRef"),
+      linkInfoList.add(new LinkInfo((String) link.get("rel"), (String) link.get("href"),
           (String) link.get("type"), (Map<String, String>) link.get("titles"),
           (Map<String, String>) link.get("properties")));
     }
