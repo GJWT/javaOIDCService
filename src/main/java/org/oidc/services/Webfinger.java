@@ -1,9 +1,5 @@
 package org.oidc.services;
 
-import com.auth0.msg.InvalidClaimException;
-import com.auth0.msg.JsonResponseDescriptor;
-import com.auth0.msg.Message;
-import com.auth0.msg.WebfingerRequestMessage;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -19,6 +15,10 @@ import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
+import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.JsonResponseDescriptor;
+import org.oidc.msg.Message;
+import org.oidc.msg.WebfingerRequestMessage;
 import org.oidc.service.AbstractService;
 import org.oidc.service.LinkInfo;
 import org.oidc.service.base.HttpArguments;

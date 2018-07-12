@@ -1,10 +1,8 @@
 package org.oidc.service.base;
 
-import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
-import com.auth0.msg.ProviderConfigurationResponse;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +17,8 @@ import org.oidc.common.Algorithm;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
+import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.ProviderConfigurationResponse;
 import org.oidc.service.util.Constants;
 
 public class ServiceContextTest {

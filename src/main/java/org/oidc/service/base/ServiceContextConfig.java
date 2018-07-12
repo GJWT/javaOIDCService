@@ -1,13 +1,13 @@
 package org.oidc.service.base;
 
-import com.auth0.msg.ProviderConfigurationResponse;
-import com.auth0.msg.RegistrationRequest;
-import com.auth0.msg.RegistrationResponse;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.KeyType;
+import org.oidc.msg.ProviderConfigurationResponse;
+import org.oidc.msg.RegistrationRequest;
+import org.oidc.msg.RegistrationResponse;
 
 /**
  * This is the configuration that is created by the configuration of the RP and is shared by all the

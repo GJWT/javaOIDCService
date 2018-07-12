@@ -1,8 +1,5 @@
 package org.oidc.service;
 
-import com.auth0.msg.InvalidClaimException;
-import com.auth0.msg.Message;
-import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -12,6 +9,9 @@ import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
+import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.Message;
+import org.oidc.msg.SerializationException;
 import org.oidc.service.base.HttpArguments;
 
 /**

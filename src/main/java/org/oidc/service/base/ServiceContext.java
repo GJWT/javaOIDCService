@@ -1,16 +1,10 @@
 package org.oidc.service.base;
 
-import com.auth0.msg.Claim;
-import com.auth0.msg.DataLocation;
-import com.auth0.msg.InvalidClaimException;
 import com.auth0.msg.Jwk;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
-import com.auth0.msg.ProviderConfigurationResponse;
 import com.auth0.msg.RSAKey;
-import com.auth0.msg.RegistrationRequest;
-import com.auth0.msg.RegistrationResponse;
 import com.google.common.base.Strings;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +16,12 @@ import org.oidc.common.Algorithm;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
+import org.oidc.msg.Claim;
+import org.oidc.msg.DataLocation;
+import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.ProviderConfigurationResponse;
+import org.oidc.msg.RegistrationRequest;
+import org.oidc.msg.RegistrationResponse;
 import org.oidc.service.util.Constants;
 
 /**

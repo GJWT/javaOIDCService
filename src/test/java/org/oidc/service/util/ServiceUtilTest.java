@@ -2,9 +2,6 @@ package org.oidc.service.util;
 
 import static org.hamcrest.core.StringContains.containsString;
 
-import com.auth0.msg.Message;
-import com.auth0.msg.ProviderConfigurationResponse;
-import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +11,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.msg.Message;
+import org.oidc.msg.ProviderConfigurationResponse;
+import org.oidc.msg.SerializationException;
 
 public class ServiceUtilTest {
 

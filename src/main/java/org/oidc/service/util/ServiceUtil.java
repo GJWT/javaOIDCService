@@ -1,13 +1,13 @@
 package org.oidc.service.util;
 
-import com.auth0.msg.Message;
-import com.auth0.msg.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.msg.Message;
+import org.oidc.msg.SerializationException;
 
 /**
  * This class has utility methods for various services
