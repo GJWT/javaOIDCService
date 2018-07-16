@@ -45,21 +45,21 @@ public class WebfingerTest {
     public void testGetQueryWithDevice() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("device:p1.example.com");
-        Assert.assertTrue(query.equals("https://p1.example.com/.well-known/webfinger?device%3Ap1.example.com"));
+        Assert.assertTrue(query.equals("https://p1.example.com/.well-known/webfinger?resource=device%3Ap1.example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
     }
 
     @Test
     public void testGetQueryWithAcct() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("acct:bob@example.com");
-        Assert.assertTrue(query.equals("https://example.com/.well-known/webfinger?acct%3Abob%40example.com"));
+        Assert.assertTrue(query.equals("https://example.com/.well-known/webfinger?resource=acct%3Abob%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
     }
 
     @Test
     public void testGetQueryWithWWWSchema() throws Exception {
         Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
         String query = webfinger.getQuery("www.yahoo.com");
-        Assert.assertTrue(query.equals("https://www.yahoo.com/.well-known/webfinger?https%3A%2F%2Fwww.yahoo.com"));
+        Assert.assertTrue(query.equals("https://www.yahoo.com/.well-known/webfinger?resource=https%3A%2F%2Fwww.yahoo.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class WebfingerTest {
         requestArguments.put("resource", null);
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
         Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
-        Assert.assertTrue(httpArguments.getUrl().equals("https://resource/.well-known/webfinger?https%3A%2F%2Fresource"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://resource/.well-known/webfinger?resource=https%3A%2F%2Fresource&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class WebfingerTest {
         requestArguments.put("resource", null);
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
         Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
-        Assert.assertTrue(httpArguments.getUrl().equals("https://baseUrl/.well-known/webfinger?https%3A%2F%2FbaseUrl"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://baseUrl/.well-known/webfinger?resource=https%3A%2F%2FbaseUrl&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class WebfingerTest {
         requestArguments.put("resource", "acct:bob@example.com");
 
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
-        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?acct%3Abob%40example.com"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?resource=acct%3Abob%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
     }
 
     @Test
@@ -143,7 +143,7 @@ public class WebfingerTest {
         requestArguments.put("resource", "acct:carol@example.com");
 
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
-        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?acct%3Acarol%40example.com"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://example.com/.well-known/webfinger?resource=acct%3Acarol%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
     }
 
     @Test
@@ -202,7 +202,7 @@ public class WebfingerTest {
         Map<String,String> requestArguments = new HashMap<>();
         requestArguments.put("resource", "foobar@example.org");
         HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
-        Assert.assertTrue(httpArguments.getUrl().equals("https://example.org/.well-known/webfinger?acct%3Afoobar%40example.org"));
+        Assert.assertTrue(httpArguments.getUrl().equals("https://example.org/.well-known/webfinger?resource=acct%3Afoobar%40example.org&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
         HashMap<String, Object> claims = new HashMap<>();
         Link linkInfo = new Link();
         linkInfo.addClaim("rel", "rel");

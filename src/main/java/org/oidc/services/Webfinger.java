@@ -134,7 +134,8 @@ public class Webfinger extends AbstractService {
       throw new WebFingerException(resource + " has an unknown schema");
     }
 
-    return String.format(Constants.WEB_FINGER_URL, host) + "?" + URLEncoder.encode(resource, UTF_8);
+    return String.format(Constants.WEB_FINGER_URL, host) + "?resource="
+        + URLEncoder.encode(resource, UTF_8) + "&rel=" + URLEncoder.encode(linkRelationType, UTF_8);
   }
 
   /**
