@@ -8,38 +8,38 @@ import org.oidc.common.ValueException;
 
 public class URIUtilTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
-    @Test
-    public void testNormalizeUrlNullUrl() throws ValueException{
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("null or empty url");
-        URIUtil.normalizeUrl(null);
-    }
+  @Test
+  public void testNormalizeUrlNullUrl() throws ValueException {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("null or empty url");
+    URIUtil.normalizeUrl(null);
+  }
 
-    @Test
-    public void testNormalizeUrlEmptyUrl() throws ValueException{
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("null or empty url");
-        URIUtil.normalizeUrl("");
-    }
+  @Test
+  public void testNormalizeUrlEmptyUrl() throws ValueException {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("null or empty url");
+    URIUtil.normalizeUrl("");
+  }
 
-    @Test
-    public void testNormalizeUrl() throws ValueException{
-        String normalizedUrl = URIUtil.normalizeUrl("foobar@example.org");
-        Assert.assertTrue(normalizedUrl.equals("acct:foobar@example.org"));
-    }
+  @Test
+  public void testNormalizeUrl() throws ValueException {
+    String normalizedUrl = URIUtil.normalizeUrl("foobar@example.org");
+    Assert.assertTrue(normalizedUrl.equals("acct:foobar@example.org"));
+  }
 
-    @Test
-    public void testNormalizeUrlThatsAlreadyBeenNormalizedForDevice() throws ValueException{
-        String normalizedUrl = URIUtil.normalizeUrl("device:p1.example.com");
-        Assert.assertTrue(normalizedUrl.equals("device:p1.example.com"));
-    }
+  @Test
+  public void testNormalizeUrlThatsAlreadyBeenNormalizedForDevice() throws ValueException {
+    String normalizedUrl = URIUtil.normalizeUrl("device:p1.example.com");
+    Assert.assertTrue(normalizedUrl.equals("device:p1.example.com"));
+  }
 
-    @Test
-    public void testNormalizeUrlThatsAlreadyBeenNormalizedForAcct() throws ValueException{
-        String normalizedUrl = URIUtil.normalizeUrl("acct:bob@example.com");
-        Assert.assertTrue(normalizedUrl.equals("acct:bob@example.com"));
-    }
+  @Test
+  public void testNormalizeUrlThatsAlreadyBeenNormalizedForAcct() throws ValueException {
+    String normalizedUrl = URIUtil.normalizeUrl("acct:bob@example.com");
+    Assert.assertTrue(normalizedUrl.equals("acct:bob@example.com"));
+  }
 }
