@@ -11,8 +11,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.msg.AbstractMessage;
+import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.ProviderConfigurationResponse;
 import org.oidc.msg.SerializationException;
 
 public class ServiceUtilTest {
@@ -50,30 +51,37 @@ public class ServiceUtilTest {
     }
 
     @Test
-    public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
+    public void testGetHttpBodyWithSerializationTypeUrlEncoded() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException, InvalidClaimException {
         Map<String,Object> claims = new HashMap<>();
         claims.put(Constants.ISSUER, "issuer");
-        Message request = new ProviderConfigurationResponse(claims);
+        Message request = new MockMessage(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.URL_ENCODED);
         Assert.assertTrue(httpBody.equals("eyJpc3N1ZXIiOiJpc3N1ZXIifQ"));
     }
 
     @Test
-    public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
+    public void testGetHttpBodyWithSerializationTypeJson() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException, InvalidClaimException {
         Map<String,Object> claims = new HashMap<>();
         claims.put(Constants.ISSUER, "issuer");
-        Message request = new ProviderConfigurationResponse(claims);
+        Message request = new MockMessage(claims);
         String httpBody = ServiceUtil.getHttpBody(request, SerializationType.JSON);
         Assert.assertTrue(httpBody.equals("{\"issuer\":\"issuer\"}"));
     }
 
     @Test
-    public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException {
+    public void testGetHttpBodyWithIncorrectSerializationType() throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException, InvalidClaimException {
         thrown.expect(UnsupportedSerializationTypeException.class);
         thrown.expectMessage(containsString("Unsupported serialization type: "));
         Map<String,Object> claims = new HashMap<>();
         claims.put(Constants.ISSUER, "issuer");
-        Message request = new ProviderConfigurationResponse(claims);
+        Message request = new MockMessage(claims);
         ServiceUtil.getHttpBody(request, SerializationType.JWT);
+    }
+    
+    class MockMessage extends AbstractMessage {
+
+      public MockMessage(Map<String, Object> claims) {
+        super(claims);
+      }
     }
 }

@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 
@@ -50,10 +51,11 @@ public class ServiceUtil {
    * @return the request serialized according to the passed in serialization type
    * @throws UnsupportedSerializationTypeException
    * @throws SerializationException
+   * @throws InvalidClaimException 
    */
   public static String getHttpBody(Message request, SerializationType serializationType)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
-      SerializationException {
+      SerializationException, InvalidClaimException {
     if (SerializationType.URL_ENCODED.equals(serializationType)) {
       return request.toUrlEncoded();
     } else if (SerializationType.JSON.equals(serializationType)) {
