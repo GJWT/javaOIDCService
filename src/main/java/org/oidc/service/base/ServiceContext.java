@@ -16,7 +16,6 @@ import org.oidc.common.Algorithm;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
-import org.oidc.msg.Claim;
 import org.oidc.msg.DataLocation;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.ProviderConfigurationResponse;
@@ -196,23 +195,33 @@ public class ServiceContext {
   public List<String> generateRequestUris(String requestsDirectory)
       throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
     MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
-    Claim issuerClaim = new Claim(Constants.ISSUER);
+
+    /*
+     * Commented the code below as it doesn't make sense: issuer in the provider configuration
+     * response is always single string and always existing.
+     * 
+     * Claim issuerClaim = new Claim(Constants.ISSUER); if
+     * (this.providerConfigurationResponse.getClaims() != null &&
+     * this.providerConfigurationResponse.getClaims().get(issuerClaim) != null &&
+     * this.providerConfigurationResponse.getClaims().get(issuerClaim) instanceof List && !((List)
+     * this.providerConfigurationResponse.getClaims().get(issuerClaim)).isEmpty()) { for (String
+     * issuer : ((List<String>) this.providerConfigurationResponse.getClaims() .get(issuerClaim))) {
+     * messageDigest.update(issuer.getBytes()); }
+     */
     if (this.providerConfigurationResponse.getClaims() != null
-        && this.providerConfigurationResponse.getClaims().get(issuerClaim) != null
-        && this.providerConfigurationResponse.getClaims().get(issuerClaim) instanceof List
-        && !((List) this.providerConfigurationResponse.getClaims().get(issuerClaim)).isEmpty()) {
-      for (String issuer : ((List<String>) this.providerConfigurationResponse.getClaims()
-          .get(issuerClaim))) {
-        messageDigest.update(issuer.getBytes());
-      }
+        && this.providerConfigurationResponse.getClaims().get(Constants.ISSUER) != null) {
+      messageDigest
+          .update(((String) this.providerConfigurationResponse.getClaims().get(Constants.ISSUER))
+              .getBytes());
+      // This is where the commented code ended
     } else {
       if (!Strings.isNullOrEmpty(this.issuer)) {
-        messageDigest.digest(this.issuer.getBytes());
+        messageDigest.update(this.issuer.getBytes());
       } else {
         throw new ValueException("null or empty issuer");
       }
     }
-    messageDigest.digest(this.baseUrl.getBytes());
+    messageDigest.update(this.baseUrl.getBytes());
     if (!requestsDirectory.startsWith("/")) {
       return Arrays.asList(this.baseUrl + "/" + requestsDirectory + "/" + messageDigest.digest());
     } else {
