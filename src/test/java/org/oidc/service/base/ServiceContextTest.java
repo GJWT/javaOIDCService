@@ -102,46 +102,11 @@ public class ServiceContextTest {
     }
 
     @Test
-    public void testGenerateRequestUrisWithNullIssuer() throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
-        ServiceContext serviceContext = new ServiceContext();
-        serviceContext.setIssuer("issuer");
-        serviceContext.setBaseUrl("baseUrl");
-        Map<String,Object> claims = new HashMap<>();
-        claims.put(Constants.ISSUER, null);
-        ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
-        serviceContext.setProviderConfigurationResponse(pcr);
-        List<String> requestUris = serviceContext.generateRequestUris("/url");
-        Assert.assertTrue(requestUris.size() == 1);
-        Assert.assertTrue(requestUris.get(0).startsWith("baseUrl/url/"));
-    }
-
-    @Test
     public void testGenerateRequestUrisWithForwardSlash() throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
         ServiceContext serviceContext = new ServiceContext();
         serviceContext.setIssuer("issuer");
         serviceContext.setBaseUrl("baseUrl");
-        Map<String,Object> claims = new HashMap<>();
-        claims.put(Constants.ISSUER, "issuer");
-        ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
-        serviceContext.setProviderConfigurationResponse(pcr);
-        List<String> requestUris = serviceContext.generateRequestUris("/url");
-        Assert.assertTrue(requestUris.size() == 1);
-        Assert.assertTrue(requestUris.get(0).startsWith("baseUrl/url/"));
-    }
-
-    /**
-     * PCR = ProviderConfigurationResponse
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidClaimException 
-     */
-    @Test
-    public void testGenerateRequestUrisWithMultipleClaimsForPCR() throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
-        ServiceContext serviceContext = new ServiceContext();
-        serviceContext.setIssuer("issuer");
-        serviceContext.setBaseUrl("baseUrl");
-        Map<String,Object> claims = new HashMap<>();
-        claims.put(Constants.ISSUER, Arrays.asList("issuerValue", "issuerValue2"));
-        ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
+        ProviderConfigurationResponse pcr = initializeMinimalConfiguration("issuer");
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("/url");
         Assert.assertTrue(requestUris.size() == 1);
@@ -153,12 +118,22 @@ public class ServiceContextTest {
         ServiceContext serviceContext = new ServiceContext();
         serviceContext.setIssuer("issuer");
         serviceContext.setBaseUrl("baseUrl");
-        Map<String,Object> claims = new HashMap<>();
-        claims.put(Constants.ISSUER, "issuer");
-        ProviderConfigurationResponse pcr = new ProviderConfigurationResponse(claims);
+        ProviderConfigurationResponse pcr = initializeMinimalConfiguration("issuer");
         serviceContext.setProviderConfigurationResponse(pcr);
         List<String> requestUris = serviceContext.generateRequestUris("url");
         Assert.assertTrue(requestUris.size() == 1);
         Assert.assertTrue(requestUris.get(0).startsWith("baseUrl/url/"));
+    }
+    
+    protected ProviderConfigurationResponse initializeMinimalConfiguration(String issuer) {
+      Map<String,Object> claims = new HashMap<>();
+      claims.put(Constants.ISSUER, issuer);
+      claims.put("authorization_endpoint", "mockEndpoint");
+      claims.put("jwks_uri", "mockUri");
+      claims.put("response_types_supported", Arrays.asList("mockType"));
+      claims.put("subject_types_supported", Arrays.asList("mockType"));
+      claims.put("id_token_signing_alg_values_supported", Arrays.asList("mockValue"));
+      return new ProviderConfigurationResponse(claims);
+      
     }
 }
