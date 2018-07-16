@@ -36,7 +36,7 @@ public interface Service {
   HttpArguments getRequestParameters(Map<String, String> requestArguments)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
       MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-      UnsupportedEncodingException, SerializationException;
+      UnsupportedEncodingException, SerializationException, InvalidClaimException;
 
   /**
    * This the start of a pipeline that will:

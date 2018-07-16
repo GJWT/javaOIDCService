@@ -274,11 +274,12 @@ public abstract class AbstractService implements Service {
    * @param requestArguments
    * @return HttpArguments
    * @throws SerializationException
+   * @throws InvalidClaimException 
    */
   public HttpArguments getRequestParameters(Map<String, String> requestArguments)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
       MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-      UnsupportedEncodingException, SerializationException {
+      UnsupportedEncodingException, SerializationException, InvalidClaimException {
     if (requestArguments == null) {
       throw new IllegalArgumentException("null requestArguments");
     }
