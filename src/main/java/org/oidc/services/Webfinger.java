@@ -5,8 +5,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.AddedClaims;
@@ -17,10 +15,10 @@ import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.JsonResponseDescriptor;
+import org.oidc.msg.Link;
 import org.oidc.msg.Message;
-import org.oidc.msg.WebfingerRequestMessage;
+import org.oidc.msg.WebfingerRequest;
 import org.oidc.service.AbstractService;
-import org.oidc.service.LinkInfo;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -44,7 +42,7 @@ public class Webfinger extends AbstractService {
   public Webfinger(ServiceContext serviceContext, State state, ServiceConfig config) {
     super(serviceContext, state, config);
     this.serviceName = ServiceName.WEB_FINGER;
-    this.requestMessage = new WebfingerRequestMessage();
+    this.requestMessage = new WebfingerRequest();
     this.responseMessage = new JsonResponseDescriptor();
   }
 
@@ -69,17 +67,13 @@ public class Webfinger extends AbstractService {
   @Override
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    List<LinkedHashMap> links = (List) response.getClaims().get(Constants.WEBFINGER_LINKS);
-    List<LinkInfo> linkInfoList = createLinkInfo(links);
-
-    if (linkInfoList == null || linkInfoList.isEmpty()) {
-      throw new MissingRequiredAttributeException("linkInfoList is null or empty");
-    }
+    List<Link> links = (List<Link>) response.getClaims().get(Constants.WEBFINGER_LINKS);
 
     String href;
-    for (LinkInfo link : linkInfoList) {
-      if (!Strings.isNullOrEmpty(link.getRel()) && link.getRel().equals(linkRelationType)) {
-        href = link.getHref();
+    for (Link link : links) {
+      String rel = (String) link.getClaims().get("rel");
+      if (!Strings.isNullOrEmpty(rel) && rel.equals(linkRelationType)) {
+        href = (String) link.getClaims().get("href");
         // allows for non-standard behavior for schema and issuer
         if (!serviceConfig.isShouldAllowHttp() || !serviceConfig.isShouldAllowNonStandardIssuer()) {
           throw new ValueException("http link not allowed: " + href);
@@ -89,27 +83,6 @@ public class Webfinger extends AbstractService {
         break;
       }
     }
-  }
-
-  /**
-   * Used to create a List of LinkInfo objects from a List of LinkedHashMaps
-   * 
-   * @param links
-   * @return
-   */
-  private List<LinkInfo> createLinkInfo(List<LinkedHashMap> links)
-      throws MissingRequiredAttributeException {
-    if (links == null || links.isEmpty()) {
-      throw new MissingRequiredAttributeException("links is null or empty");
-    }
-    List<LinkInfo> linkInfoList = new ArrayList<>();
-    for (LinkedHashMap link : links) {
-      linkInfoList.add(new LinkInfo((String) link.get(Constants.WEBFINGER_REL), 
-          (String) link.get(Constants.WEBFINGER_HREF),
-          (String) link.get(Constants.WEBFINGER_TYPE), (Map<String, String>) link.get(Constants.WEBFINGER_TITLES),
-          (Map<String, String>) link.get(Constants.WEBFINGER_PROPERTIES)));
-    }
-    return linkInfoList;
   }
 
   public void updateServiceContext(Message response, String stateKey) {
