@@ -232,6 +232,7 @@ public class WebfingerTest {
     JsonResponseDescriptor jrd = new JsonResponseDescriptor(claims);
     Message parsedResponse = webfinger.parseResponse(jrd.toJson());
     Assert.assertTrue(parsedResponse instanceof JsonResponseDescriptor);
+    Assert.assertTrue(parsedResponse.verify());
     Map<String, Object> expectedClaims = new HashMap<>();
     expectedClaims.put("rel", "rel");
     expectedClaims.put("href", "href");
