@@ -301,12 +301,13 @@ public abstract class AbstractService implements Service {
     HttpArguments httpArguments = new HttpArguments();
     httpArguments.setHttpMethod(httpMethod);
 
+    /* commented below currently
     AddedClaims addedClaimsCopy = addedClaims.clone();
     if (!Strings.isNullOrEmpty(this.serviceContext.getIssuer())) {
       addedClaimsCopy.buildAddedClaimsBuilder().setIssuer(this.serviceContext.getIssuer())
           .buildAddedClaims();
     }
-
+    
     SerializationType contentType;
     HttpHeader httpHeader = null;
     if (HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD))) {
@@ -323,7 +324,7 @@ public abstract class AbstractService implements Service {
     if (httpHeader != null) {
       httpArguments.setHeader(httpHeader);
     }
-
+    */
     return httpArguments;
   }
 
