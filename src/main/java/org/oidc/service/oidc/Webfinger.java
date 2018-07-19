@@ -1,4 +1,4 @@
-package org.oidc.services;
+package org.oidc.service.oidc;
 
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;

@@ -1,4 +1,4 @@
-package org.oidc.services;
+package org.oidc.service.oidc;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;

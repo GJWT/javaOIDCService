@@ -1,4 +1,4 @@
-package org.oidc.services;
+package org.oidc.service.oidc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
