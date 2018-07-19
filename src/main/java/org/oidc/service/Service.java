@@ -9,6 +9,7 @@ import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
+import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -53,7 +54,7 @@ public interface Service {
    * @return the parsed and to some extent verified response
    **/
   Message parseResponse(String response, SerializationType serializationType, String stateKey)
-      throws Exception;
+      throws DeserializationException;
 
   /**
    * This the start of a pipeline that will:
@@ -70,7 +71,7 @@ public interface Service {
    *          The response, can be either in a JSON or an urlencoded format
    * @return the parsed and to some extent verified response
    **/
-  Message parseResponse(String response) throws Exception;
+  Message parseResponse(String response) throws DeserializationException;
 
   /**
    * This is the start of a pipeline that will:
@@ -88,7 +89,8 @@ public interface Service {
    *          which serialization that was used
    * @return the parsed and to some extent verified response
    **/
-  Message parseResponse(String response, SerializationType serializationType) throws Exception;
+  Message parseResponse(String response, SerializationType serializationType)
+      throws DeserializationException;
 
   /**
    * This method will run after the response has been parsed and verified. It requires response and

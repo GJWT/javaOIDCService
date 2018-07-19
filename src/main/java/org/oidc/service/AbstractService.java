@@ -2,6 +2,8 @@ package org.oidc.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Map;
@@ -16,6 +18,7 @@ import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
+import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -190,14 +193,18 @@ public abstract class AbstractService implements Service {
    * @return the parsed and to some extent verified response
    **/
   public Message parseResponse(String responseBody, SerializationType serializationType,
-      String stateKey) throws Exception {
+      String stateKey) throws DeserializationException {
     if (serializationType != null) {
       this.serializationType = serializationType;
     }
 
     String urlInfo = null;
     if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
-      urlInfo = ServiceUtil.getUrlInfo(responseBody);
+      try {
+        urlInfo = ServiceUtil.getUrlInfo(responseBody);
+      } catch (MalformedURLException e) {
+        throw new DeserializationException("Invalid URL", e);
+      }
     }
 
     try {
@@ -206,9 +213,9 @@ public abstract class AbstractService implements Service {
       } else if (SerializationType.JSON.equals(this.serializationType)) {
         this.responseMessage.fromJson(responseBody);
       }
-    } catch (Exception e) {
+    } catch (IOException | InvalidClaimException e) {
       logger.error("Error while deserializing");
-      throw e;
+      throw new DeserializationException("Could not deserialize the given message", e);
     }
 
     // TODO
@@ -220,7 +227,7 @@ public abstract class AbstractService implements Service {
     this.responseMessage = this.postParseResponse(this.responseMessage, stateKey);
 
     if (this.responseMessage == null) {
-      throw new ResponseException("Missing or faulty response");
+      throw new DeserializationException("Missing or faulty response");
     }
 
     return this.responseMessage;
@@ -240,7 +247,7 @@ public abstract class AbstractService implements Service {
    *          The response, can be either in a JSON or an urlencoded format
    * @return the parsed and to some extent verified response
    **/
-  public Message parseResponse(String responseBody) throws Exception {
+  public Message parseResponse(String responseBody) throws DeserializationException {
     return parseResponse(responseBody, SerializationType.JSON, "");
   }
 
@@ -257,7 +264,7 @@ public abstract class AbstractService implements Service {
    * @return the parsed and to some extent verified response
    **/
   public Message parseResponse(String responseBody, SerializationType serializationType)
-      throws Exception {
+      throws DeserializationException {
     return parseResponse(responseBody, serializationType, "");
   }
 
