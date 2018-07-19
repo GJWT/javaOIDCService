@@ -1,5 +1,6 @@
 package org.oidc.services;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.ProviderConfigurationResponse;
 import org.oidc.msg.RegistrationRequest;
+import org.oidc.msg.RegistrationResponse;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
@@ -51,20 +53,23 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
     this.requestMessage = null; // no request parameters
     this.responseMessage = new ProviderConfigurationResponse();
     this.httpMethod = HttpMethod.GET;
-    //TODO: where do we need this?
+    // TODO: where do we need this?
     this.setAddedClaims(new AddedClaims.AddedClaimsBuilder().buildAddedClaims());
   }
 
   @Override
   public void updateServiceContext(Message response, String stateKey) {
-    // TODO Auto-generated method stub
-
+    throw new UnsupportedOperationException(
+        "stateKey is not supported to update service context" + " for this service");
   }
 
   @Override
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-
+    super.updateServiceContext(response);
+    if (getServiceContext().getBehavior() == null) {
+      getServiceContext().setBehavior(new RegistrationResponse());
+    }
     matchPreferences(response);
 
     // TODO: implement the following:
@@ -88,15 +93,26 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
   protected void matchPreferences(Message response) throws MissingRequiredAttributeException {
     ProviderConfigurationResponse pcr;
     if (response == null || !(response instanceof ProviderConfigurationResponse)) {
-      pcr = this.serviceContext.getProviderConfigurationResponse();
+      if (!(getServiceContext()
+          .getProviderConfigurationResponse() instanceof ProviderConfigurationResponse)) {
+        throw new MissingRequiredAttributeException(
+            "ProviderConfigurationResponse not found in neither response nor service context");
+      }
+      pcr = (ProviderConfigurationResponse) this.serviceContext.getProviderConfigurationResponse();
     } else {
       pcr = (ProviderConfigurationResponse) response;
+    }
+    RegistrationRequest preferences = this.getServiceContext().getClientPreferences();
+    if (preferences == null) {
+      return;
     }
     for (Entry<String, String> entry : PREFERENCE_TO_PROVIDER.entrySet()) {
       String preferenceKey = entry.getKey();
       String providerKey = entry.getValue();
-      RegistrationRequest preferences = this.getServiceContext().getClientPreferences();
       Object preferenceValue = preferences.getClaims().get(preferenceKey);
+      if (preferenceValue == null) {
+        continue;
+      }
       Object providerValue = pcr.getClaims().get(providerKey);
       if (providerValue == null) {
         if (PROVIDER_DEFAULT.containsKey(preferenceKey)) {
@@ -111,25 +127,43 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       } else {
         if (providerValue instanceof List) {
           if (preferenceValue instanceof List) {
+            this.getServiceContext().getBehavior().addClaim(preferenceKey, new ArrayList<Object>());
             for (Object item : (List<?>) preferenceValue) {
               if (((List<?>) providerValue).contains(item)) {
-                List<Object> list = (List<Object>)this.getServiceContext().getBehavior().getClaims().get(preferenceKey);
+                List<Object> list = (List<Object>) this.getServiceContext().getBehavior()
+                    .getClaims().get(preferenceKey);
                 list.add(item);
                 this.getServiceContext().getBehavior().addClaim(preferenceKey, list);
               }
             }
           } else {
             if (((List<?>) providerValue).contains(preferenceValue)) {
-              this.getServiceContext().getBehavior().addClaim(preferenceKey, Arrays.asList(preferenceValue));
+              this.getServiceContext().getBehavior().addClaim(preferenceKey,
+                  Arrays.asList(preferenceValue));
             }
           }
         } else {
-          
+          if (preferenceValue instanceof List)
+            if (((List<Object>) preferenceValue).contains(providerValue)) {
+              this.getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);
+          } else {
+            if (preferenceValue.equals(providerValue)) {
+              this.getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);              
+            }
+          }
         }
       }
       if (!getServiceContext().getBehavior().getClaims().containsKey(preferenceKey)) {
         throw new MissingRequiredAttributeException("Could not match prefence " + preferenceKey);
       }
+    }
+    for (Entry<String, Object> entry : getServiceContext().getClientPreferences().getClaims().entrySet()) {
+      if (getServiceContext().getBehavior().getClaims().containsKey(entry.getKey())) {
+        continue;
+      }
+      //TODO: should we support list in preferences even if the registration response data model does not
+      //support list?
+      getServiceContext().getBehavior().getClaims().put(entry.getKey(), entry.getValue());
     }
   }
 
