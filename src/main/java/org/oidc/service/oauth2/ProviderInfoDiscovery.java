@@ -21,6 +21,7 @@ import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
 
+import com.auth0.msg.KeyJar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 
@@ -48,6 +49,9 @@ public class ProviderInfoDiscovery extends AbstractService {
           "Unexpected response message type, should be ASConfigurationResponse");
     }
     String ctxIssuer = getServiceContext().getIssuer();
+    if (ctxIssuer == null) {
+      throw new MissingRequiredAttributeException("Service context is missing 'issuer'");
+    }
     Map<String, Object> pcrClaims = ((ASConfigurationResponse) response).getClaims();
     String pcrIssuer = (String) pcrClaims.get("issuer");
     String issuer;
@@ -65,11 +69,23 @@ public class ProviderInfoDiscovery extends AbstractService {
       // mismatches are allowed, nothing to check
     } else {
       if (!issuer.equals(pcrIssuer)) {
-        throw new InvalidClaimException("Provider info issuer mismatch " + pcrIssuer + " != " + issuer);
+        throw new InvalidClaimException(
+            "Provider info issuer mismatch " + pcrIssuer + " != " + issuer);
       }
     }
     getServiceContext().setIssuer(pcrIssuer);
-//    getServiceContext().setProviderConfigurationResponse((ASConfigurationResponse)response);
+    getServiceContext().setProviderConfigurationResponse((ASConfigurationResponse) response);
+
+    /*
+     * TODO: Python code checks if the serviceContext contains any other services and if yes, the
+     * endpoints of those services are set to the values defined by _endpoint claims in the response
+     * object.
+     */
+
+    KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
+        : getServiceContext().getKeyJar();
+    //TODO: load keys from response to KeyJar
+    getServiceContext().setKeyJar(keyJar);
   }
 
   protected String getOpEndpoint() throws MissingRequiredAttributeException {
