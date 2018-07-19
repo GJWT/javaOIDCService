@@ -18,9 +18,9 @@ import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
 import org.oidc.msg.DataLocation;
 import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.ProviderConfigurationResponse;
 import org.oidc.msg.RegistrationRequest;
 import org.oidc.msg.RegistrationResponse;
+import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.service.util.Constants;
 
 /**
@@ -40,7 +40,7 @@ public class ServiceContext {
   /**
    * Where dynamically received or statically assigned provider information is stored
    */
-  private ProviderConfigurationResponse providerConfigurationResponse;
+  private ASConfigurationResponse providerConfigurationResponse;
   /**
    * Where the response to a dynamic client registration is stored.
    */
@@ -245,12 +245,12 @@ public class ServiceContext {
     this.config = config;
   }
 
-  public ProviderConfigurationResponse getProviderConfigurationResponse() {
+  public ASConfigurationResponse getProviderConfigurationResponse() {
     return providerConfigurationResponse;
   }
 
   public void setProviderConfigurationResponse(
-      ProviderConfigurationResponse providerConfigurationResponse) {
+      ASConfigurationResponse providerConfigurationResponse) {
     this.providerConfigurationResponse = providerConfigurationResponse;
   }
 
