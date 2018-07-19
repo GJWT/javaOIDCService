@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2018 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.oidc.service.oauth2;
 
 import java.util.Arrays;
@@ -54,20 +70,21 @@ public class ProviderInfoDiscoveryTest {
         httpArguments.getUrl());
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
   }
-  
+
   @Test(expected = MissingRequiredAttributeException.class)
   public void testUpdateCtxMissingIssuer() throws Exception {
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     service.updateServiceContext(buildMinimalResponse(issuer));
   }
-  
+
   @Test
   public void testUpdateCtxSuccess() throws Exception {
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     serviceContext.setIssuer(issuer);
     Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
     service.updateServiceContext(buildMinimalResponse(issuer));
-    ASConfigurationResponse response = service.getServiceContext().getProviderConfigurationResponse();
+    ASConfigurationResponse response = service.getServiceContext()
+        .getProviderConfigurationResponse();
     Assert.assertNotNull(response);
     Assert.assertTrue(response.verify());
   }
@@ -81,7 +98,8 @@ public class ProviderInfoDiscoveryTest {
     serviceContext.setAllow(allow);
     Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
     service.updateServiceContext(buildMinimalResponse(issuer));
-    ASConfigurationResponse response = service.getServiceContext().getProviderConfigurationResponse();
+    ASConfigurationResponse response = service.getServiceContext()
+        .getProviderConfigurationResponse();
     Assert.assertNotNull(response);
     Assert.assertTrue(response.verify());
   }
@@ -93,7 +111,7 @@ public class ProviderInfoDiscoveryTest {
     Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
     service.updateServiceContext(buildMinimalResponse(issuer + "/"));
   }
-  
+
   protected ASConfigurationResponse buildMinimalResponse(String issuer) {
     ASConfigurationResponse response = new ASConfigurationResponse();
     response.addClaim("issuer", issuer);

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2018 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.oidc.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -281,7 +297,7 @@ public abstract class AbstractService implements Service {
    * @param requestArguments
    * @return HttpArguments
    * @throws SerializationException
-   * @throws InvalidClaimException 
+   * @throws InvalidClaimException
    */
   public HttpArguments getRequestParameters(Map<String, String> requestArguments)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
@@ -308,30 +324,22 @@ public abstract class AbstractService implements Service {
     HttpArguments httpArguments = new HttpArguments();
     httpArguments.setHttpMethod(httpMethod);
 
-    /* commented below currently
-    AddedClaims addedClaimsCopy = addedClaims.clone();
-    if (!Strings.isNullOrEmpty(this.serviceContext.getIssuer())) {
-      addedClaimsCopy.buildAddedClaimsBuilder().setIssuer(this.serviceContext.getIssuer())
-          .buildAddedClaims();
-    }
-    
-    SerializationType contentType;
-    HttpHeader httpHeader = null;
-    if (HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD))) {
-      if (SerializationType.URL_ENCODED.equals(serializationType)) {
-        contentType = SerializationType.URL_ENCODED;
-      } else {
-        contentType = SerializationType.JSON;
-      }
-
-      httpArguments.setBody(ServiceUtil.getHttpBody(request, contentType));
-      httpHeader.setContentType(contentType.name());
-    }
-
-    if (httpHeader != null) {
-      httpArguments.setHeader(httpHeader);
-    }
-    */
+    /*
+     * commented below currently AddedClaims addedClaimsCopy = addedClaims.clone(); if
+     * (!Strings.isNullOrEmpty(this.serviceContext.getIssuer())) {
+     * addedClaimsCopy.buildAddedClaimsBuilder().setIssuer(this.serviceContext.getIssuer())
+     * .buildAddedClaims(); }
+     * 
+     * SerializationType contentType; HttpHeader httpHeader = null; if
+     * (HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD))) { if
+     * (SerializationType.URL_ENCODED.equals(serializationType)) { contentType =
+     * SerializationType.URL_ENCODED; } else { contentType = SerializationType.JSON; }
+     * 
+     * httpArguments.setBody(ServiceUtil.getHttpBody(request, contentType));
+     * httpHeader.setContentType(contentType.name()); }
+     * 
+     * if (httpHeader != null) { httpArguments.setHeader(httpHeader); }
+     */
     return httpArguments;
   }
 
