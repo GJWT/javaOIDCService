@@ -111,7 +111,7 @@ public class WebfingerTest {
     AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource("resource")
         .buildAddedClaims();
     webfinger.setAddedClaims(addedClaims);
-    Map<String, String> requestArguments = new HashMap<String, String>();
+    Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", null);
     HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
     Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
@@ -127,7 +127,7 @@ public class WebfingerTest {
     AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource(null)
         .buildAddedClaims();
     webfinger.setAddedClaims(addedClaims);
-    Map<String, String> requestArguments = new HashMap<String, String>();
+    Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", null);
     HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
     Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
@@ -146,7 +146,7 @@ public class WebfingerTest {
     AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource(null)
         .buildAddedClaims();
     webfinger.setAddedClaims(addedClaims);
-    Map<String, String> requestArguments = new HashMap<String, String>();
+    Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", null);
     HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
   }
@@ -154,7 +154,7 @@ public class WebfingerTest {
   @Test
   public void testGetRequestParametersUrl() throws Exception {
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    Map<String, String> requestArguments = new HashMap<String, String>();
+    Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", "acct:bob@example.com");
 
     HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
@@ -165,7 +165,7 @@ public class WebfingerTest {
   @Test
   public void testGetRequestParametersAcct() throws Exception {
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    Map<String, String> requestArguments = new HashMap<String, String>();
+    Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", "acct:carol@example.com");
 
     HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
@@ -213,7 +213,7 @@ public class WebfingerTest {
     };
 
     HttpArguments requestParams;
-    Map<String, String> input = new HashMap<>();
+    Map<String, Object> input = new HashMap<>();
     String[] requestParamsSplit;
     for (String key : requestParametersMap.keySet()) {
       input.put("resource", key);
@@ -230,7 +230,7 @@ public class WebfingerTest {
   public void testWebfingerEndToEnd() throws Exception {
     ServiceConfig serviceConfig = new ServiceConfig(true, true);
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT, serviceConfig);
-    Map<String, String> requestArguments = new HashMap<>();
+    Map<String, Object> requestArguments = new HashMap<>();
     requestArguments.put("resource", "foobar@example.org");
     HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
     Assert.assertTrue(httpArguments.getUrl().equals(
