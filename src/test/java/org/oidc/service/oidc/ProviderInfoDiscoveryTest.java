@@ -17,8 +17,12 @@
 package org.oidc.service.oidc;
 
 import java.io.UnsupportedEncodingException;
+
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,6 +36,7 @@ import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.ProviderConfigurationResponse;
+import org.oidc.msg.RegistrationRequest;
 import org.oidc.msg.SerializationException;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
@@ -50,6 +55,15 @@ public class ProviderInfoDiscoveryTest {
   public void init() {
     serviceContext = new ServiceContext();
     issuer = "https://www.example.com";
+    serviceContext.setIssuer(issuer);
+  }
+
+  @Test
+  public void testHttpParameters() throws Exception {
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, String>());
+    Assert.assertEquals(issuer + "/.well-known/openid-configuration", httpArguments.getUrl());
+    Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
   }
 
   @Test
@@ -57,14 +71,100 @@ public class ProviderInfoDiscoveryTest {
       throws JsonProcessingException, MalformedURLException, UnsupportedEncodingException,
       UnsupportedSerializationTypeException, MissingRequiredAttributeException, WebFingerException,
       ValueException, SerializationException, InvalidClaimException, DeserializationException {
-    serviceContext.setIssuer(issuer);
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, String>());
-    Assert.assertEquals(issuer + "/.well-known/openid-configuration", httpArguments.getUrl());
-    Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
+    Message message = service.parseResponse(exampleValidResponse());
+    service.updateServiceContext((ProviderConfigurationResponse) message);
+    Assert.assertNotNull(serviceContext.getBehavior());
+  }
+
+  @Test
+  public void testMatchingPreferences() throws Exception {
+    RegistrationRequest preferences = new RegistrationRequest();
+
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+
     Message message = service.parseResponse(exampleValidResponse());
     Assert.assertTrue(message instanceof ProviderConfigurationResponse);
-    service.updateServiceContext((ProviderConfigurationResponse) message);
+    ProviderConfigurationResponse pcr = (ProviderConfigurationResponse) message;
+
+    for (Entry<String, String> entry : ProviderInfoDiscovery.PREFERENCE_TO_PROVIDER.entrySet()) {
+      preferences.addClaim(entry.getKey(), pcr.getClaims().get(entry.getValue()));
+    }
+    serviceContext.setClientPreferences(preferences);
+    service.updateServiceContext(pcr);
+    for (Entry<String, String> entry : ProviderInfoDiscovery.PREFERENCE_TO_PROVIDER.entrySet()) {
+      Assert.assertEquals(serviceContext.getBehavior().getClaims().get(entry.getKey()),
+          pcr.getClaims().get(entry.getValue()));
+    }
+  }
+
+  @Test(expected = MissingRequiredAttributeException.class)
+  public void testPreferenceNotSatisfied() throws Exception {
+    RegistrationRequest preferences = new RegistrationRequest();
+
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+
+    Message message = service.parseResponse(exampleValidResponse());
+    Assert.assertTrue(message instanceof ProviderConfigurationResponse);
+    ProviderConfigurationResponse pcr = (ProviderConfigurationResponse) message;
+
+    preferences.addClaim("request_object_signing_alg", Arrays.asList("CUSTOM_NOT_SUPPORTED"));
+    serviceContext.setClientPreferences(preferences);
+    service.updateServiceContext(pcr);
+  }
+
+  @Test
+  public void testCustomPreferences() throws Exception {
+    RegistrationRequest preferences = new RegistrationRequest();
+
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+
+    Message message = service.parseResponse(exampleValidResponse());
+    Assert.assertTrue(message instanceof ProviderConfigurationResponse);
+    ProviderConfigurationResponse pcr = (ProviderConfigurationResponse) message;
+    // try both single String..
+    preferences.addClaim("request_object_signing_alg", "RS512");
+    // ..and arrays of String values
+    preferences.addClaim("request_object_encryption_alg",
+        Arrays.asList("RSA-OAEP", "RSA-OAEP-256"));
+    preferences.addClaim("request_object_encryption_enc", "A256CBC-HS512");
+    preferences.addClaim("userinfo_signed_response_alg", "RS512");
+    preferences.addClaim("userinfo_encrypted_response_alg", "RSA-OAEP");
+    preferences.addClaim("userinfo_encrypted_response_enc", "A256CBC-HS512");
+    preferences.addClaim("id_token_signed_response_alg", "RS512");
+    preferences.addClaim("id_token_encrypted_response_alg", "RSA-OAEP");
+    preferences.addClaim("id_token_encrypted_response_enc", "A256CBC-HS512");
+    preferences.addClaim("default_acr_values", "PASSWORD");
+    preferences.addClaim("subject_type", "pairwise");
+    // leave empty on purpose and check later it doesn't exist in behaviour
+    preferences.addClaim("token_endpoint_auth_method", "");
+    preferences.addClaim("token_endpoint_auth_signing_alg", "RS512");
+    preferences.addClaim("response_types", "id_token");
+    serviceContext.setClientPreferences(preferences);
+    service.updateServiceContext(pcr);
+    for (Entry<String, Object> entry : serviceContext.getClientPreferences().getClaims()
+        .entrySet()) {
+      if (!ProviderInfoDiscovery.nullOrEmpty(entry.getValue())) {
+        Object behaviourValue = serviceContext.getBehavior().getClaims().get(entry.getKey());
+        Object preferredValue = entry.getValue();
+        Assert.assertEquals(behaviourValue instanceof List && !(preferredValue instanceof List)
+            ? Arrays.asList(entry.getValue())
+            : entry.getValue(), behaviourValue);
+      }
+    }
+    Assert.assertNull(serviceContext.getBehavior().getClaims().get("token_endpoint_auth_method"));
+  }
+
+  public void testDefaults() throws Exception {
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+    Message message = service.parseResponse(minimalValidResponse());
+    Assert.assertTrue(message instanceof ProviderConfigurationResponse);
+    ProviderConfigurationResponse pcr = (ProviderConfigurationResponse) message;
+    service.updateServiceContext(pcr);
+    Assert.assertEquals(ProviderInfoDiscovery.PROVIDER_DEFAULT.get("token_endpoint_auth_method"),
+        serviceContext.getBehavior().getClaims().get("token_endpoint_auth_method"));
+    Assert.assertEquals(ProviderInfoDiscovery.PROVIDER_DEFAULT.get("id_token_signed_response_alg"),
+        serviceContext.getBehavior().getClaims().get("id_token_signed_response_alg"));
   }
 
   protected String exampleValidResponse() {
@@ -145,5 +245,21 @@ public class ProviderInfoDiscoveryTest {
         + "\"userinfo_endpoint\": \"https://example.com/userinfo\",\n"
         + "\"registration_endpoint\": \"https://example.com/registration\",\n"
         + "\"end_session_endpoint\": \"https://example.com/end_session\"}";
+  }
+
+  protected String minimalValidResponse() {
+    return "{\n" + "\"response_types_supported\": [\"code\", \"id_token\",\n"
+        + "                             \"id_token token\",\n"
+        + "                             \"code id_token\",\n"
+        + "                             \"code token\",\n"
+        + "                             \"code id_token token\"],\n"
+        + "\"subject_types_supported\": [\"public\", \"pairwise\"],\n"
+        + "\"id_token_signing_alg_values_supported\": [\n"
+        + "    \"RS256\", \"RS384\", \"RS512\",\n" + "    \"ES256\", \"ES384\", \"ES512\",\n"
+        + "    \"HS256\", \"HS384\", \"HS512\",\n"
+        + "    \"PS256\", \"PS384\", \"PS512\", \"none\"],\n"
+        + "\"issuer\": \"https://www.example.com\",\n"
+        + "\"jwks_uri\": \"https://example.com/static/jwks_tE2iLbOAqXhe8bqh.json\",\n"
+        + "\"authorization_endpoint\": \"https://example.com/authorization\"}";
   }
 }

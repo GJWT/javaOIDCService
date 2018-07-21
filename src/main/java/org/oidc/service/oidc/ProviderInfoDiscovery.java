@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.oidc.common.AddedClaims;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
@@ -36,6 +35,7 @@ import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoDiscovery {
@@ -69,8 +69,6 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
     this.requestMessage = null; // no request parameters
     this.responseMessage = new ProviderConfigurationResponse();
     this.httpMethod = HttpMethod.GET;
-    // TODO: where do we need this?
-    this.setAddedClaims(new AddedClaims.AddedClaimsBuilder().buildAddedClaims());
   }
 
   @Override
@@ -83,10 +81,15 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     super.updateServiceContext(response);
+    if (!(response instanceof ProviderConfigurationResponse)) {
+      throw new ValueException(
+          "Unexpected response message type, should be ProviderConfigurationResponse");
+    }
+
     if (getServiceContext().getBehavior() == null) {
       getServiceContext().setBehavior(new RegistrationResponse());
     }
-    matchPreferences(response);
+    matchPreferences((ProviderConfigurationResponse) response);
 
     // TODO: implement the following:
     /*
@@ -106,18 +109,8 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
    * @param response
    * @throws MissingRequiredAttributeException
    */
-  protected void matchPreferences(Message response) throws MissingRequiredAttributeException {
-    ProviderConfigurationResponse pcr;
-    if (response == null || !(response instanceof ProviderConfigurationResponse)) {
-      if (!(getServiceContext()
-          .getProviderConfigurationResponse() instanceof ProviderConfigurationResponse)) {
-        throw new MissingRequiredAttributeException(
-            "ProviderConfigurationResponse not found in neither response nor service context");
-      }
-      pcr = (ProviderConfigurationResponse) this.serviceContext.getProviderConfigurationResponse();
-    } else {
-      pcr = (ProviderConfigurationResponse) response;
-    }
+  protected void matchPreferences(ProviderConfigurationResponse pcr)
+      throws MissingRequiredAttributeException {
     RegistrationRequest preferences = this.getServiceContext().getClientPreferences();
     if (preferences == null) {
       return;
@@ -126,7 +119,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       String preferenceKey = entry.getKey();
       String providerKey = entry.getValue();
       Object preferenceValue = preferences.getClaims().get(preferenceKey);
-      if (preferenceValue == null) {
+      if (nullOrEmpty(preferenceValue)) {
         continue;
       }
       Object providerValue = pcr.getClaims().get(providerKey);
@@ -138,35 +131,32 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
           providerValue = preferenceValue;
         }
       }
-      if (stringOrListContains(preferenceValue, providerValue)) {
-        getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);
-      } else {
-        if (providerValue instanceof List) {
-          if (preferenceValue instanceof List) {
-            this.getServiceContext().getBehavior().addClaim(preferenceKey, new ArrayList<Object>());
-            for (Object item : (List<?>) preferenceValue) {
-              if (((List<?>) providerValue).contains(item)) {
-                List<Object> list = (List<Object>) this.getServiceContext().getBehavior()
-                    .getClaims().get(preferenceKey);
-                list.add(item);
-                this.getServiceContext().getBehavior().addClaim(preferenceKey, list);
-              }
-            }
-          } else {
-            if (((List<?>) providerValue).contains(preferenceValue)) {
-              this.getServiceContext().getBehavior().addClaim(preferenceKey,
-                  Arrays.asList(preferenceValue));
+      if (providerValue instanceof List) {
+        if (preferenceValue instanceof List) {
+          List<Object> list = new ArrayList<Object>();
+          for (Object item : (List<?>) preferenceValue) {
+            if (((List<?>) providerValue).contains(item)) {
+              list.add(item);
             }
           }
+          if (!list.isEmpty()) {
+            this.getServiceContext().getBehavior().addClaim(preferenceKey, list);
+          }
         } else {
-          if (preferenceValue instanceof List)
-            if (((List<Object>) preferenceValue).contains(providerValue)) {
-              this.getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);
-            } else {
-              if (preferenceValue.equals(providerValue)) {
-                this.getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);
-              }
-            }
+          if (((List<?>) providerValue).contains(preferenceValue)) {
+            this.getServiceContext().getBehavior().addClaim(preferenceKey,
+                Arrays.asList(preferenceValue));
+          }
+        }
+      } else {
+        if (preferenceValue instanceof List) {
+          if (((List<Object>) preferenceValue).contains(providerValue)) {
+            this.getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);
+          }
+        } else {
+          if (preferenceValue.equals(providerValue)) {
+            this.getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);
+          }
         }
       }
       if (!getServiceContext().getBehavior().getClaims().containsKey(preferenceKey)) {
@@ -175,31 +165,23 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
     }
     for (Entry<String, Object> entry : getServiceContext().getClientPreferences().getClaims()
         .entrySet()) {
-      if (getServiceContext().getBehavior().getClaims().containsKey(entry.getKey())) {
+      if (nullOrEmpty(entry.getValue())
+          || getServiceContext().getBehavior().getClaims().containsKey(entry.getKey())) {
         continue;
       }
-      // TODO: should we support list in preferences even if the registration response data model
-      // does not
-      // support list?
+      // Note that behaviour may not be valid message as not all client preferences are validated
+      // and PCR claims might be list even though request only allows single values.
       getServiceContext().getBehavior().getClaims().put(entry.getKey(), entry.getValue());
     }
   }
 
-  private boolean stringOrListContains(Object value, Object target) {
-    if (!(value instanceof String) || target == null) {
-      return false;
-    }
-    if (target instanceof String) {
-      return ((String) value).equals((String) target);
-    }
-    if (target instanceof List) {
-      List<?> list = (List<?>) target;
-      if (list.isEmpty() || !(list.get(0) instanceof String)) {
-        return false;
-      }
-      return ((List<String>) list).contains((String) value);
-    }
-    return false;
+  /**
+   * Checks if the given parameter is either null, or an empty String or List.
+   * @param value The object to be checked.
+   * @return True is null or empty String or List, false otherwise.
+   */
+  protected static boolean nullOrEmpty(Object value) {
+    return (value == null || (value instanceof String && Strings.isNullOrEmpty((String) value))
+        || (value instanceof List && ((List<?>) value).isEmpty()));
   }
-
 }
