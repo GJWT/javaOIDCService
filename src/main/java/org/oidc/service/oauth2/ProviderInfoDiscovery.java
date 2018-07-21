@@ -60,7 +60,7 @@ public class ProviderInfoDiscovery extends AbstractService {
   @Override
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (!(response instanceof ASConfigurationResponse)) {
+    if (response == null || !(response instanceof ASConfigurationResponse)) {
       throw new ValueException(
           "Unexpected response message type, should be ASConfigurationResponse");
     }

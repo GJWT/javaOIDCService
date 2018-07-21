@@ -25,7 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.RegistrationResponse;
 import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
@@ -71,6 +73,18 @@ public class ProviderInfoDiscoveryTest {
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
   }
 
+  @Test(expected = ValueException.class)
+  public void testUpdateCtxMissingResponse() throws Exception {
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+    service.updateServiceContext(null);
+  }
+
+  @Test(expected = ValueException.class)
+  public void testUpdateCtxWrongResponse() throws Exception {
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+    service.updateServiceContext(new RegistrationResponse());
+  }
+  
   @Test(expected = MissingRequiredAttributeException.class)
   public void testUpdateCtxMissingIssuer() throws Exception {
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
