@@ -35,9 +35,9 @@ import org.oidc.common.WebFingerException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.ProviderConfigurationResponse;
-import org.oidc.msg.RegistrationRequest;
 import org.oidc.msg.SerializationException;
+import org.oidc.msg.oidc.ProviderConfigurationResponse;
+import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
 

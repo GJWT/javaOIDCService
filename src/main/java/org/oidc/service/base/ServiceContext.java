@@ -34,8 +34,8 @@ import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
 import org.oidc.msg.DataLocation;
 import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.RegistrationRequest;
-import org.oidc.msg.RegistrationResponse;
+import org.oidc.msg.oidc.RegistrationRequest;
+import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.service.util.Constants;
 

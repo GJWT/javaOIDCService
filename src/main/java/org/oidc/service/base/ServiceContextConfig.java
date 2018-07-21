@@ -21,9 +21,9 @@ import java.util.Map;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.KeyType;
-import org.oidc.msg.ProviderConfigurationResponse;
-import org.oidc.msg.RegistrationRequest;
-import org.oidc.msg.RegistrationResponse;
+import org.oidc.msg.oidc.ProviderConfigurationResponse;
+import org.oidc.msg.oidc.RegistrationRequest;
+import org.oidc.msg.oidc.RegistrationResponse;
 
 /**
  * This is the configuration that is created by the configuration of the RP and is shared by all the

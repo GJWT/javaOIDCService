@@ -34,7 +34,7 @@ import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.ProviderConfigurationResponse;
+import org.oidc.msg.oidc.ProviderConfigurationResponse;
 import org.oidc.service.util.Constants;
 
 public class ServiceContextTest {
