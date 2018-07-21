@@ -87,6 +87,7 @@ public class ProviderInfoDiscoveryTest {
         .getProviderConfigurationResponse();
     Assert.assertNotNull(response);
     Assert.assertTrue(response.verify());
+    Assert.assertNotNull(serviceContext.getKeyJar());
   }
 
   @Test
@@ -102,6 +103,7 @@ public class ProviderInfoDiscoveryTest {
         .getProviderConfigurationResponse();
     Assert.assertNotNull(response);
     Assert.assertTrue(response.verify());
+    Assert.assertNotNull(serviceContext.getKeyJar());
   }
 
   @Test(expected = InvalidClaimException.class)
@@ -112,11 +114,12 @@ public class ProviderInfoDiscoveryTest {
     service.updateServiceContext(buildMinimalResponse(issuer + "/"));
   }
 
-  protected ASConfigurationResponse buildMinimalResponse(String issuer) {
+  protected ASConfigurationResponse buildMinimalResponse(String issuer) throws InvalidClaimException {
     ASConfigurationResponse response = new ASConfigurationResponse();
     response.addClaim("issuer", issuer);
     response.addClaim("response_types_supported", Arrays.asList("code"));
     response.addClaim("grant_types_supported", Arrays.asList("authorization_code"));
+    Assert.assertTrue(response.verify());
     return response;
   }
 }
