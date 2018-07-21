@@ -1,0 +1,42 @@
+/*
+ * Copyright (C) 2018 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.oidc.service.base.processor;
+
+import java.util.Map;
+
+import org.oidc.service.AbstractService;
+import org.oidc.service.base.RequestArgumentProcessor;
+
+public class AddClientBehaviourPreference implements RequestArgumentProcessor {
+
+  @Override
+  public void processRequestArguments(Map<String, Object> requestArguments,
+      AbstractService service) {
+    for (String key : service.getRequestMessage().getParameterVerificationDefinitions().keySet()) {
+      if (requestArguments.containsKey(key)) {
+        continue;
+      }
+      if (service.getServiceContext().getBehavior() != null
+          && service.getServiceContext().getBehavior().getClaims().containsKey(key)) {
+        requestArguments.put(key, service.getServiceContext().getBehavior().getClaims().get(key));
+      } else if (service.getServiceContext().getClientPreferences() != null) {
+        requestArguments.put(key,
+            service.getServiceContext().getClientPreferences().getClaims().get(key));
+      }
+    }
+  }
+}
