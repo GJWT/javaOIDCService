@@ -22,6 +22,7 @@ import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Map;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.ClientAuthenticationMethod;
@@ -40,6 +41,7 @@ import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.HttpHeader;
+import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
@@ -122,7 +124,7 @@ public abstract class AbstractService implements Service {
   /**
    * Arguments to be used by the preConstruct methods
    */
-  private Map<String, String> preConstruct;
+  protected List<RequestArgumentProcessor> preConstructors;
 
   /**
    * Arguments to be used by the postConstruct methods
@@ -299,7 +301,7 @@ public abstract class AbstractService implements Service {
    * @throws SerializationException
    * @throws InvalidClaimException
    */
-  public HttpArguments getRequestParameters(Map<String, String> requestArguments)
+  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
       MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
       UnsupportedEncodingException, SerializationException, InvalidClaimException {
@@ -307,15 +309,15 @@ public abstract class AbstractService implements Service {
       throw new IllegalArgumentException("null requestArguments");
     }
 
-    if (Strings.isNullOrEmpty(requestArguments.get(HTTP_METHOD))) {
+    if (Strings.isNullOrEmpty((String)requestArguments.get(HTTP_METHOD))) {
       requestArguments.put(HTTP_METHOD, this.httpMethod.name());
     }
 
-    if (Strings.isNullOrEmpty(requestArguments.get(AUTHENTICATION_METHOD))) {
+    if (Strings.isNullOrEmpty((String)requestArguments.get(AUTHENTICATION_METHOD))) {
       requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name());
     }
 
-    if (Strings.isNullOrEmpty(requestArguments.get(SERIALIZATION_TYPE))) {
+    if (Strings.isNullOrEmpty((String)requestArguments.get(SERIALIZATION_TYPE))) {
       requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name());
     }
 
@@ -446,22 +448,6 @@ public abstract class AbstractService implements Service {
 
   public void setServiceContext(ServiceContext serviceContext) {
     this.serviceContext = serviceContext;
-  }
-
-  public Map<String, String> getPreConstruct() {
-    return preConstruct;
-  }
-
-  public void setPreConstruct(Map<String, String> preConstruct) {
-    this.preConstruct = preConstruct;
-  }
-
-  public Map<String, String> getPostConstruct() {
-    return postConstruct;
-  }
-
-  public void setPostConstruct(Map<String, String> postConstruct) {
-    this.postConstruct = postConstruct;
   }
 
   public ServiceConfig getServiceConfig() {

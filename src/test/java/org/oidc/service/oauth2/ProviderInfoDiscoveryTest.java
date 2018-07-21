@@ -50,14 +50,14 @@ public class ProviderInfoDiscoveryTest {
   @Test(expected = MissingRequiredAttributeException.class)
   public void testHttpParamsMissingIssuer() throws Exception {
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-    service.getRequestParameters(new HashMap<String, String>());
+    service.getRequestParameters(new HashMap<String, Object>());
   }
 
   @Test
   public void testHttpParamsSuccessfulIssuer() throws Exception {
     serviceContext.setIssuer(issuer);
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, String>());
+    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, Object>());
     Assert.assertEquals("https://www.example.com/.well-known/openid-configuration",
         httpArguments.getUrl());
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
@@ -67,7 +67,7 @@ public class ProviderInfoDiscoveryTest {
   public void testHttpParamsSuccessFulIssuerTrailingSlash() throws Exception {
     serviceContext.setIssuer(issuer + "/");
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, String>());
+    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, Object>());
     Assert.assertEquals("https://www.example.com/.well-known/openid-configuration",
         httpArguments.getUrl());
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());

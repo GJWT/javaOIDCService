@@ -116,7 +116,7 @@ public class ProviderInfoDiscovery extends AbstractService {
   }
 
   @Override
-  public HttpArguments getRequestParameters(Map<String, String> requestArguments)
+  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
       MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
       UnsupportedEncodingException, SerializationException, InvalidClaimException {

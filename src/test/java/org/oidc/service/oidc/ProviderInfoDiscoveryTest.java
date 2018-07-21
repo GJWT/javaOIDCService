@@ -61,7 +61,7 @@ public class ProviderInfoDiscoveryTest {
   @Test
   public void testHttpParameters() throws Exception {
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, String>());
+    HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, Object>());
     Assert.assertEquals(issuer + "/.well-known/openid-configuration", httpArguments.getUrl());
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
   }

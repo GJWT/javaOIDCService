@@ -50,7 +50,7 @@ public interface Service {
    * @param requestArguments
    * @return HttpArguments
    */
-  HttpArguments getRequestParameters(Map<String, String> requestArguments)
+  HttpArguments getRequestParameters(Map<String, Object> requestArguments)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
       MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
       UnsupportedEncodingException, SerializationException, InvalidClaimException;

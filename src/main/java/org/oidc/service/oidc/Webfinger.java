@@ -169,14 +169,14 @@ public class Webfinger extends AbstractService {
    * @return HttpArguments
    */
   @Override
-  public HttpArguments getRequestParameters(Map<String, String> requestArguments)
+  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
       throws MissingRequiredAttributeException, MalformedURLException, WebFingerException,
       ValueException, UnsupportedEncodingException {
     if (requestArguments == null) {
       throw new IllegalArgumentException("null requestArguments");
     }
 
-    String resource = requestArguments.get(Constants.WEBFINGER_RESOURCE);
+    String resource = (String)requestArguments.get(Constants.WEBFINGER_RESOURCE);
     AddedClaims addedClaims = getAddedClaims();
     if (Strings.isNullOrEmpty(resource)) {
       resource = addedClaims.getResource();
