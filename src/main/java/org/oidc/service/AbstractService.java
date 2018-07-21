@@ -122,14 +122,14 @@ public abstract class AbstractService implements Service {
   protected ServiceContext serviceContext;
 
   /**
-   * Arguments to be used by the preConstruct methods
+   * The processors run before message construction.
    */
   protected List<RequestArgumentProcessor> preConstructors;
 
   /**
-   * Arguments to be used by the postConstruct methods
+   * The processors run after message construction.
    */
-  private Map<String, String> postConstruct;
+  protected List<RequestArgumentProcessor> postConstructors;
 
   /**
    * Configuration that is specific to every service Additional configuration arguments that could
