@@ -16,22 +16,31 @@
 
 package org.oidc.service.oidc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
+import org.oidc.common.WebFingerException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
+import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.AuthenticationRequest;
 import org.oidc.msg.oidc.AuthenticationResponse;
 import org.oidc.service.AbstractService;
-//import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
-//import org.oidc.service.base.processor.AddClientBehaviourPreference;
-//import org.oidc.service.base.processor.AddOidcResponseTypes;
-//import org.oidc.service.base.processor.AddRedirectUris;
 import org.oidc.service.data.State;
+
+
 
 public class Authentication extends AbstractService {
 
@@ -40,10 +49,26 @@ public class Authentication extends AbstractService {
     this.serviceName = ServiceName.AUTHORIZATION;
     this.requestMessage = new AuthenticationRequest();
     this.responseMessage = new AuthenticationResponse();
-    // this.httpMethod = HttpMethod.POST;
-    // this.preConstructors = (List<RequestArgumentProcessor>) Arrays
-    // .asList(new AddClientBehaviourPreference(), new AddRedirectUris());
-    // this.postConstructors = Arrays.asList((RequestArgumentProcessor)new AddOidcResponseTypes());
+    
+    //TODO : PRECONSTRUCTS & INIT
+    /*
+    Set default scope value, this is set if not found in gather_request_args in the base class 
+    self.default_request_args = {'scope': ['openid']}
+    
+    // Preconstruct methods
+     1) set_state.. get state from "extra args"(?), 
+        if not there, from req arqs.. if not there generate
+     2) see def pick_redirect_uris(request_args=None, service=None, **kwargs):
+     3) see def oidc_pre_construct(self, request_args=None, **kwargs):
+     
+     self.pre_construct = [self.set_state, pick_redirect_uris,
+                              self.oidc_pre_construct]
+    
+    //PostConstruct methods
+     1) def oidc_post_construct(self, req, **kwargs)
+    */
+    this.preConstructors = new ArrayList<RequestArgumentProcessor>();
+    this.postConstructors = new ArrayList<RequestArgumentProcessor>();
   }
 
   @Override
@@ -56,5 +81,67 @@ public class Authentication extends AbstractService {
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     // TODO Auto-generated method stub
   }
+  
+  /**
+   * Builds the request message and constructs the HTTP headers.
+   *
+   * This is the starting pont for a pipeline that will:
+   *
+   * - construct the request message - add/remove information to/from the request message in the way
+   * a specific client authentication method requires. - gather a set of HTTP headers like
+   * Content-type and Authorization. - serialize the request message into the necessary format
+   * (JSON, urlencoded, signed JWT)
+   *
+   * @param requestArguments
+   *          will contain the value for resource
+   * @return HttpArguments
+   * @throws InvalidClaimException 
+   * @throws SerializationException 
+   * @throws UnsupportedSerializationTypeException 
+   * @throws JsonProcessingException 
+   */
+  
+  // TODO: This will be moved atleast on some level to abstract
+  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
+      throws MissingRequiredAttributeException, MalformedURLException, WebFingerException,
+      ValueException, UnsupportedEncodingException, JsonProcessingException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
 
+    if (requestArguments == null) {
+      throw new IllegalArgumentException("null requestArguments");
+    }
+
+    // TODO: maybe only temporary but use same key values for now as python
+    if (!requestArguments.containsKey("method")
+        || !(requestArguments.get("method") instanceof HttpMethod)) {
+      requestArguments.put("method", this.httpMethod);
+    }
+
+    HttpArguments httpArguments = new HttpArguments();
+    httpArguments.setHttpMethod((HttpMethod) requestArguments.get("method"));
+
+    Message request = constructRequest(requestArguments);
+    httpArguments.setBody(request.toUrlEncoded());
+    return httpArguments;
+
+  }
+
+  // TODO: move this to abstract service once working properly
+  protected Message constructRequest(Map<String, Object> requestArguments) throws ValueException {
+    if (requestArguments == null) {
+      requestArguments = new HashMap<>();
+    }
+    for (RequestArgumentProcessor processor : this.preConstructors) {
+      processor.processRequestArguments(requestArguments, this);
+    }
+
+    Message response = new AuthenticationRequest(requestArguments);
+
+    for (RequestArgumentProcessor processor : this.postConstructors) {
+      processor.processRequestArguments(response.getClaims(), this);
+
+    }
+    return response;
+  }
+  
 }
