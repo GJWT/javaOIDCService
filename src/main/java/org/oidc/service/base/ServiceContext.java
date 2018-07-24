@@ -116,6 +116,11 @@ public class ServiceContext {
    * response mode separate.
    */
   private Map<DataLocation, String> callBack;
+  /**
+   * URL to which the RP is requesting that the End-User's User Agent be redirected after a logout
+   * has been performed.
+   */
+  private List<String> postLogoutRedirectUris;
 
   /**
    * Constants
@@ -356,5 +361,13 @@ public class ServiceContext {
 
   public void setCallBack(Map<DataLocation, String> callBack) {
     this.callBack = callBack;
+  }
+  
+  public List<String> getPostLogoutRedirectUris() {
+    return this.postLogoutRedirectUris;
+  }
+
+  public void setPostLogoutRedirectUris(List<String> uris) {
+    this.postLogoutRedirectUris = uris;
   }
 }
