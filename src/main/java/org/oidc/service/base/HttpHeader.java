@@ -31,11 +31,6 @@ public class HttpHeader {
    */
   private String contentType;
 
-  public HttpHeader(String authorization, String contentType) {
-    this.authorization = authorization;
-    this.contentType = contentType;
-  }
-
   public String getAuthorization() {
     return authorization;
   }
