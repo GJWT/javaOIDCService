@@ -89,6 +89,7 @@ public class Webfinger extends AbstractService {
       throw new ValueException(
           "Unexpected response message type, should be JsonResponseDescriptor");
     }
+    this.responseMessage = response;
     @SuppressWarnings("unchecked")
     List<Link> links = (List<Link>) response.getClaims().get(Constants.WEBFINGER_LINKS);
 

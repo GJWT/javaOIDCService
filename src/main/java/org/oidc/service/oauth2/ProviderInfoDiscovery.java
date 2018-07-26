@@ -62,6 +62,7 @@ public class ProviderInfoDiscovery extends AbstractService {
       throw new ValueException(
           "Unexpected response message type, should be ASConfigurationResponse");
     }
+    this.responseMessage = response;
     String ctxIssuer = getServiceContext().getIssuer();
     if (ctxIssuer == null) {
       throw new MissingRequiredAttributeException("Service context is missing 'issuer'");
