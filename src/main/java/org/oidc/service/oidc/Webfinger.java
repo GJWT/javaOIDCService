@@ -164,11 +164,10 @@ public class Webfinger extends AbstractService {
         + URLEncoder.encode(resource, UTF_8) + "&rel=" + URLEncoder.encode(rel, UTF_8);
   }
 
-  @Override
-  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException, ValueException, JsonProcessingException,
+  public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
+      Map<String, Object> requestArguments)
+      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
-    HttpArguments httpArguments = super.getRequestParameters(requestArguments);
     try {
       httpArguments.setUrl(getQuery(requestArguments));
     } catch (UnsupportedEncodingException e) {

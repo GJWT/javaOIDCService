@@ -339,8 +339,13 @@ public abstract class AbstractService implements Service {
       httpArguments.setHeader(httpHeader);
     }
 
-    return httpArguments;
+    return finalizeGetRequestParameters(httpArguments, requestArguments);
   }
+
+  public abstract HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
+      Map<String, Object> requestArguments)
+      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException;
 
   protected Message constructRequest(Map<String, Object> requestArguments)
       throws ValueException, MissingRequiredAttributeException {

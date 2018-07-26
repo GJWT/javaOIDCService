@@ -72,11 +72,10 @@ public class Authentication extends AbstractService {
     // TODO Auto-generated method stub
   }
 
-  @Override
-  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException, ValueException, JsonProcessingException,
+  public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
+      Map<String, Object> requestArguments)
+      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
-    HttpArguments httpArguments = super.getRequestParameters(requestArguments);
     if (HttpMethod.GET.equals(httpArguments.getHttpMethod())) {
       //TODO: above is invalid, the message should be encoded to httpArguments.setUrl
       httpArguments.setBody(requestMessage.toUrlEncoded());

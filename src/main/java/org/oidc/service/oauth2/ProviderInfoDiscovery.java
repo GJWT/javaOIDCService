@@ -124,11 +124,10 @@ public class ProviderInfoDiscovery extends AbstractService {
     throw new MissingRequiredAttributeException("Issuer cannot be resolved from the current data");
   }
 
-  @Override
-  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException, ValueException, JsonProcessingException,
+  public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
+      Map<String, Object> requestArguments)
+      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
-    HttpArguments httpArguments = super.getRequestParameters(requestArguments);
     httpArguments.setUrl(getOpEndpoint(requestArguments));
     return httpArguments;
   }
