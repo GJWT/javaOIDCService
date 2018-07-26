@@ -310,13 +310,13 @@ public abstract class AbstractService implements Service {
       requestArguments = new HashMap<String, Object>();
     }
 
-    if (Strings.isNullOrEmpty((String) requestArguments.get(AUTHENTICATION_METHOD))) {
-      requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name());
-    }
-
-    if (Strings.isNullOrEmpty((String) requestArguments.get(SERIALIZATION_TYPE))) {
-      requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name());
-    }
+    /*
+     * if (Strings.isNullOrEmpty((String) requestArguments.get(AUTHENTICATION_METHOD))) {
+     * requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name()); }
+     * 
+     * if (Strings.isNullOrEmpty((String) requestArguments.get(SERIALIZATION_TYPE))) {
+     * requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name()); }
+     */
 
     requestMessage = constructRequest(requestArguments);
 
@@ -327,7 +327,7 @@ public abstract class AbstractService implements Service {
 
     SerializationType contentType;
     HttpHeader httpHeader = new HttpHeader();
-    if (HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD))) {
+    if (HttpMethod.POST.equals(httpArguments.getHttpMethod())) {
       if (SerializationType.URL_ENCODED.equals(serializationType)) {
         contentType = SerializationType.URL_ENCODED;
       } else {
