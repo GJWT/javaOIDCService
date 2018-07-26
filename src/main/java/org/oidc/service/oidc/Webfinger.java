@@ -16,23 +16,25 @@
 
 package org.oidc.service.oidc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.oidc.common.AddedClaims;
-import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oidc.JsonResponseDescriptor;
 import org.oidc.msg.oidc.Link;
 import org.oidc.msg.Message;
+import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.WebfingerRequest;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
@@ -83,13 +85,13 @@ public class Webfinger extends AbstractService {
   @Override
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+    @SuppressWarnings("unchecked")
     List<Link> links = (List<Link>) response.getClaims().get(Constants.WEBFINGER_LINKS);
 
-    String href;
     for (Link link : links) {
       String rel = (String) link.getClaims().get("rel");
       if (!Strings.isNullOrEmpty(rel) && rel.equals(linkRelationType)) {
-        href = (String) link.getClaims().get("href");
+        String href = (String) link.getClaims().get("href");
         // allows for non-standard behavior for schema and issuer
         if (!serviceConfig.isShouldAllowHttp() || !serviceConfig.isShouldAllowNonStandardIssuer()) {
           throw new ValueException("http link not allowed: " + href);
@@ -111,13 +113,16 @@ public class Webfinger extends AbstractService {
    * query, fragment. The schema can be one of the 3 values: https, acct (when resource looks like
    * email address), device.
    *
-   * @param resource
+   * @param requestArguments
+   *          The request arguments must have String-values for resource and rel.
    * @return
    * @throws Exception
    */
-  public String getQuery(String resource) throws ValueException, MalformedURLException,
-      WebFingerException, UnsupportedEncodingException {
-    resource = URIUtil.normalizeUrl(resource);
+  protected String getQuery(Map<String, Object> requestArguments) throws ValueException,
+      MalformedURLException, WebFingerException, UnsupportedEncodingException {
+    String resource = URIUtil
+        .normalizeUrl((String) requestArguments.get(Constants.WEBFINGER_RESOURCE));
+    String rel = (String) requestArguments.get(Constants.WEBFINGER_REL);
     String host;
     if (resource.startsWith("http")) {
       URL url = new URL(resource);
@@ -151,44 +156,42 @@ public class Webfinger extends AbstractService {
     }
 
     return String.format(Constants.WEB_FINGER_URL, host) + "?resource="
-        + URLEncoder.encode(resource, UTF_8) + "&rel=" + URLEncoder.encode(linkRelationType, UTF_8);
+        + URLEncoder.encode(resource, UTF_8) + "&rel=" + URLEncoder.encode(rel, UTF_8);
   }
 
-  /**
-   * Builds the request message and constructs the HTTP headers.
-   *
-   * This is the starting pont for a pipeline that will:
-   *
-   * - construct the request message - add/remove information to/from the request message in the way
-   * a specific client authentication method requires. - gather a set of HTTP headers like
-   * Content-type and Authorization. - serialize the request message into the necessary format
-   * (JSON, urlencoded, signed JWT)
-   *
-   * @param requestArguments
-   *          will contain the value for resource
-   * @return HttpArguments
-   */
   @Override
   public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException, MalformedURLException, WebFingerException,
-      ValueException, UnsupportedEncodingException {
-    if (requestArguments == null) {
-      throw new IllegalArgumentException("null requestArguments");
+      throws MissingRequiredAttributeException, ValueException, JsonProcessingException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+    HttpArguments httpArguments = super.getRequestParameters(requestArguments);
+    try {
+      httpArguments.setUrl(getQuery(requestArguments));
+    } catch (UnsupportedEncodingException e) {
+      throw new SerializationException(e.getMessage(), e);
+    } catch (MalformedURLException | WebFingerException e) {
+      throw new InvalidClaimException(e.getMessage(), e);
     }
-
-    String resource = (String)requestArguments.get(Constants.WEBFINGER_RESOURCE);
-    AddedClaims addedClaims = getAddedClaims();
-    if (Strings.isNullOrEmpty(resource)) {
-      resource = addedClaims.getResource();
-      if (Strings.isNullOrEmpty(resource)) {
-        resource = this.serviceContext.getBaseUrl();
-      }
-      if (Strings.isNullOrEmpty(resource)) {
-        throw new MissingRequiredAttributeException("resource attribute is missing");
-      }
-    }
-
-    HttpArguments httpArguments = new HttpArguments(HttpMethod.GET, this.getQuery(resource));
     return httpArguments;
+  }
+
+  @Override
+  protected Message doConstructRequest(Map<String, Object> requestArguments)
+      throws MissingRequiredAttributeException {
+    for (String value : Arrays.asList((String) requestArguments.get(Constants.WEBFINGER_RESOURCE),
+        getAddedClaims() == null ? null : getAddedClaims().getResource(),
+        this.serviceContext.getBaseUrl())) {
+      if (!Strings.isNullOrEmpty(value)) {
+        requestArguments.put(Constants.WEBFINGER_RESOURCE, value);
+        break;
+      }
+    }
+    if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_RESOURCE))) {
+      throw new MissingRequiredAttributeException("resource attribute is missing");
+    }
+    if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_REL))) {
+      requestArguments.put(Constants.WEBFINGER_REL, linkRelationType);
+    }
+    WebfingerRequest message = new WebfingerRequest(requestArguments);
+    return message;
   }
 }

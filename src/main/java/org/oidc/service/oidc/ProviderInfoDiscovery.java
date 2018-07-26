@@ -150,7 +150,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
         }
       } else {
         if (preferenceValue instanceof List) {
-          if (((List<Object>) preferenceValue).contains(providerValue)) {
+          if (((List<?>) preferenceValue).contains(providerValue)) {
             this.getServiceContext().getBehavior().addClaim(preferenceKey, providerValue);
           }
         } else {
@@ -177,7 +177,9 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
 
   /**
    * Checks if the given parameter is either null, or an empty String or List.
-   * @param value The object to be checked.
+   * 
+   * @param value
+   *          The object to be checked.
    * @return True is null or empty String or List, false otherwise.
    */
   protected static boolean nullOrEmpty(Object value) {

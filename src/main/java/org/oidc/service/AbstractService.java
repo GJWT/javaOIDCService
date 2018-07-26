@@ -20,8 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.AddedClaims;
@@ -29,12 +29,10 @@ import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
-import org.oidc.common.ResponseException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
-import org.oidc.common.WebFingerException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
@@ -298,56 +296,73 @@ public abstract class AbstractService implements Service {
    *
    * @param requestArguments
    * @return HttpArguments
+   * @throws MissingRequiredAttributeException
+   * @throws ValueException
+   * @throws UnsupportedSerializationTypeException
+   * @throws JsonProcessingException
    * @throws SerializationException
    * @throws InvalidClaimException
    */
   public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws UnsupportedSerializationTypeException, JsonProcessingException,
-      MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-      UnsupportedEncodingException, SerializationException, InvalidClaimException {
+      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
     if (requestArguments == null) {
-      throw new IllegalArgumentException("null requestArguments");
+      requestArguments = new HashMap<String, Object>();
     }
 
-    if (Strings.isNullOrEmpty((String)requestArguments.get(HTTP_METHOD))) {
-      requestArguments.put(HTTP_METHOD, this.httpMethod.name());
-    }
-
-    if (Strings.isNullOrEmpty((String)requestArguments.get(AUTHENTICATION_METHOD))) {
+    if (Strings.isNullOrEmpty((String) requestArguments.get(AUTHENTICATION_METHOD))) {
       requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name());
     }
 
-    if (Strings.isNullOrEmpty((String)requestArguments.get(SERIALIZATION_TYPE))) {
+    if (Strings.isNullOrEmpty((String) requestArguments.get(SERIALIZATION_TYPE))) {
       requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name());
     }
 
-    Message request = constructRequest();
+    requestMessage = constructRequest(requestArguments);
 
     HttpArguments httpArguments = new HttpArguments();
-    httpArguments.setHttpMethod(httpMethod);
+    httpArguments.setHttpMethod(
+        requestArguments.containsKey(HTTP_METHOD) ? (HttpMethod) requestArguments.get(HTTP_METHOD)
+            : httpMethod);
 
-    /*
-     * commented below currently AddedClaims addedClaimsCopy = addedClaims.clone(); if
-     * (!Strings.isNullOrEmpty(this.serviceContext.getIssuer())) {
-     * addedClaimsCopy.buildAddedClaimsBuilder().setIssuer(this.serviceContext.getIssuer())
-     * .buildAddedClaims(); }
-     * 
-     * SerializationType contentType; HttpHeader httpHeader = null; if
-     * (HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD))) { if
-     * (SerializationType.URL_ENCODED.equals(serializationType)) { contentType =
-     * SerializationType.URL_ENCODED; } else { contentType = SerializationType.JSON; }
-     * 
-     * httpArguments.setBody(ServiceUtil.getHttpBody(request, contentType));
-     * httpHeader.setContentType(contentType.name()); }
-     * 
-     * if (httpHeader != null) { httpArguments.setHeader(httpHeader); }
-     */
+    SerializationType contentType;
+    HttpHeader httpHeader = new HttpHeader();
+    if (HttpMethod.POST.equals(requestArguments.get(HTTP_METHOD))) {
+      if (SerializationType.URL_ENCODED.equals(serializationType)) {
+        contentType = SerializationType.URL_ENCODED;
+      } else {
+        contentType = SerializationType.JSON;
+      }
+
+      httpArguments.setBody(ServiceUtil.getHttpBody(requestMessage, contentType));
+      httpHeader.setContentType(contentType.name());
+      httpArguments.setHeader(httpHeader);
+    }
+
     return httpArguments;
   }
 
-  public Message constructRequest() {
-    return null;
+  protected Message constructRequest(Map<String, Object> requestArguments)
+      throws ValueException, MissingRequiredAttributeException {
+    if (this.preConstructors != null) {
+      for (RequestArgumentProcessor processor : this.preConstructors) {
+        processor.processRequestArguments(requestArguments, this);
+      }
+    }
+
+    // TODO: should we gather other configuration? Python checks service_context, self.conf
+    Message response = doConstructRequest(requestArguments);
+
+    if (this.postConstructors != null) {
+      for (RequestArgumentProcessor processor : this.postConstructors) {
+        processor.processRequestArguments(response.getClaims(), this);
+      }
+    }
+    return response;
   }
+
+  protected abstract Message doConstructRequest(Map<String, Object> requestArguments)
+      throws MissingRequiredAttributeException;
 
   public Message getRequestMessage() {
     return requestMessage;

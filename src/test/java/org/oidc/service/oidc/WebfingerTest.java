@@ -29,9 +29,12 @@ import org.junit.rules.ExpectedException;
 import org.oidc.common.AddedClaims;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
+import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
+import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.JsonResponseDescriptor;
 import org.oidc.msg.oidc.Link;
 import org.oidc.service.AbstractService;
@@ -39,6 +42,8 @@ import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.util.Constants;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class WebfingerTest {
 
@@ -56,11 +61,18 @@ public class WebfingerTest {
     AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
     webfinger.updateServiceContext(null, null);
   }
+  
+  protected Map<String, Object> buildArgsWithResource(String resource) {
+    Map<String, Object> map = new HashMap<>();
+    map.put(Constants.WEBFINGER_RESOURCE, resource);
+    map.put(Constants.WEBFINGER_REL, "http://openid.net/specs/connect/1.0/issuer");
+    return map;
+  }
 
   @Test
   public void testGetQueryWithDevice() throws Exception {
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery("device:p1.example.com");
+    String query = webfinger.getQuery(buildArgsWithResource("device:p1.example.com"));
     Assert.assertTrue(query.equals(
         "https://p1.example.com/.well-known/webfinger?resource=device%3Ap1.example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
@@ -68,7 +80,7 @@ public class WebfingerTest {
   @Test
   public void testGetQueryWithAcct() throws Exception {
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery("acct:bob@example.com");
+    String query = webfinger.getQuery(buildArgsWithResource("acct:bob@example.com"));
     Assert.assertTrue(query.equals(
         "https://example.com/.well-known/webfinger?resource=acct%3Abob%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
@@ -76,7 +88,7 @@ public class WebfingerTest {
   @Test
   public void testGetQueryWithWWWSchema() throws Exception {
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery("www.yahoo.com");
+    String query = webfinger.getQuery(buildArgsWithResource("www.yahoo.com"));
     Assert.assertTrue(query.equals(
         "https://www.yahoo.com/.well-known/webfinger?resource=https%3A%2F%2Fwww.yahoo.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
@@ -86,7 +98,7 @@ public class WebfingerTest {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("null or empty url");
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery(null);
+    String query = webfinger.getQuery(buildArgsWithResource(null));
   }
 
   @Test
@@ -94,15 +106,7 @@ public class WebfingerTest {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("null or empty url");
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery("");
-  }
-
-  @Test
-  public void testGetRequestParametersNullRequestArguments() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("null requestArguments");
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    webfinger.getRequestParameters(null);
+    String query = webfinger.getQuery(buildArgsWithResource(""));
   }
 
   @Test
@@ -175,7 +179,7 @@ public class WebfingerTest {
 
   @Test
   public void testGetRequestParameters() throws MalformedURLException, WebFingerException,
-      MissingRequiredAttributeException, ValueException, UnsupportedEncodingException {
+      MissingRequiredAttributeException, ValueException, UnsupportedEncodingException, JsonProcessingException, UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
     Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
     Map<String, String> requestParametersMap = new HashMap<String, String>() {
       {

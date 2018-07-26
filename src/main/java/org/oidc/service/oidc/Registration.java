@@ -16,8 +16,6 @@
 
 package org.oidc.service.oidc;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +25,6 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
-import org.oidc.common.WebFingerException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -39,8 +36,11 @@ import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.base.processor.AddClientBehaviourPreference;
+import org.oidc.service.base.processor.AddJwksUriOrJwks;
 import org.oidc.service.base.processor.AddOidcResponseTypes;
+import org.oidc.service.base.processor.AddPostLogoutRedirectUris;
 import org.oidc.service.base.processor.AddRedirectUris;
+import org.oidc.service.base.processor.AddRequestUri;
 import org.oidc.service.data.State;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,9 +53,10 @@ public class Registration extends AbstractService {
     this.requestMessage = new RegistrationRequest();
     this.responseMessage = new RegistrationResponse();
     this.httpMethod = HttpMethod.POST;
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays
-        .asList(new AddClientBehaviourPreference(), new AddRedirectUris());
-    this.postConstructors = Arrays.asList((RequestArgumentProcessor)new AddOidcResponseTypes());
+    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(
+        new AddClientBehaviourPreference(), new AddRedirectUris(), new AddRequestUri(),
+        new AddPostLogoutRedirectUris(), new AddJwksUriOrJwks());
+    this.postConstructors = Arrays.asList((RequestArgumentProcessor) new AddOidcResponseTypes());
   }
 
   @Override
@@ -86,8 +87,11 @@ public class Registration extends AbstractService {
    * @return HttpArguments
    */
   public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException, MalformedURLException, WebFingerException,
-      ValueException, UnsupportedEncodingException {
+      throws MissingRequiredAttributeException, ValueException {
+
+    if (requestArguments == null) {
+      requestArguments = new HashMap<String, Object>();
+    }
 
     Message request = constructRequest(requestArguments);
 
@@ -101,23 +105,10 @@ public class Registration extends AbstractService {
     return httpArguments;
   }
 
-  // TODO: move this to abstract service once working properly
-  protected Message constructRequest(Map<String, Object> requestArguments) throws ValueException {
-    if (requestArguments == null) {
-      requestArguments = new HashMap<>();
-    }
-    for (RequestArgumentProcessor processor : this.preConstructors) {
-      processor.processRequestArguments(requestArguments, this);
-    }
-
-    Message response =  new RegistrationRequest(requestArguments);
-
-    // Message request = gatherRequestArgs(requestArguments);
-    
-    for (RequestArgumentProcessor processor : this.postConstructors) {
-      processor.processRequestArguments(response.getClaims(), this);
-      
-    }
+  @Override
+  protected Message doConstructRequest(Map<String, Object> requestArguments)
+      throws MissingRequiredAttributeException {
+    Message response = new RegistrationRequest(requestArguments);
     return response;
   }
 }

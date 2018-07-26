@@ -16,8 +16,7 @@
 
 package org.oidc.service.oauth2;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.oidc.common.HttpMethod;
@@ -25,7 +24,6 @@ import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
-import org.oidc.common.WebFingerException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -104,24 +102,39 @@ public class ProviderInfoDiscovery extends AbstractService {
     getServiceContext().setKeyJar(keyJar);
   }
 
-  protected String getOpEndpoint() throws MissingRequiredAttributeException {
-    String issuer = getServiceContext().getIssuer() == null ? getEndpoint()
-        : getServiceContext().getIssuer();
-    if (Strings.isNullOrEmpty(issuer)) {
-      throw new MissingRequiredAttributeException(
-          "Issuer cannot be resolved from the current data");
+  /**
+   * Resolves the OP configuration endpoint by using issuer from either given request arguments,
+   * service context or this service object's endpoint variable.
+   * 
+   * @param requestArguments
+   * @return
+   * @throws MissingRequiredAttributeException
+   *           If the issuer cannot be resolved from the current data.
+   */
+  protected String getOpEndpoint(Map<String, Object> requestArguments)
+      throws MissingRequiredAttributeException {
+    for (String value : Arrays.asList((String) requestArguments.get("issuer"),
+        getServiceContext().getIssuer(), getEndpoint())) {
+      if (!Strings.isNullOrEmpty(value)) {
+        // remove the trailing '/' if exists from issuer
+        return String.format(Constants.OIDCONF_PATTERN, value.replaceAll("/\\s*$", ""));
+      }
     }
-    // remove the trailing '/' if exists from issuer
-    return String.format(Constants.OIDCONF_PATTERN, issuer.replaceAll("/\\s*$", ""));
+    throw new MissingRequiredAttributeException("Issuer cannot be resolved from the current data");
   }
 
   @Override
   public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws UnsupportedSerializationTypeException, JsonProcessingException,
-      MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-      UnsupportedEncodingException, SerializationException, InvalidClaimException {
+      throws MissingRequiredAttributeException, ValueException, JsonProcessingException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
     HttpArguments httpArguments = super.getRequestParameters(requestArguments);
-    httpArguments.setUrl(getOpEndpoint());
+    httpArguments.setUrl(getOpEndpoint(requestArguments));
     return httpArguments;
+  }
+
+  @Override
+  protected Message doConstructRequest(Map<String, Object> requestArguments)
+      throws MissingRequiredAttributeException {
+    return null;
   }
 }

@@ -18,7 +18,6 @@ package org.oidc.service.oidc;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +54,7 @@ public class AuthenticationTest {
     Authentication service = new Authentication(serviceContext, null, null);
     Map<String, Object> requestParameters = new HashMap<String, Object>();
     HttpMethod httpMethod = HttpMethod.POST;
-    requestParameters.put("method", httpMethod);
+    requestParameters.put("httpMethod", httpMethod);
     HttpArguments httpArguments = service.getRequestParameters(requestParameters);
     Assert.assertEquals(HttpMethod.POST, httpArguments.getHttpMethod());
   }
