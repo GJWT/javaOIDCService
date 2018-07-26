@@ -17,21 +17,19 @@
 package org.oidc.service.oidc;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.service.AbstractService;
-import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -42,8 +40,6 @@ import org.oidc.service.base.processor.AddPostLogoutRedirectUris;
 import org.oidc.service.base.processor.AddRedirectUris;
 import org.oidc.service.base.processor.AddRequestUri;
 import org.oidc.service.data.State;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class Registration extends AbstractService {
 
@@ -57,6 +53,7 @@ public class Registration extends AbstractService {
         new AddClientBehaviourPreference(), new AddRedirectUris(), new AddRequestUri(),
         new AddPostLogoutRedirectUris(), new AddJwksUriOrJwks());
     this.postConstructors = Arrays.asList((RequestArgumentProcessor) new AddOidcResponseTypes());
+    this.serializationType = SerializationType.JSON;
   }
 
   @Override
@@ -70,39 +67,6 @@ public class Registration extends AbstractService {
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     // TODO Auto-generated method stub
 
-  }
-
-  /**
-   * Builds the request message and constructs the HTTP headers.
-   *
-   * This is the starting pont for a pipeline that will:
-   *
-   * - construct the request message - add/remove information to/from the request message in the way
-   * a specific client authentication method requires. - gather a set of HTTP headers like
-   * Content-type and Authorization. - serialize the request message into the necessary format
-   * (JSON, urlencoded, signed JWT)
-   *
-   * @param requestArguments
-   *          will contain the value for resource
-   * @return HttpArguments
-   */
-  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException, ValueException {
-
-    if (requestArguments == null) {
-      requestArguments = new HashMap<String, Object>();
-    }
-
-    Message request = constructRequest(requestArguments);
-
-    HttpArguments httpArguments = new HttpArguments();
-    httpArguments.setHttpMethod(httpMethod);
-    try {
-      httpArguments.setBody(request.toJson());
-    } catch (InvalidClaimException | JsonProcessingException | SerializationException e) {
-      throw new ValueException("Could not serialize the message into JSON");
-    }
-    return httpArguments;
   }
 
   @Override
