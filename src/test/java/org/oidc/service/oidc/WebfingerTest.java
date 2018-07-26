@@ -32,6 +32,7 @@ import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
+import org.oidc.msg.AbstractMessage;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -60,6 +61,18 @@ public class WebfingerTest {
         "stateKey is not supported to update service context for the WebFinger service");
     AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
     webfinger.updateServiceContext(null, null);
+  }
+
+  @Test(expected = ValueException.class)
+  public void testUpdateServiceContextNullResponse() throws Exception {
+    AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
+    webfinger.updateServiceContext(null);
+  }
+
+  @Test(expected = ValueException.class)
+  public void testUpdateServiceContextWrongResponse() throws Exception {
+    AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
+    webfinger.updateServiceContext(new MockMessage());
   }
   
   protected Map<String, Object> buildArgsWithResource(String resource) {
@@ -267,5 +280,13 @@ public class WebfingerTest {
 
     webfinger.updateServiceContext(parsedResponse);
     Assert.assertTrue(webfinger.getServiceContext().getIssuer().equals(OP_BASEURL));
+  }
+  
+  class MockMessage extends AbstractMessage {
+
+    public MockMessage() {
+      super(new HashMap<String, Object>());
+    }
+    
   }
 }

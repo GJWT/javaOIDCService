@@ -85,6 +85,10 @@ public class Webfinger extends AbstractService {
   @Override
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+    if (response == null || !(response instanceof JsonResponseDescriptor)) {
+      throw new ValueException(
+          "Unexpected response message type, should be JsonResponseDescriptor");
+    }
     @SuppressWarnings("unchecked")
     List<Link> links = (List<Link>) response.getClaims().get(Constants.WEBFINGER_LINKS);
 
