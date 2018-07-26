@@ -38,6 +38,7 @@ import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.ProviderConfigurationResponse;
 import org.oidc.msg.oidc.RegistrationRequest;
+import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
 
@@ -46,7 +47,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 /**
  * Unit tests for {@link ProviderInfoDiscovery}.
  */
-public class ProviderInfoDiscoveryTest {
+public class ProviderInfoDiscoveryTest extends BaseServiceTest {
 
   ServiceContext serviceContext;
   String issuer;
@@ -54,13 +55,13 @@ public class ProviderInfoDiscoveryTest {
   @Before
   public void init() {
     serviceContext = new ServiceContext();
+    service = new ProviderInfoDiscovery(serviceContext, null, null);
     issuer = "https://www.example.com";
     serviceContext.setIssuer(issuer);
   }
 
   @Test
   public void testHttpParameters() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, Object>());
     Assert.assertEquals(issuer + "/.well-known/openid-configuration", httpArguments.getUrl());
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
@@ -71,7 +72,6 @@ public class ProviderInfoDiscoveryTest {
       throws JsonProcessingException, MalformedURLException, UnsupportedEncodingException,
       UnsupportedSerializationTypeException, MissingRequiredAttributeException, WebFingerException,
       ValueException, SerializationException, InvalidClaimException, DeserializationException {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     Message message = service.parseResponse(exampleValidResponse());
     service.updateServiceContext((ProviderConfigurationResponse) message);
     Assert.assertNotNull(serviceContext.getBehavior());
@@ -80,8 +80,6 @@ public class ProviderInfoDiscoveryTest {
   @Test
   public void testMatchingPreferences() throws Exception {
     RegistrationRequest preferences = new RegistrationRequest();
-
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
 
     Message message = service.parseResponse(exampleValidResponse());
     Assert.assertTrue(message instanceof ProviderConfigurationResponse);
@@ -102,8 +100,6 @@ public class ProviderInfoDiscoveryTest {
   public void testPreferenceNotSatisfied() throws Exception {
     RegistrationRequest preferences = new RegistrationRequest();
 
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-
     Message message = service.parseResponse(exampleValidResponse());
     Assert.assertTrue(message instanceof ProviderConfigurationResponse);
     ProviderConfigurationResponse pcr = (ProviderConfigurationResponse) message;
@@ -116,8 +112,6 @@ public class ProviderInfoDiscoveryTest {
   @Test
   public void testCustomPreferences() throws Exception {
     RegistrationRequest preferences = new RegistrationRequest();
-
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
 
     Message message = service.parseResponse(exampleValidResponse());
     Assert.assertTrue(message instanceof ProviderConfigurationResponse);
@@ -156,7 +150,6 @@ public class ProviderInfoDiscoveryTest {
   }
 
   public void testDefaults() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     Message message = service.parseResponse(minimalValidResponse());
     Assert.assertTrue(message instanceof ProviderConfigurationResponse);
     ProviderConfigurationResponse pcr = (ProviderConfigurationResponse) message;

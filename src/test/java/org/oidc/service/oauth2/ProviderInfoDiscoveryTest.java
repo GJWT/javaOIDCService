@@ -25,10 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oauth2.ASConfigurationResponse;
-import org.oidc.msg.oidc.RegistrationResponse;
+import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.util.Constants;
@@ -36,7 +35,7 @@ import org.oidc.service.util.Constants;
 /**
  * Unit tests for {@link ProviderInfoDiscovery}
  */
-public class ProviderInfoDiscoveryTest {
+public class ProviderInfoDiscoveryTest extends BaseServiceTest {
 
   ServiceContext serviceContext;
   String issuer;
@@ -44,6 +43,7 @@ public class ProviderInfoDiscoveryTest {
   @Before
   public void init() {
     serviceContext = new ServiceContext();
+    service = new ProviderInfoDiscovery(serviceContext, null, null);
     issuer = "https://www.example.com";
   }
 
@@ -73,18 +73,6 @@ public class ProviderInfoDiscoveryTest {
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
   }
 
-  @Test(expected = ValueException.class)
-  public void testUpdateCtxMissingResponse() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-    service.updateServiceContext(null);
-  }
-
-  @Test(expected = ValueException.class)
-  public void testUpdateCtxWrongResponse() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
-    service.updateServiceContext(new RegistrationResponse());
-  }
-  
   @Test(expected = MissingRequiredAttributeException.class)
   public void testUpdateCtxMissingIssuer() throws Exception {
     ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);

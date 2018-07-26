@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -32,13 +33,13 @@ import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.common.WebFingerException;
-import org.oidc.msg.AbstractMessage;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.JsonResponseDescriptor;
 import org.oidc.msg.oidc.Link;
 import org.oidc.service.AbstractService;
+import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -46,11 +47,16 @@ import org.oidc.service.util.Constants;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class WebfingerTest {
+public class WebfingerTest extends BaseServiceTest {
 
   private static final ServiceContext SERVICE_CONTEXT = new ServiceContext();
   private static final String OP_BASEURL = "https://example.org/op";
 
+  @Before
+  public void init() {
+    service = new Webfinger(SERVICE_CONTEXT);
+  }
+  
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
@@ -63,18 +69,6 @@ public class WebfingerTest {
     webfinger.updateServiceContext(null, null);
   }
 
-  @Test(expected = ValueException.class)
-  public void testUpdateServiceContextNullResponse() throws Exception {
-    AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
-    webfinger.updateServiceContext(null);
-  }
-
-  @Test(expected = ValueException.class)
-  public void testUpdateServiceContextWrongResponse() throws Exception {
-    AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
-    webfinger.updateServiceContext(new MockMessage());
-  }
-  
   protected Map<String, Object> buildArgsWithResource(String resource) {
     Map<String, Object> map = new HashMap<>();
     map.put(Constants.WEBFINGER_RESOURCE, resource);
@@ -141,51 +135,34 @@ public class WebfingerTest {
     ServiceContext serviceContext = SERVICE_CONTEXT;
     serviceContext.setBaseUrl("baseUrl");
     Webfinger webfinger = new Webfinger(serviceContext);
-    AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource(null)
-        .buildAddedClaims();
-    webfinger.setAddedClaims(addedClaims);
-    Map<String, Object> requestArguments = new HashMap<String, Object>();
-    requestArguments.put("resource", null);
-    HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+    HttpArguments httpArguments = webfinger.getRequestParameters(null);
     Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
     Assert.assertTrue(httpArguments.getUrl().equals(
         "https://baseUrl/.well-known/webfinger?resource=https%3A%2F%2FbaseUrl&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
-  @Test
+  @Test(expected = MissingRequiredAttributeException.class)
   public void testGetRequestParametersNullResourceAndNullAddedClaimsResourceAndNullBaseUrl()
       throws Exception {
-    thrown.expect(MissingRequiredAttributeException.class);
-    thrown.expectMessage("resource attribute is missing");
-    ServiceContext serviceContext = SERVICE_CONTEXT;
-    serviceContext.setBaseUrl(null);
-    Webfinger webfinger = new Webfinger(serviceContext);
-    AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource(null)
-        .buildAddedClaims();
-    webfinger.setAddedClaims(addedClaims);
-    Map<String, Object> requestArguments = new HashMap<String, Object>();
-    requestArguments.put("resource", null);
-    HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+    service.getRequestParameters(null);
   }
 
   @Test
   public void testGetRequestParametersUrl() throws Exception {
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
     Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", "acct:bob@example.com");
 
-    HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+    HttpArguments httpArguments = service.getRequestParameters(requestArguments);
     Assert.assertTrue(httpArguments.getUrl().equals(
         "https://example.com/.well-known/webfinger?resource=acct%3Abob%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
   @Test
   public void testGetRequestParametersAcct() throws Exception {
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
     Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", "acct:carol@example.com");
 
-    HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+    HttpArguments httpArguments = service.getRequestParameters(requestArguments);
     Assert.assertTrue(httpArguments.getUrl().equals(
         "https://example.com/.well-known/webfinger?resource=acct%3Acarol%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
@@ -193,7 +170,6 @@ public class WebfingerTest {
   @Test
   public void testGetRequestParameters() throws MalformedURLException, WebFingerException,
       MissingRequiredAttributeException, ValueException, UnsupportedEncodingException, JsonProcessingException, UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
     Map<String, String> requestParametersMap = new HashMap<String, String>() {
       {
         put("example.com", "example.com");
@@ -229,12 +205,11 @@ public class WebfingerTest {
       }
     };
 
-    HttpArguments requestParams;
     Map<String, Object> input = new HashMap<>();
     String[] requestParamsSplit;
     for (String key : requestParametersMap.keySet()) {
       input.put("resource", key);
-      requestParams = webfinger.getRequestParameters(input);
+      HttpArguments requestParams = service.getRequestParameters(input);
       requestParamsSplit = requestParams.getUrl().split("\\?");
       if (!requestParamsSplit[0]
           .equals(String.format(Constants.WEB_FINGER_URL, requestParametersMap.get(key)))) {
@@ -281,12 +256,5 @@ public class WebfingerTest {
     webfinger.updateServiceContext(parsedResponse);
     Assert.assertTrue(webfinger.getServiceContext().getIssuer().equals(OP_BASEURL));
   }
-  
-  class MockMessage extends AbstractMessage {
 
-    public MockMessage() {
-      super(new HashMap<String, Object>());
-    }
-    
-  }
 }
