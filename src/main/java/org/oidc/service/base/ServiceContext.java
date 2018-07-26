@@ -25,6 +25,7 @@ import com.google.common.base.Strings;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,6 +102,14 @@ public class ServiceContext {
    * The client secret, which is optional.
    */
   private String clientSecret;
+  /**
+   * The client secret expiration time, which is optional.
+   */
+  private Date clientSecretExpiresAt;
+  /**
+   * The registration access token, which is optional.
+   */
+  private String registrationAccessToken;
   /**
    * The Issuer ID. This is the unique identifier of the OP/AS the client is communicating with.
    */
@@ -338,7 +347,23 @@ public class ServiceContext {
   public void setClientSecret(String clientSecret) {
     this.clientSecret = clientSecret;
   }
+  
+  public Date getClientSecretExpiresAt() {
+    return clientSecretExpiresAt;
+  }
+  
+  public void setClientSecretExpiresAt(Date expiresAt) {
+    this.clientSecretExpiresAt = expiresAt;
+  }
 
+  public String getRegistrationAccessToken() {
+    return this.registrationAccessToken;
+  }
+  
+  public void setRegistrationAccessToken(String accessToken) {
+    this.registrationAccessToken = accessToken;
+  }
+  
   public String getIssuer() {
     return issuer;
   }
