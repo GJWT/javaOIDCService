@@ -17,6 +17,7 @@
 package org.oidc.service.oidc;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -24,12 +25,15 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
+import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.service.AbstractService;
+import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -40,6 +44,8 @@ import org.oidc.service.base.processor.AddPostLogoutRedirectUris;
 import org.oidc.service.base.processor.AddRedirectUris;
 import org.oidc.service.base.processor.AddRequestUri;
 import org.oidc.service.data.State;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class Registration extends AbstractService {
 
@@ -58,15 +64,27 @@ public class Registration extends AbstractService {
 
   @Override
   public void updateServiceContext(Message response, String stateKey) {
-    // TODO Auto-generated method stub
-
+    throw new UnsupportedOperationException(
+        "stateKey is not supported to update service context" + " for this service");
   }
 
   @Override
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    // TODO Auto-generated method stub
-
+    if (response == null || !(response instanceof RegistrationResponse)) {
+      throw new ValueException("Unexpected response message type, should be RegistrationResponse");
+    }
+    this.responseMessage = response;
+    if (!response.getClaims().containsKey("token_endpoint_auth_method")) {
+      response.getClaims().put("token_endpoint_auth_method", "client_secret_basic");
+    }
+    getServiceContext().setClientId((String) response.getClaims().get("client_id"));
+    getServiceContext().setClientSecret((String) response.getClaims().get("client_secret"));
+    getServiceContext()
+        .setClientSecretExpiresAt((Date) response.getClaims().get("client_secret_expires_at"));
+    getServiceContext()
+        .setRegistrationAccessToken((String) response.getClaims().get("registration_access_token"));
+    getServiceContext().setRegistrationResponse((RegistrationResponse) response);
   }
 
   @Override
@@ -74,5 +92,16 @@ public class Registration extends AbstractService {
       throws MissingRequiredAttributeException {
     Message response = new RegistrationRequest(requestArguments);
     return response;
+  }
+
+  public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
+      Map<String, Object> requestArguments)
+      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+
+    // TODO: set URL
+    // TODO: this or abstract service should check that request contains mandatory fields
+
+    return httpArguments;
   }
 }
