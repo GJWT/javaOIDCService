@@ -19,6 +19,7 @@ package org.oidc.service.oauth2;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
@@ -38,6 +39,7 @@ import org.oidc.service.util.Constants;
 import com.auth0.msg.KeyJar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 
 public class ProviderInfoDiscovery extends AbstractService {
 
@@ -91,16 +93,26 @@ public class ProviderInfoDiscovery extends AbstractService {
     getServiceContext().setIssuer(pcrIssuer);
     getServiceContext().setProviderConfigurationResponse((ASConfigurationResponse) response);
 
-    /*
-     * TODO: Python code checks if the serviceContext contains any other services and if yes, the
-     * endpoints of those services are set to the values defined by _endpoint claims in the response
-     * object.
-     */
+    for (String pcrKey : pcrClaims.keySet()) {
+      EndpointName endpointName = getEndpointName(pcrKey);
+      if (endpointName != null) {
+        getServiceContext().getEndpoints().put(endpointName, (String) pcrClaims.get(pcrKey));
+      }
+    }
 
     KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
         : getServiceContext().getKeyJar();
     // TODO: load keys from response to KeyJar
     getServiceContext().setKeyJar(keyJar);
+  }
+
+  protected EndpointName getEndpointName(String key) {
+    return ImmutableMap.<String, EndpointName>builder()
+        .put("authorization_endpoint", EndpointName.AUTHORIZATION)
+        .put("registration_endpoint", EndpointName.REGISTRATION)
+        .put("token_endpoint", EndpointName.TOKEN)
+        .put("revocation_endpoint", EndpointName.REVOCATION)
+        .put("introspection_endpoint", EndpointName.INTROSPECTION).build().get(key);
   }
 
   /**

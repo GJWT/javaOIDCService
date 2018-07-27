@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
@@ -173,6 +174,16 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       // and PCR claims might be list even though request only allows single values.
       getServiceContext().getBehavior().getClaims().put(entry.getKey(), entry.getValue());
     }
+  }
+
+  @Override
+  protected EndpointName getEndpointName(String key) {
+    return ImmutableMap.<String, EndpointName>builder()
+        .put("authorization_endpoint", EndpointName.AUTHORIZATION)
+        .put("registration_endpoint", EndpointName.REGISTRATION)
+        .put("token_endpoint", EndpointName.TOKEN)
+        .put("end_session_endpoint", EndpointName.END_SESSION)
+        .put("userinfo_endpoint", EndpointName.USER_INFO).build().get(key);
   }
 
   /**

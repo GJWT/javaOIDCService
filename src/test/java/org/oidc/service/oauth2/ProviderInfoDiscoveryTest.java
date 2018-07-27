@@ -23,6 +23,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.msg.InvalidClaimException;
@@ -90,6 +91,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest {
     Assert.assertNotNull(response);
     Assert.assertTrue(response.verify());
     Assert.assertNotNull(serviceContext.getKeyJar());
+    Assert.assertTrue(serviceContext.getEndpoints().isEmpty());
   }
 
   @Test
@@ -106,6 +108,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest {
     Assert.assertNotNull(response);
     Assert.assertTrue(response.verify());
     Assert.assertNotNull(serviceContext.getKeyJar());
+    Assert.assertTrue(serviceContext.getEndpoints().isEmpty());
   }
 
   @Test(expected = InvalidClaimException.class)
@@ -116,12 +119,40 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest {
     service.updateServiceContext(buildMinimalResponse(issuer + "/"));
   }
 
-  protected ASConfigurationResponse buildMinimalResponse(String issuer) throws InvalidClaimException {
+  @Test
+  public void testUpdateCtxSuccessWithEndpoints() throws Exception {
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+    serviceContext.setIssuer(issuer);
+    Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
+    service.updateServiceContext(buildMinimalResponseWithEndpoints(issuer));
+    ASConfigurationResponse response = service.getServiceContext()
+        .getProviderConfigurationResponse();
+    Assert.assertNotNull(response);
+    Assert.assertTrue(response.verify());
+    Assert.assertNotNull(serviceContext.getKeyJar());
+    Assert.assertFalse(serviceContext.getEndpoints().isEmpty());
+    Assert.assertTrue(serviceContext.getEndpoints().keySet().size() == 2);
+    Assert.assertEquals("https://www.example.org/authorize",
+        serviceContext.getEndpoints().get(EndpointName.AUTHORIZATION));
+    Assert.assertEquals("https://www.example.org/token",
+        serviceContext.getEndpoints().get(EndpointName.TOKEN));
+  }
+
+  protected ASConfigurationResponse buildMinimalResponse(String issuer)
+      throws InvalidClaimException {
     ASConfigurationResponse response = new ASConfigurationResponse();
     response.addClaim("issuer", issuer);
     response.addClaim("response_types_supported", Arrays.asList("code"));
     response.addClaim("grant_types_supported", Arrays.asList("authorization_code"));
     Assert.assertTrue(response.verify());
+    return response;
+  }
+
+  protected ASConfigurationResponse buildMinimalResponseWithEndpoints(String issuer)
+      throws InvalidClaimException {
+    ASConfigurationResponse response = buildMinimalResponse(issuer);
+    response.addClaim("authorization_endpoint", "https://www.example.org/authorize");
+    response.addClaim("token_endpoint", "https://www.example.org/token");
     return response;
   }
 }

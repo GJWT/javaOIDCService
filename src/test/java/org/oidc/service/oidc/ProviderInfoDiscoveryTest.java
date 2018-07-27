@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
@@ -107,6 +108,32 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest {
     preferences.addClaim("request_object_signing_alg", Arrays.asList("CUSTOM_NOT_SUPPORTED"));
     serviceContext.setClientPreferences(preferences);
     service.updateServiceContext(pcr);
+  }
+
+  @Test
+  public void testUpdateCtxSuccessWithEndpoints() throws Exception {
+    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
+    serviceContext.setIssuer(issuer);
+    Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
+    service.updateServiceContext(service.parseResponse(exampleValidResponse()));
+    ProviderConfigurationResponse response = (ProviderConfigurationResponse) service
+        .getServiceContext().getProviderConfigurationResponse();
+    Assert.assertNotNull(response);
+    Assert.assertTrue(response.verify());
+    Assert.assertNotNull(serviceContext.getKeyJar());
+    Assert.assertFalse(serviceContext.getEndpoints().isEmpty());
+    // five expected because revocation_endpoint from the message is ignored as non-OIDC
+    Assert.assertTrue(serviceContext.getEndpoints().keySet().size() == 5);
+    Assert.assertEquals("https://example.com/authorization",
+        serviceContext.getEndpoints().get(EndpointName.AUTHORIZATION));
+    Assert.assertEquals("https://example.com/token",
+        serviceContext.getEndpoints().get(EndpointName.TOKEN));
+    Assert.assertEquals("https://example.com/userinfo",
+        serviceContext.getEndpoints().get(EndpointName.USER_INFO));
+    Assert.assertEquals("https://example.com/registration",
+        serviceContext.getEndpoints().get(EndpointName.REGISTRATION));
+    Assert.assertEquals("https://example.com/end_session",
+        serviceContext.getEndpoints().get(EndpointName.END_SESSION));
   }
 
   @Test
@@ -237,6 +264,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest {
         + "\"token_endpoint\": \"https://example.com/token\",\n"
         + "\"userinfo_endpoint\": \"https://example.com/userinfo\",\n"
         + "\"registration_endpoint\": \"https://example.com/registration\",\n"
+        + "\"revocation_endpoint\": \"https://example.com/revocation\",\n"
         + "\"end_session_endpoint\": \"https://example.com/end_session\"}";
   }
 
