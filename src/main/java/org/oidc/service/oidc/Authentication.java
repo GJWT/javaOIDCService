@@ -19,6 +19,8 @@ package org.oidc.service.oidc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
 import java.util.Map;
+
+import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
@@ -41,6 +43,7 @@ public class Authentication extends AbstractService {
   public Authentication(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
     this.serviceName = ServiceName.AUTHORIZATION;
+    this.endpointName = EndpointName.AUTHORIZATION;
     this.requestMessage = new AuthenticationRequest();
     this.responseMessage = new AuthenticationResponse();
 

@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
@@ -52,6 +53,7 @@ public class Registration extends AbstractService {
   public Registration(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
     this.serviceName = ServiceName.REGISTRATION;
+    this.endpointName = EndpointName.REGISTRATION;
     this.requestMessage = new RegistrationRequest();
     this.responseMessage = new RegistrationResponse();
     this.httpMethod = HttpMethod.POST;
