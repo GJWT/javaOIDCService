@@ -26,10 +26,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.oidc.common.Algorithm;
+import org.oidc.common.EndpointName;
 import org.oidc.common.FileOrUrl;
 import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
@@ -130,6 +132,10 @@ public class ServiceContext {
    * has been performed.
    */
   private List<String> postLogoutRedirectUris;
+  /**
+   * Map of service endpoint URLs corresponding to the endpoint name.
+   */
+  private Map<EndpointName, String> endpoints;
 
   /**
    * Constants
@@ -139,12 +145,13 @@ public class ServiceContext {
   private static final String ISSUER = "issuer";
 
   public ServiceContext(KeyJar keyJar, ServiceContextConfig config) {
+    this();
     this.keyJar = keyJar;
     this.config = config;
   }
 
   public ServiceContext() {
-
+    endpoints = new HashMap<EndpointName, String>();
   }
 
   /**
@@ -394,5 +401,13 @@ public class ServiceContext {
 
   public void setPostLogoutRedirectUris(List<String> uris) {
     this.postLogoutRedirectUris = uris;
+  }
+  
+  public Map<EndpointName, String> getEndpoints() {
+    return this.endpoints;
+  }
+  
+  public void setEndpoints(Map<EndpointName, String> map) {
+    this.endpoints = map;
   }
 }
