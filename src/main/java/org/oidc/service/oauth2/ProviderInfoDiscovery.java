@@ -52,19 +52,12 @@ public class ProviderInfoDiscovery extends AbstractService {
   }
 
   @Override
-  public void updateServiceContext(Message response, String stateKey) {
-    throw new UnsupportedOperationException(
-        "stateKey is not supported to update service context" + " for this service");
-  }
-
-  @Override
-  public void updateServiceContext(Message response)
+  protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (response == null || !(response instanceof ASConfigurationResponse)) {
-      throw new ValueException(
-          "Unexpected response message type, should be ASConfigurationResponse");
+    if (stateKey != null) {
+      throw new UnsupportedOperationException(
+          "stateKey is not supported to update service context" + " for this service");
     }
-    this.responseMessage = response;
     String ctxIssuer = getServiceContext().getIssuer();
     if (ctxIssuer == null) {
       throw new MissingRequiredAttributeException("Service context is missing 'issuer'");

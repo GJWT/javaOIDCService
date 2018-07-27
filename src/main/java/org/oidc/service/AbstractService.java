@@ -17,7 +17,6 @@
 package org.oidc.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,6 +36,7 @@ import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
+import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.HttpHeader;
 import org.oidc.service.base.RequestArgumentProcessor;
@@ -106,7 +106,7 @@ public abstract class AbstractService implements Service {
   /**
    * The actual URL provided in provider information discovery.
    */
-  private String endpoint = "";
+  private String endpoint;
 
   /**
    * Serves as an in-memory cache
@@ -180,7 +180,14 @@ public abstract class AbstractService implements Service {
    * @param stateKey
    *          the key that identifies the State object
    **/
-  public abstract void updateServiceContext(Message response, String stateKey);
+  public void updateServiceContext(Message response, String stateKey)
+      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+    if (response == null || !(this.responseMessage.getClass().isInstance(response))) {
+      throw new ValueException("Unexpected response message type, not instance of "
+          + this.responseMessage.getClass().getName());
+    }
+    doUpdateServiceContext(response, stateKey);
+  }
 
   /**
    * This method will run after the response has been parsed and verified. It requires response in
@@ -191,7 +198,12 @@ public abstract class AbstractService implements Service {
    * @param response
    *          the response as a Message instance
    */
-  public abstract void updateServiceContext(Message response)
+  public void updateServiceContext(Message response)
+      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+    updateServiceContext(response, null);
+  }
+
+  protected abstract void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
 
   /**
@@ -309,7 +321,9 @@ public abstract class AbstractService implements Service {
     if (requestArguments == null) {
       requestArguments = new HashMap<String, Object>();
     }
-
+    if (getEndpoint() == null) {
+      setEndpoint(getServiceContext().getEndpoints().get(this.endpointName));
+    }
     /*
      * if (Strings.isNullOrEmpty((String) requestArguments.get(AUTHENTICATION_METHOD))) {
      * requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name()); }
@@ -337,9 +351,16 @@ public abstract class AbstractService implements Service {
       httpArguments.setBody(ServiceUtil.getHttpBody(requestMessage, contentType));
       httpHeader.setContentType(contentType.name());
       httpArguments.setHeader(httpHeader);
+      httpArguments.setUrl(getEndpoint());
     }
 
-    return finalizeGetRequestParameters(httpArguments, requestArguments);
+    httpArguments = finalizeGetRequestParameters(httpArguments, requestArguments);
+
+    if (httpArguments.getUrl() == null) {
+      throw new MissingRequiredAttributeException("Could not resolve endpoint URL");
+    }
+
+    return httpArguments;
   }
 
   public abstract HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,

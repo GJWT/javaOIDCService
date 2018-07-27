@@ -38,7 +38,6 @@ import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.JsonResponseDescriptor;
 import org.oidc.msg.oidc.Link;
-import org.oidc.service.AbstractService;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceConfig;
@@ -65,8 +64,7 @@ public class WebfingerTest extends BaseServiceTest {
     thrown.expect(UnsupportedOperationException.class);
     thrown.expectMessage(
         "stateKey is not supported to update service context for the WebFinger service");
-    AbstractService webfinger = new Webfinger(SERVICE_CONTEXT);
-    webfinger.updateServiceContext(null, null);
+    service.updateServiceContext(new JsonResponseDescriptor(), "mockKey");
   }
 
   protected Map<String, Object> buildArgsWithResource(String resource) {

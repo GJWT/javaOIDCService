@@ -65,14 +65,9 @@ public class Authentication extends AbstractService {
   }
 
   @Override
-  public void updateServiceContext(Message response, String stateKey) {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public void updateServiceContext(Message response)
+  protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    // TODO Auto-generated method stub
+    //TODO
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
@@ -80,6 +75,7 @@ public class Authentication extends AbstractService {
       throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
     if (HttpMethod.GET.equals(httpArguments.getHttpMethod())) {
+      httpArguments.setUrl(getEndpoint());
       //TODO: above is invalid, the message should be encoded to httpArguments.setUrl
       httpArguments.setBody(requestMessage.toUrlEncoded());
     }

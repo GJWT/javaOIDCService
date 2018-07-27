@@ -116,7 +116,8 @@ public interface Service {
    * @param stateKey
    *          The key that corresponds to the appropriate State object
    */
-  void updateServiceContext(Message response, String stateKey);
+  void updateServiceContext(Message response, String stateKey)
+      throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
 
   /**
    * This method will run after the response has been parsed and verified. It requires response in

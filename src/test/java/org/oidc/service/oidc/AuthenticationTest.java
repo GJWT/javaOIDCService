@@ -23,6 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.oidc.common.HttpMethod;
+import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 
 import org.oidc.service.base.ServiceContext;
@@ -30,7 +32,7 @@ import org.oidc.service.base.ServiceContext;
 /**
  * Unit tests for {@link Authentication}.
  */
-public class AuthenticationTest {
+public class AuthenticationTest extends BaseServiceTest {
 
   ServiceContext serviceContext;
   String issuer;
@@ -38,20 +40,26 @@ public class AuthenticationTest {
   @Before
   public void init() {
     serviceContext = new ServiceContext();
+    service = new Authentication(serviceContext, null, null);
     issuer = "https://www.example.com";
     serviceContext.setIssuer(issuer);
   }
 
+  @Test(expected = MissingRequiredAttributeException.class)
+  public void testHttpGetParametersMissingUrl() throws Exception {
+    service.getRequestParameters(new HashMap<String, Object>());
+  }
+
   @Test
   public void testHttpGetParameters() throws Exception {
-    Authentication service = new Authentication(serviceContext, null, null);
+    ((Authentication)service).setEndpoint("https://www.example.com/authorize");
     HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, Object>());
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
   }
 
   @Test
   public void testHttpPostParameters() throws Exception {
-    Authentication service = new Authentication(serviceContext, null, null);
+    ((Authentication)service).setEndpoint("https://www.example.com/authorize");
     Map<String, Object> requestParameters = new HashMap<String, Object>();
     HttpMethod httpMethod = HttpMethod.POST;
     requestParameters.put("httpMethod", httpMethod);

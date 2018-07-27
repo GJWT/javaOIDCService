@@ -65,13 +65,7 @@ public class Registration extends AbstractService {
   }
 
   @Override
-  public void updateServiceContext(Message response, String stateKey) {
-    throw new UnsupportedOperationException(
-        "stateKey is not supported to update service context" + " for this service");
-  }
-
-  @Override
-  public void updateServiceContext(Message response)
+  protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     if (response == null || !(response instanceof RegistrationResponse)) {
       throw new ValueException("Unexpected response message type, should be RegistrationResponse");

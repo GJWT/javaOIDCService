@@ -72,24 +72,13 @@ public class Webfinger extends AbstractService {
     this(serviceContext, null, serviceConfig);
   }
 
-  /**
-   * This method will run after the response has been parsed and verified. It requires response in
-   * order for the service context to be updated. This method may update certain attributes of the
-   * service context such as issuer, clientId, or clientSecret. This method does not require a
-   * stateKey since it is used for services that are not expected to store state in the state DB.
-   *
-   * @param response
-   *          the response as a Message instance
-   * @throws InvalidClaimException
-   */
   @Override
-  public void updateServiceContext(Message response)
+  protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (response == null || !(response instanceof JsonResponseDescriptor)) {
-      throw new ValueException(
-          "Unexpected response message type, should be JsonResponseDescriptor");
+    if (stateKey != null) {
+      throw new UnsupportedOperationException(
+          "stateKey is not supported to update service context" + " for the WebFinger service");
     }
-    this.responseMessage = response;
     @SuppressWarnings("unchecked")
     List<Link> links = (List<Link>) response.getClaims().get(Constants.WEBFINGER_LINKS);
 
@@ -106,11 +95,6 @@ public class Webfinger extends AbstractService {
         break;
       }
     }
-  }
-
-  public void updateServiceContext(Message response, String stateKey) {
-    throw new UnsupportedOperationException(
-        "stateKey is not supported to update service context" + " for the WebFinger service");
   }
 
   /**

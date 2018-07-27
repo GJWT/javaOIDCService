@@ -73,19 +73,9 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
   }
 
   @Override
-  public void updateServiceContext(Message response, String stateKey) {
-    throw new UnsupportedOperationException(
-        "stateKey is not supported to update service context" + " for this service");
-  }
-
-  @Override
-  public void updateServiceContext(Message response)
+  protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    super.updateServiceContext(response);
-    if (!(response instanceof ProviderConfigurationResponse)) {
-      throw new ValueException(
-          "Unexpected response message type, should be ProviderConfigurationResponse");
-    }
+    super.doUpdateServiceContext(response, stateKey);
 
     if (getServiceContext().getBehavior() == null) {
       getServiceContext().setBehavior(new RegistrationResponse());
