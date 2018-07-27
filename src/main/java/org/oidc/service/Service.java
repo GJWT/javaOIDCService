@@ -17,14 +17,11 @@
 package org.oidc.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
-import org.oidc.common.WebFingerException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
@@ -52,8 +49,8 @@ public interface Service {
    */
   HttpArguments getRequestParameters(Map<String, Object> requestArguments)
       throws UnsupportedSerializationTypeException, JsonProcessingException,
-      MissingRequiredAttributeException, MalformedURLException, WebFingerException, ValueException,
-      UnsupportedEncodingException, SerializationException, InvalidClaimException;
+      MissingRequiredAttributeException, ValueException, SerializationException,
+      InvalidClaimException;
 
   /**
    * This the start of a pipeline that will:
