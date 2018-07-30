@@ -32,7 +32,7 @@ import org.oidc.service.base.ServiceContext;
 /**
  * Unit tests for {@link Authentication}.
  */
-public class AuthenticationTest extends BaseServiceTest {
+public class AuthenticationTest extends BaseServiceTest<Authentication> {
 
   ServiceContext serviceContext;
   String issuer;

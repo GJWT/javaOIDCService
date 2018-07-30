@@ -36,7 +36,7 @@ import org.oidc.service.util.Constants;
 /**
  * Unit tests for {@link ProviderInfoDiscovery}
  */
-public class ProviderInfoDiscoveryTest extends BaseServiceTest {
+public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDiscovery> {
 
   ServiceContext serviceContext;
   String issuer;

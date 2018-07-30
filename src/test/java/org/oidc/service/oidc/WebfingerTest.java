@@ -46,7 +46,7 @@ import org.oidc.service.util.Constants;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class WebfingerTest extends BaseServiceTest {
+public class WebfingerTest extends BaseServiceTest<Webfinger> {
 
   private static final ServiceContext SERVICE_CONTEXT = new ServiceContext();
   private static final String OP_BASEURL = "https://example.org/op";

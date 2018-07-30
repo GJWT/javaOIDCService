@@ -24,10 +24,10 @@ import org.oidc.common.ValueException;
 import org.oidc.msg.AbstractMessage;
 import org.oidc.msg.InvalidClaimException;
 
-public abstract class BaseServiceTest {
+public abstract class BaseServiceTest<T extends AbstractService> {
 
   /** The service to be tested. */
-  protected Service service;
+  protected T service;
 
   @Test(expected = ValueException.class)
   public void testUpdateContextNullResponse()

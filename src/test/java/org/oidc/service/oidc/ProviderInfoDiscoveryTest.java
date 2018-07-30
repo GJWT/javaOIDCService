@@ -48,7 +48,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 /**
  * Unit tests for {@link ProviderInfoDiscovery}.
  */
-public class ProviderInfoDiscoveryTest extends BaseServiceTest {
+public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDiscovery> {
 
   ServiceContext serviceContext;
   String issuer;
