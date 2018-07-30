@@ -59,14 +59,26 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  @Test
+  @Test(expected = UnsupportedOperationException.class)
   public void testUpdateServiceContextWrongMethod() throws Exception {
-    thrown.expect(UnsupportedOperationException.class);
-    thrown.expectMessage(
-        "stateKey is not supported to update service context for the WebFinger service");
-    service.updateServiceContext(new JsonResponseDescriptor(), "mockKey");
+    service.updateServiceContext(buildMinimalJrd(), "mockKey");
   }
 
+  @Test(expected = InvalidClaimException.class)
+  public void testUpdateServiceContextInvalidMsgContents() throws Exception {
+    JsonResponseDescriptor jrd = buildMinimalJrd();
+    jrd.addClaim("properties", "this is not a map as it should");
+    service.updateServiceContext(jrd);
+  }
+  
+  protected JsonResponseDescriptor buildMinimalJrd() {
+    JsonResponseDescriptor jrd = new JsonResponseDescriptor();
+    Link link = new Link();
+    link.addClaim("rel", "mockRel");
+    jrd.addClaim("links", Arrays.asList(link));
+    return jrd;
+  }
+  
   protected Map<String, Object> buildArgsWithResource(String resource) {
     Map<String, Object> map = new HashMap<>();
     map.put(Constants.WEBFINGER_RESOURCE, resource);

@@ -112,7 +112,6 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
 
   @Test
   public void testUpdateCtxSuccessWithEndpoints() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     serviceContext.setIssuer(issuer);
     Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
     service.updateServiceContext(service.parseResponse(exampleValidResponse()));
@@ -134,6 +133,14 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
         serviceContext.getEndpoints().get(EndpointName.REGISTRATION));
     Assert.assertEquals("https://example.com/end_session",
         serviceContext.getEndpoints().get(EndpointName.END_SESSION));
+  }
+  
+  @Test(expected = InvalidClaimException.class)
+  public void testUpdateCtxInvalidResponseContents() throws Exception {
+    ProviderConfigurationResponse pcr = new ProviderConfigurationResponse();
+    pcr.fromJson(exampleValidResponse());
+    pcr.addClaim("request_parameter_supported", "should be boolean");
+    service.updateServiceContext(pcr);
   }
 
   @Test

@@ -50,14 +50,12 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
 
   @Test(expected = MissingRequiredAttributeException.class)
   public void testHttpParamsMissingIssuer() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     service.getRequestParameters(new HashMap<String, Object>());
   }
 
   @Test
   public void testHttpParamsSuccessfulIssuer() throws Exception {
     serviceContext.setIssuer(issuer);
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, Object>());
     Assert.assertEquals("https://www.example.com/.well-known/openid-configuration",
         httpArguments.getUrl());
@@ -67,7 +65,6 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
   @Test
   public void testHttpParamsSuccessFulIssuerTrailingSlash() throws Exception {
     serviceContext.setIssuer(issuer + "/");
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     HttpArguments httpArguments = service.getRequestParameters(new HashMap<String, Object>());
     Assert.assertEquals("https://www.example.com/.well-known/openid-configuration",
         httpArguments.getUrl());
@@ -76,13 +73,18 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
 
   @Test(expected = MissingRequiredAttributeException.class)
   public void testUpdateCtxMissingIssuer() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     service.updateServiceContext(buildMinimalResponse(issuer));
   }
 
+  @Test(expected = InvalidClaimException.class)
+  public void testUpdateCtxInvalidResponseContents() throws Exception {
+    ASConfigurationResponse response = buildMinimalResponseWithEndpoints(issuer);
+    response.addClaim("revocation_endpoint", Arrays.asList("should", "not", "be", "list"));
+    service.updateServiceContext(response);
+  }
+  
   @Test
   public void testUpdateCtxSuccess() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     serviceContext.setIssuer(issuer);
     Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
     service.updateServiceContext(buildMinimalResponse(issuer));
@@ -96,7 +98,6 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
 
   @Test
   public void testUpdateCtxSuccessMismatchAllowed() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     serviceContext.setIssuer("https://www.example.org");
     Map<String, Boolean> allow = new HashMap<String, Boolean>();
     allow.put(Constants.ALLOW_PARAM_ISSUER_MISMATCH, Boolean.TRUE);
@@ -113,7 +114,6 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
 
   @Test(expected = InvalidClaimException.class)
   public void testUpdateCtxFailedMismatch() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     serviceContext.setIssuer("https://www.example.org");
     Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
     service.updateServiceContext(buildMinimalResponse(issuer + "/"));
@@ -121,7 +121,6 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
 
   @Test
   public void testUpdateCtxSuccessWithEndpoints() throws Exception {
-    ProviderInfoDiscovery service = new ProviderInfoDiscovery(serviceContext, null, null);
     serviceContext.setIssuer(issuer);
     Assert.assertNull(service.getServiceContext().getProviderConfigurationResponse());
     service.updateServiceContext(buildMinimalResponseWithEndpoints(issuer));
