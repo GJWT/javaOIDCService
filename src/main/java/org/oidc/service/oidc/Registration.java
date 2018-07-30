@@ -67,10 +67,6 @@ public class Registration extends AbstractService {
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (response == null || !(response instanceof RegistrationResponse)) {
-      throw new ValueException("Unexpected response message type, should be RegistrationResponse");
-    }
-    this.responseMessage = response;
     if (!response.getClaims().containsKey("token_endpoint_auth_method")) {
       response.getClaims().put("token_endpoint_auth_method", "client_secret_basic");
     }
@@ -81,6 +77,7 @@ public class Registration extends AbstractService {
     getServiceContext()
         .setRegistrationAccessToken((String) response.getClaims().get("registration_access_token"));
     getServiceContext().setRegistrationResponse((RegistrationResponse) response);
+    this.responseMessage = response;
   }
 
   @Override
