@@ -55,7 +55,7 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
   public void init() {
     service = new Webfinger(SERVICE_CONTEXT);
   }
-  
+
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
@@ -70,7 +70,7 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
     jrd.addClaim("properties", "this is not a map as it should");
     service.updateServiceContext(jrd);
   }
-  
+
   protected JsonResponseDescriptor buildMinimalJrd() {
     JsonResponseDescriptor jrd = new JsonResponseDescriptor();
     Link link = new Link();
@@ -78,63 +78,50 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
     jrd.addClaim("links", Arrays.asList(link));
     return jrd;
   }
-  
+
   protected Map<String, Object> buildArgsWithResource(String resource) {
     Map<String, Object> map = new HashMap<>();
     map.put(Constants.WEBFINGER_RESOURCE, resource);
-    map.put(Constants.WEBFINGER_REL, "http://openid.net/specs/connect/1.0/issuer");
     return map;
   }
 
   @Test
-  public void testGetQueryWithDevice() throws Exception {
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery(buildArgsWithResource("device:p1.example.com"));
-    Assert.assertTrue(query.equals(
+  public void testGetRequestParametersWithDevice() throws Exception {
+    HttpArguments httpArguments = service
+        .getRequestParameters(buildArgsWithResource("device:p1.example.com"));
+    Assert.assertTrue(httpArguments.getUrl().equals(
         "https://p1.example.com/.well-known/webfinger?resource=device%3Ap1.example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
   @Test
-  public void testGetQueryWithAcct() throws Exception {
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery(buildArgsWithResource("acct:bob@example.com"));
-    Assert.assertTrue(query.equals(
+  public void testGetRequestParametersWithAcct() throws Exception {
+    HttpArguments httpArguments = service
+        .getRequestParameters(buildArgsWithResource("acct:bob@example.com"));
+    Assert.assertTrue(httpArguments.getUrl().equals(
         "https://example.com/.well-known/webfinger?resource=acct%3Abob%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
   @Test
-  public void testGetQueryWithWWWSchema() throws Exception {
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery(buildArgsWithResource("www.yahoo.com"));
-    Assert.assertTrue(query.equals(
+  public void testGetRequestParametersWithWWWSchema() throws Exception {
+    HttpArguments httpArguments = service
+        .getRequestParameters(buildArgsWithResource("www.yahoo.com"));
+    Assert.assertTrue(httpArguments.getUrl().equals(
         "https://www.yahoo.com/.well-known/webfinger?resource=https%3A%2F%2Fwww.yahoo.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
-  @Test
-  public void testGetQueryWithNullResource() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("null or empty url");
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery(buildArgsWithResource(null));
-  }
-
-  @Test
+  @Test(expected = MissingRequiredAttributeException.class)
   public void testGetQueryWithEmptyResource() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("null or empty url");
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
-    String query = webfinger.getQuery(buildArgsWithResource(""));
+    service.getRequestParameters(buildArgsWithResource(""));
   }
 
   @Test
   public void testGetRequestParametersNullResource() throws Exception {
-    Webfinger webfinger = new Webfinger(SERVICE_CONTEXT);
     AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource("resource")
         .buildAddedClaims();
-    webfinger.setAddedClaims(addedClaims);
+    service.setAddedClaims(addedClaims);
     Map<String, Object> requestArguments = new HashMap<String, Object>();
     requestArguments.put("resource", null);
-    HttpArguments httpArguments = webfinger.getRequestParameters(requestArguments);
+    HttpArguments httpArguments = service.getRequestParameters(requestArguments);
     Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
     Assert.assertTrue(httpArguments.getUrl().equals(
         "https://resource/.well-known/webfinger?resource=https%3A%2F%2Fresource&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
@@ -147,6 +134,7 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
     Webfinger webfinger = new Webfinger(serviceContext);
     HttpArguments httpArguments = webfinger.getRequestParameters(null);
     Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
+    System.out.println(httpArguments.getUrl());
     Assert.assertTrue(httpArguments.getUrl().equals(
         "https://baseUrl/.well-known/webfinger?resource=https%3A%2F%2FbaseUrl&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
@@ -173,13 +161,16 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
     requestArguments.put("resource", "acct:carol@example.com");
 
     HttpArguments httpArguments = service.getRequestParameters(requestArguments);
+    System.out.println(httpArguments.getUrl());
     Assert.assertTrue(httpArguments.getUrl().equals(
         "https://example.com/.well-known/webfinger?resource=acct%3Acarol%40example.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
   @Test
-  public void testGetRequestParameters() throws MalformedURLException, WebFingerException,
-      MissingRequiredAttributeException, ValueException, UnsupportedEncodingException, JsonProcessingException, UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+  public void testGetRequestParameters()
+      throws MalformedURLException, WebFingerException, MissingRequiredAttributeException,
+      ValueException, UnsupportedEncodingException, JsonProcessingException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
     Map<String, String> requestParametersMap = new HashMap<String, String>() {
       {
         put("example.com", "example.com");

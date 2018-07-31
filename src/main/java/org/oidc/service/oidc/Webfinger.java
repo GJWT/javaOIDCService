@@ -108,11 +108,8 @@ public class Webfinger extends AbstractService {
    * @return
    * @throws Exception
    */
-  protected String getQuery(Map<String, Object> requestArguments) throws ValueException,
+  protected String getEndpointWithoutQuery(String resource) throws ValueException,
       MalformedURLException, WebFingerException, UnsupportedEncodingException {
-    String resource = URIUtil
-        .normalizeUrl((String) requestArguments.get(Constants.WEBFINGER_RESOURCE));
-    String rel = (String) requestArguments.get(Constants.WEBFINGER_REL);
     String host;
     if (resource.startsWith("http")) {
       URL url = new URL(resource);
@@ -144,17 +141,19 @@ public class Webfinger extends AbstractService {
     } else {
       throw new WebFingerException(resource + " has an unknown schema");
     }
-
-    return String.format(Constants.WEB_FINGER_URL, host) + "?resource="
-        + URLEncoder.encode(resource, UTF_8) + "&rel=" + URLEncoder.encode(rel, UTF_8);
+    return String.format(Constants.WEB_FINGER_URL, host);
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments)
       throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+    String resource = URIUtil
+        .normalizeUrl((String) requestArguments.get(Constants.WEBFINGER_RESOURCE));
+    requestArguments.put(Constants.WEBFINGER_RESOURCE, resource);
     try {
-      httpArguments.setUrl(getQuery(requestArguments));
+      String endpoint = getEndpointWithoutQuery(resource);
+      httpArguments.setUrl(endpoint + this.requestMessage.toUrlEncoded());
     } catch (UnsupportedEncodingException e) {
       throw new SerializationException(e.getMessage(), e);
     } catch (MalformedURLException | WebFingerException e) {
