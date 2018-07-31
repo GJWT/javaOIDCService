@@ -49,6 +49,7 @@ public class ProviderInfoDiscovery extends AbstractService {
     this.serviceName = ServiceName.PROVIDER_INFO_DISCOVERY;
     this.responseMessage = new ASConfigurationResponse();
     this.httpMethod = HttpMethod.GET;
+    this.expectedResponseClass = ASConfigurationResponse.class;
   }
 
   @Override

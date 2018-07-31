@@ -18,11 +18,13 @@ package org.oidc.service;
 
 import java.util.HashMap;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.AbstractMessage;
 import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.oauth2.ResponseMessage;
 
 public abstract class BaseServiceTest<T extends AbstractService> {
 
@@ -40,7 +42,31 @@ public abstract class BaseServiceTest<T extends AbstractService> {
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     service.updateServiceContext(new MockMessage());
   }
+  
+  @Test
+  public void testUpdateContextErrorMessage()
+      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+    // Skip check if the expected response class is not extending ResponseMessage
+    if (!ResponseMessage.class.isAssignableFrom(service.getExpectedResponseClass())) {
+      return;
+    }
+    boolean catched = false;
+    try {
+      service.updateServiceContext(buildErrorMessage());
+    } catch (ValueException e) {
+      catched = true;
+    }
+    Assert.assertTrue(catched);
+    Assert.assertTrue(service.getResponseMessage().getClaims().containsKey("error"));
+  }
 
+  protected ResponseMessage buildErrorMessage() throws InvalidClaimException {
+    ResponseMessage response = new ResponseMessage();
+    response.addClaim("error", "custom_error");
+    response.addClaim("error_description", "Custom error description");
+    return response;
+  }
+  
   class MockMessage extends AbstractMessage {
 
     public MockMessage() {

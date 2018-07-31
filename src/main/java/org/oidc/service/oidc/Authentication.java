@@ -46,6 +46,7 @@ public class Authentication extends AbstractService {
     this.endpointName = EndpointName.AUTHORIZATION;
     this.requestMessage = new AuthenticationRequest();
     this.responseMessage = new AuthenticationResponse();
+    this.expectedResponseClass = AuthenticationResponse.class;
 
     // TODO : PRECONSTRUCTS & INIT
     /*

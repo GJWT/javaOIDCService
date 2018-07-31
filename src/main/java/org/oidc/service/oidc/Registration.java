@@ -62,6 +62,7 @@ public class Registration extends AbstractService {
         new AddPostLogoutRedirectUris(), new AddJwksUriOrJwks());
     this.postConstructors = Arrays.asList((RequestArgumentProcessor) new AddOidcResponseTypes());
     this.serializationType = SerializationType.JSON;
+    this.expectedResponseClass = RegistrationResponse.class;
   }
 
   @Override

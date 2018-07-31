@@ -62,6 +62,7 @@ public class Webfinger extends AbstractService {
     this.serviceName = ServiceName.WEB_FINGER;
     this.requestMessage = new WebfingerRequest();
     this.responseMessage = new JsonResponseDescriptor();
+    this.expectedResponseClass = JsonResponseDescriptor.class;
   }
 
   public Webfinger(ServiceContext serviceContext) {

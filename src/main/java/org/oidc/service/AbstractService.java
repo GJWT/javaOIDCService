@@ -36,7 +36,7 @@ import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
-import org.oidc.msg.oauth2.ASConfigurationResponse;
+import org.oidc.msg.oauth2.ResponseMessage;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.HttpHeader;
 import org.oidc.service.base.RequestArgumentProcessor;
@@ -62,6 +62,11 @@ public abstract class AbstractService implements Service {
    * Message that describes the response.
    */
   protected Message responseMessage;
+  
+  /**
+   * Expected class for the successful response message.
+   */
+  protected Class<? extends Message> expectedResponseClass;
 
   /**
    * The name used for the endpoint in provider information discovery
@@ -182,7 +187,14 @@ public abstract class AbstractService implements Service {
    **/
   public void updateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (response == null || !(this.responseMessage.getClass().isInstance(response))) {
+    if (response == null) {
+      throw new ValueException("The response message is null");
+    }
+    if (response instanceof ResponseMessage && response.getClaims().containsKey("error")) {
+      this.responseMessage = response;
+      throw new ValueException("The response message is an error message");
+    }
+    if (!this.expectedResponseClass.isInstance(response)) {
       throw new ValueException("Unexpected response message type, not instance of "
           + this.responseMessage.getClass().getName());
     }
@@ -405,6 +417,14 @@ public abstract class AbstractService implements Service {
 
   public void setResponseMessage(Message responseMessage) {
     this.responseMessage = responseMessage;
+  }
+  
+  public Class<? extends Message> getExpectedResponseClass() {
+    return this.expectedResponseClass;
+  }
+  
+  public void setExpectedResponseClass(Class<? extends Message> responseClass) {
+    this.expectedResponseClass = responseClass;
   }
 
   public EndpointName getEndpointName() {
