@@ -75,13 +75,8 @@ public class Authentication extends AbstractService {
       Map<String, Object> requestArguments)
       throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
-    if (HttpMethod.GET.equals(httpArguments.getHttpMethod())) {
-      httpArguments.setUrl(getEndpoint());
-      //TODO: above is invalid, the message should be encoded to httpArguments.setUrl
-      httpArguments.setBody(requestMessage.toUrlEncoded());
-    }
-    return httpArguments;
 
+    return httpArguments;
   }
 
   @Override
