@@ -366,6 +366,12 @@ public abstract class AbstractService implements Service {
       httpArguments.setHeader(httpHeader);
       httpArguments.setUrl(getEndpoint());
     }
+    
+    if (HttpMethod.GET.equals(httpArguments.getHttpMethod())) {
+      if (getEndpoint() != null) {
+        httpArguments.setUrl(getEndpoint() + requestMessage.toUrlEncoded());
+      }
+    }
 
     httpArguments = finalizeGetRequestParameters(httpArguments, requestArguments);
 
