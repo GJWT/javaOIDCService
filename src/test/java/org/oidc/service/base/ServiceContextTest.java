@@ -16,6 +16,7 @@
 
 package org.oidc.service.base;
 
+import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,8 +44,13 @@ public class ServiceContextTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private static final KeyJar keyJar = new KeyJar();
+  private KeyJar keyJar;
 
+  @Before
+  public void setup() throws ImportException {
+    keyJar = new KeyJar();
+  }
+  
   @Test
   public void testImportKeysNullKeySpecifications() {
     thrown.expect(IllegalArgumentException.class);
@@ -55,6 +62,7 @@ public class ServiceContextTest {
   @Ignore
   @Test
   public void testImportKeysWithFile() {
+    /*
     ServiceContext serviceContext = new ServiceContext();
     KeyJar keyJar = new KeyJar();
     KeyBundle keyBundle = new KeyBundle();
@@ -68,6 +76,7 @@ public class ServiceContextTest {
     keySpecificationsMap.put(FileOrUrl.FILE, keySpecifications);
     serviceContext.importKeys(keySpecificationsMap);
     Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 1);
+    */
   }
 
   @Test

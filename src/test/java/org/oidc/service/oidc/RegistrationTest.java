@@ -24,13 +24,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Unit tests for {@link Registration} service.
@@ -39,28 +43,41 @@ public class RegistrationTest extends BaseServiceTest<Registration> {
 
   ServiceContext serviceContext;
   String clientId;
+  String endpoint;
 
   @Before
   public void init() {
     serviceContext = new ServiceContext();
+    endpoint = "https://www.example.com/registration";
     service = new Registration(serviceContext, null, null);
     clientId = "mock_rp";
+    service.setEndpoint(endpoint);
   }
 
-  @Test(expected = InvalidClaimException.class)
+  @Test
   public void testNoRedirectUris() throws Exception {
-    service.setEndpoint("https://www.example.com/registration");
     HttpArguments httpArguments = service.getRequestParameters(null);
     RegistrationRequest request = new RegistrationRequest();
     request.fromJson(httpArguments.getBody());
-    request.verify();
+    Assert.assertFalse(request.verify());
   }
 
   @Test(expected = MissingRequiredAttributeException.class)
   public void testHttpParametersNoUrl() throws Exception {
     RegistrationResponse behaviour = new RegistrationResponse();
+    service.setEndpoint(null);
     serviceContext.setBehavior(behaviour);
     service.getRequestParameters(null);
+  }
+
+  @Test
+  public void testHttpParameters()
+      throws JsonProcessingException, ValueException, MissingRequiredAttributeException,
+      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+    RegistrationResponse behaviour = new RegistrationResponse();
+    serviceContext.setBehavior(behaviour);
+    HttpArguments httpArguments = service.getRequestParameters(null);
+    Assert.assertEquals(endpoint, httpArguments.getUrl());
   }
 
   @Test
@@ -82,7 +99,7 @@ public class RegistrationTest extends BaseServiceTest<Registration> {
     response.addClaim("client_id_issued_at", "should be a Date");
     service.updateServiceContext(response);
   }
-  
+
   @Test
   public void testUpdateContextSpec()
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {

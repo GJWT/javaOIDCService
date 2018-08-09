@@ -54,6 +54,7 @@ public class Registration extends AbstractService {
     super(serviceContext, state, serviceConfig);
     this.serviceName = ServiceName.REGISTRATION;
     this.endpointName = EndpointName.REGISTRATION;
+    this.setEndpoint(serviceContext.getEndpoints().get(this.endpointName));
     this.requestMessage = new RegistrationRequest();
     this.responseMessage = new RegistrationResponse();
     this.httpMethod = HttpMethod.POST;
@@ -93,7 +94,6 @@ public class Registration extends AbstractService {
       throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
 
-    // TODO: set URL
     // TODO: this or abstract service should check that request contains mandatory fields
 
     return httpArguments;

@@ -36,6 +36,7 @@ import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
 
+import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
 import com.auth0.msg.KeyJar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -94,10 +95,14 @@ public class ProviderInfoDiscovery extends AbstractService {
       }
     }
 
-    KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
-        : getServiceContext().getKeyJar();
-    // TODO: load keys from response to KeyJar
-    getServiceContext().setKeyJar(keyJar);
+    try {
+      KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
+          : getServiceContext().getKeyJar();
+      // TODO: load keys from response to KeyJar
+      getServiceContext().setKeyJar(keyJar);
+    } catch (ImportException e) {
+      // TODO: how to handle these kind of exceptions?
+    }
   }
 
   protected EndpointName getEndpointName(String key) {

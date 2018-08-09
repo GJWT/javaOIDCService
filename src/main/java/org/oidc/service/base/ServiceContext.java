@@ -16,11 +16,9 @@
 
 package org.oidc.service.base;
 
-import com.auth0.msg.Jwk;
 import com.auth0.msg.Key;
 import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
-import com.auth0.msg.RSAKey;
 import com.google.common.base.Strings;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -51,7 +49,7 @@ public class ServiceContext {
   /**
    * Used to store keys
    */
-  private KeyJar keyJar = new KeyJar();
+  private KeyJar keyJar;
   /**
    * Additional configuration arguments
    */
@@ -145,13 +143,13 @@ public class ServiceContext {
   private static final String ISSUER = "issuer";
 
   public ServiceContext(KeyJar keyJar, ServiceContextConfig config) {
-    this();
+    endpoints = new HashMap<EndpointName, String>();
     this.keyJar = keyJar;
     this.config = config;
   }
 
   public ServiceContext() {
-    endpoints = new HashMap<EndpointName, String>();
+    this(null, null);
   }
 
   /**
@@ -178,15 +176,19 @@ public class ServiceContext {
         algorithm = keySpecificationsIndex.getAlgorithm();
         if (Algorithm.RS256.equals(algorithm) || Algorithm.RS384.equals(algorithm)
             || Algorithm.RS512.equals(algorithm)) {
+          // commented for now, as KeyJar/Bundle under construction
+          /*
           rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()),
               SIG);
           keyBundle = new KeyBundle();
           keyBundle.addKey(rsaKey);
-          keyJar.addKeyBundle("", keyBundle);
+          keyJar.addKeyBundle("", keyBundle);*/
         }
       } else if (FileOrUrl.URL.equals(key)) {
+        /*
         keyBundle = new KeyBundle();
         keyJar.addKeyBundle(ISSUER, keyBundle);
+        */
       }
     }
   }

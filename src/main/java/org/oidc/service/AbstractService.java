@@ -198,7 +198,10 @@ public abstract class AbstractService implements Service {
       throw new ValueException("Unexpected response message type, not instance of "
           + this.responseMessage.getClass().getName());
     }
-    response.verify();
+    if (!response.verify()) {
+      //TODO
+      throw new InvalidClaimException("TODO: add details here");
+    }
     doUpdateServiceContext(response, stateKey);
   }
 

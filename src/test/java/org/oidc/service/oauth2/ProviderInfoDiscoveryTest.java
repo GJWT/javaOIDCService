@@ -80,6 +80,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
   public void testUpdateCtxInvalidResponseContents() throws Exception {
     ASConfigurationResponse response = buildMinimalResponseWithEndpoints(issuer);
     response.addClaim("revocation_endpoint", Arrays.asList("should", "not", "be", "list"));
+    serviceContext.setIssuer(issuer + "/");
     service.updateServiceContext(response);
   }
   
