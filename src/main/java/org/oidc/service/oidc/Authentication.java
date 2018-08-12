@@ -50,8 +50,8 @@ public class Authentication extends AbstractService {
     this.responseMessage = new AuthenticationResponse();
     this.expectedResponseClass = AuthenticationResponse.class;
 
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays
-        .asList((RequestArgumentProcessor) new PickRedirectUri());
+    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new PickRedirectUri(),
+        new PreConstruct());
     this.postConstructors = new ArrayList<RequestArgumentProcessor>();
   }
 
@@ -76,4 +76,45 @@ public class Authentication extends AbstractService {
     return response;
   }
 
+  private class PreConstruct implements RequestArgumentProcessor {
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void processRequestArguments(Map<String, Object> requestArguments,
+        AbstractService service) throws ValueException {
+      if (requestArguments == null || service == null || service.getServiceContext() == null) {
+        return;
+      }
+      ServiceContext context = service.getServiceContext();
+      // Set response type, default is code if not otherwise defined.
+      // TODO: Do we want to verify the type of the claim first?
+      String responseType = (String) requestArguments.get("response_type");
+      // TODO: Verify policy for Behavior and it's claims. Can they be null? Assumed here so.
+      if (responseType == null && context.getBehavior() != null
+          && context.getBehavior().getClaims() != null) {
+        if (context.getBehavior().getClaims().containsKey("response_types")) {
+          responseType = (String) ((List<String>) context.getBehavior().getClaims()
+              .get("response_types")).get(0);
+        }
+        if (responseType == null) {
+          // default response type
+          responseType = "code";
+        }
+        requestArguments.put("response_type", responseType);
+      }
+      if (!requestArguments.containsKey("scope")) {
+        requestArguments.put("scope", "openid");
+      }
+      // TODO: If there is no value openid in scope, add it. This
+      // will mean we need to verify the type of existing unverified scope claim.
+
+      // TODO: Create nonce if needed. The need is checked from response_type argument and the the
+      // type of the claims should be verified first.
+
+      // TODO: Python implementation handles here somehow also passing "request_object_signing_alg",
+      // "algorithm", "sig_kid" and "request_method" values forward. See how to do it in Java.
+
+    }
+
+  }
 }
