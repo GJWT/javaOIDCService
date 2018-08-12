@@ -16,18 +16,17 @@
 
 package org.oidc.service.oidc;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
-
 import org.oidc.service.base.ServiceContext;
 
 /**
@@ -42,6 +41,9 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
   public void init() {
     serviceContext = new ServiceContext();
     service = new Authentication(serviceContext, null, null);
+    List<String> redirectUris = new ArrayList<String>();
+    redirectUris.add("https://example.com/cb");
+    serviceContext.setRedirectUris(redirectUris);
     issuer = "https://www.example.com";
     serviceContext.setIssuer(issuer);
   }
@@ -54,14 +56,14 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
   @Test
   public void testHttpGetParametersMinimal() throws Exception {
     Map<String, Object> map = new HashMap<String, Object>();
-    map.put("redirect_uri", "https://example.com/cb");
     map.put("scope", "openid info");
     service.setEndpoint("https://www.example.com/authorize");
     HttpArguments httpArguments = service.getRequestParameters(map);
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
     Assert.assertTrue(httpArguments.getUrl().startsWith("https://www.example.com/authorize"));
     Assert.assertTrue(httpArguments.getUrl().contains("scope=openid+info"));
-    Assert.assertTrue(httpArguments.getUrl().contains("redirect_uri=https%3A%2F%2Fexample.com%2Fcb"));
+    Assert
+        .assertTrue(httpArguments.getUrl().contains("redirect_uri=https%3A%2F%2Fexample.com%2Fcb"));
   }
 
   @Test
