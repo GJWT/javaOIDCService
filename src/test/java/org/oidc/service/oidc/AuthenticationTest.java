@@ -56,12 +56,13 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
   @Test
   public void testHttpGetParametersMinimal() throws Exception {
     Map<String, Object> map = new HashMap<String, Object>();
-    map.put("scope", "openid info");
+    map.put("response_type", "code");
     service.setEndpoint("https://www.example.com/authorize");
     HttpArguments httpArguments = service.getRequestParameters(map);
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
     Assert.assertTrue(httpArguments.getUrl().startsWith("https://www.example.com/authorize"));
-    Assert.assertTrue(httpArguments.getUrl().contains("scope=openid+info"));
+    Assert.assertTrue(httpArguments.getUrl().contains("scope=openid"));
+    Assert.assertTrue(httpArguments.getUrl().contains("response_type=code"));
     Assert
         .assertTrue(httpArguments.getUrl().contains("redirect_uri=https%3A%2F%2Fexample.com%2Fcb"));
   }
