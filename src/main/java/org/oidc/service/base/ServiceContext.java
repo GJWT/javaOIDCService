@@ -124,7 +124,7 @@ public class ServiceContext {
    * of 3 such modes: fragment, queryString, formPost In callback, we can keep the redirect uris per
    * response mode separate.
    */
-  private Map<DataLocation, String> callBack;
+  private Map<String, String> callBack;
   /**
    * URL to which the RP is requesting that the End-User's User Agent be redirected after a logout
    * has been performed.
@@ -389,11 +389,11 @@ public class ServiceContext {
     this.redirectUris = redirectUris;
   }
 
-  public Map<DataLocation, String> getCallBack() {
+  public Map<String, String> getCallBack() {
     return callBack;
   }
 
-  public void setCallBack(Map<DataLocation, String> callBack) {
+  public void setCallBack(Map<String, String> callBack) {
     this.callBack = callBack;
   }
   
