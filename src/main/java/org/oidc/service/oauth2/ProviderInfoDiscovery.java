@@ -95,14 +95,11 @@ public class ProviderInfoDiscovery extends AbstractService {
       }
     }
 
-    try {
-      KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
-          : getServiceContext().getKeyJar();
-      // TODO: load keys from response to KeyJar
-      getServiceContext().setKeyJar(keyJar);
-    } catch (ImportException e) {
-      // TODO: how to handle these kind of exceptions?
-    }
+    KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
+        : getServiceContext().getKeyJar();
+    // TODO: load keys from response to KeyJar
+    getServiceContext().setKeyJar(keyJar);
+    
   }
 
   protected EndpointName getEndpointName(String key) {
