@@ -32,7 +32,6 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
-import org.oidc.common.WebFingerException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
@@ -71,7 +70,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
   @Test
   public void test()
       throws JsonProcessingException, MalformedURLException, UnsupportedEncodingException,
-      UnsupportedSerializationTypeException, MissingRequiredAttributeException, WebFingerException,
+      UnsupportedSerializationTypeException, MissingRequiredAttributeException,
       ValueException, SerializationException, InvalidClaimException, DeserializationException {
     Message message = service.parseResponse(exampleValidResponse());
     service.updateServiceContext((ProviderConfigurationResponse) message);

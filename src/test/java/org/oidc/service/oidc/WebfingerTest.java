@@ -32,7 +32,6 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
-import org.oidc.common.WebFingerException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -168,7 +167,7 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
 
   @Test
   public void testGetRequestParameters()
-      throws MalformedURLException, WebFingerException, MissingRequiredAttributeException,
+      throws MalformedURLException, MissingRequiredAttributeException,
       ValueException, UnsupportedEncodingException, JsonProcessingException,
       UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
     Map<String, String> requestParametersMap = new HashMap<String, String>() {

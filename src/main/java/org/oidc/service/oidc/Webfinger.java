@@ -21,7 +21,6 @@ import com.google.common.base.Strings;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,6 @@ import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
-import org.oidc.common.WebFingerException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oidc.JsonResponseDescriptor;
 import org.oidc.msg.oidc.Link;
@@ -109,7 +107,7 @@ public class Webfinger extends AbstractService {
    * @throws Exception
    */
   protected String getEndpointWithoutQuery(String resource) throws ValueException,
-      MalformedURLException, WebFingerException, UnsupportedEncodingException {
+      MalformedURLException, UnsupportedEncodingException {
     String host;
     if (resource.startsWith("http")) {
       URL url = new URL(resource);
@@ -139,7 +137,7 @@ public class Webfinger extends AbstractService {
         throw new ValueException("resource cannot be split properly");
       }
     } else {
-      throw new WebFingerException(resource + " has an unknown schema");
+      throw new MalformedURLException(resource + " has an unknown schema");
     }
     return String.format(Constants.WEB_FINGER_URL, host);
   }
@@ -156,7 +154,7 @@ public class Webfinger extends AbstractService {
       httpArguments.setUrl(endpoint + this.requestMessage.toUrlEncoded());
     } catch (UnsupportedEncodingException e) {
       throw new SerializationException(e.getMessage(), e);
-    } catch (MalformedURLException | WebFingerException e) {
+    } catch (MalformedURLException  e) {
       throw new InvalidClaimException(e.getMessage(), e);
     }
     return httpArguments;
