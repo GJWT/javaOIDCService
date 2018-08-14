@@ -16,10 +16,17 @@
 
 package org.oidc.service.base;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.SerializationType;
+import org.oidc.service.util.Constants;
+
+import com.google.common.base.Strings;
 
 /**
  * Configuration that is specific to every service
@@ -47,13 +54,13 @@ public class ServiceConfig {
    */
   private SerializationType deSerializationType;
   /**
-   * Arguments to be used by the preConstruct methods
+   * The processors run before message construction.
    */
-  private Map<String, String> preConstruct;
+  protected List<RequestArgumentProcessor> preConstructors;
   /**
-   * Arguments to be used by the postConstruct methods
+   * The processors run after message construction.
    */
-  private Map<String, String> postConstruct;
+  protected List<RequestArgumentProcessor> postConstructors;
   /**
    * The OIDC standard in many places states that you *MUST* use HTTPS and not HTTP. In a number of
    * use cases, that causes a problem. Therefore, the libraries should still be used in those use
@@ -67,18 +74,53 @@ public class ServiceConfig {
 
   public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod,
       HttpMethod httpMethod, SerializationType serializationType,
-      SerializationType deSerializationType, Map<String, String> preConstruct,
-      Map<String, String> postConstruct, boolean shouldAllowHttp,
+      SerializationType deSerializationType, boolean shouldAllowHttp,
       boolean shouldAllowNonStandardIssuer) {
     this.endpoint = endpoint;
     this.defaultAuthenticationMethod = defaultAuthenticationMethod;
     this.httpMethod = httpMethod;
     this.serializationType = serializationType;
     this.deSerializationType = deSerializationType;
-    this.preConstruct = preConstruct;
-    this.postConstruct = postConstruct;
+    this.preConstructors = new ArrayList<>();
+    this.postConstructors = new ArrayList<>();
     this.shouldAllowHttp = shouldAllowHttp;
     this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
+  }
+
+  public ServiceConfig(Properties properties) throws InvalidConfigurationPropertyException {
+    this.preConstructors = getProcessorsFromProperty(
+        properties.getProperty(Constants.SERVICE_CONFIG_KEY_PRE_CONSTRUCTORS));
+    this.postConstructors = getProcessorsFromProperty(
+        properties.getProperty(Constants.SERVICE_CONFIG_KEY_POST_CONSTRUCTORS));
+  }
+
+  protected List<RequestArgumentProcessor> getProcessorsFromProperty(String spaceSeparated)
+      throws InvalidConfigurationPropertyException {
+    List<RequestArgumentProcessor> result = new ArrayList<>();
+    if (Strings.isNullOrEmpty(spaceSeparated)) {
+      return result;
+    }
+    StringTokenizer tokenizer = new StringTokenizer(spaceSeparated, " ");
+    while (tokenizer.hasMoreTokens()) {
+      String processor = tokenizer.nextToken();
+      Object object;
+      try {
+        Class<?> rawClass = Class.forName(processor);
+        object = rawClass.newInstance();
+      } catch (ClassNotFoundException e) {
+        throw new InvalidConfigurationPropertyException("Could not find a class for " + processor,
+            e);
+      } catch (InstantiationException | IllegalAccessException e) {
+        throw new InvalidConfigurationPropertyException(
+            "Could not instantiate the class for " + processor, e);
+      }
+      if (object instanceof RequestArgumentProcessor) {
+        result.add((RequestArgumentProcessor) object);
+      } else {
+        throw new InvalidConfigurationPropertyException("Incompatible class type for " + processor);
+      }
+    }
+    return result;
   }
 
   public ServiceConfig(boolean shouldAllowHttp, boolean shouldAllowNonStandardIssuer) {
@@ -127,20 +169,20 @@ public class ServiceConfig {
     this.deSerializationType = deSerializationType;
   }
 
-  public Map<String, String> getPreConstruct() {
-    return preConstruct;
+  public List<RequestArgumentProcessor> getPreConstructors() {
+    return preConstructors;
   }
 
-  public void setPreConstruct(Map<String, String> preConstruct) {
-    this.preConstruct = preConstruct;
+  public void setPreConstructors(List<RequestArgumentProcessor> preConstruct) {
+    this.preConstructors = preConstruct;
   }
 
-  public Map<String, String> getPostConstruct() {
-    return postConstruct;
+  public List<RequestArgumentProcessor> getPostConstructors() {
+    return postConstructors;
   }
 
-  public void setPostConstruct(Map<String, String> postConstruct) {
-    this.postConstruct = postConstruct;
+  public void setPostConstructors(List<RequestArgumentProcessor> postConstruct) {
+    this.postConstructors = postConstruct;
   }
 
   public boolean isShouldAllowHttp() {
