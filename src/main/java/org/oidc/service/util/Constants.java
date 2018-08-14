@@ -17,6 +17,20 @@
 package org.oidc.service.util;
 
 public class Constants {
+
+  /**
+   * Service configuration property keys.
+   */
+  public static final String SERVICE_CONFIG_KEY_ENDPOINT = "service_endpoint";
+  public static final String SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD = "service_default_authentication_method";
+  public static final String SERVICE_CONFIG_KEY_HTTP_METHOD = "service_http_method";
+  public static final String SERVICE_CONFIG_KEY_SERIALIZATION_TYPE = "service_serialization_type";
+  public static final String SERVICE_CONFIG_KEY_DESERIALIZATION_TYPE = "service_deserialization_type";
+  public static final String SERVICE_CONFIG_KEY_PRE_CONSTRUCTORS = "service_pre_constructors";
+  public static final String SERVICE_CONFIG_KEY_POST_CONSTRUCTORS = "service_post_constructors";
+  public static final String SERVICE_CONFIG_KEY_SHOULD_ALLOW_HTTP = "service_allow_http";
+  public static final String SERVICE_CONFIG_KEY_ALLOW_NON_STANDARD_ISSUER = "service_allow_non_standard_issuer";
+
   public static final String OIDC_ISSUER = "http://openid.net/specs/connect/1.0/issuer";
   public static final String WEB_FINGER_URL = "https://%s/.well-known/webfinger";
   public static final String OIDCONF_PATTERN = "%s/.well-known/openid-configuration";
