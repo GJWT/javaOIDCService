@@ -172,6 +172,15 @@ public abstract class AbstractService implements Service {
     this.serviceContext = serviceContext;
     this.state = state;
     this.serviceConfig = serviceConfig;
+    if (serviceConfig != null) {
+      this.setDefaultAuthenticationMethod(serviceConfig.getDefaultAuthenticationMethod());
+      this.setDeserializationType(serviceConfig.getDeSerializationType());
+      this.setEndpoint(serviceConfig.getEndpoint());
+      this.setHttpMethod(serviceConfig.getHttpMethod());
+      this.setPostConstructors(serviceConfig.getPostConstructors());
+      this.setPreConstructors(serviceConfig.getPreConstructors());
+      this.setSerializationType(serviceConfig.getSerializationType());
+    }
   }
 
   /**
@@ -535,5 +544,21 @@ public abstract class AbstractService implements Service {
 
   public void setAddedClaims(AddedClaims addedClaims) {
     this.addedClaims = addedClaims;
+  }
+  
+  public List<RequestArgumentProcessor> getPreConstructors() {
+    return this.preConstructors;
+  }
+  
+  public void setPreConstructors(List<RequestArgumentProcessor> processors) {
+    this.preConstructors = processors;
+  }
+
+  public List<RequestArgumentProcessor> getPostConstructors() {
+    return this.postConstructors;
+  }
+  
+  public void setPostConstructors(List<RequestArgumentProcessor> processors) {
+    this.postConstructors = processors;
   }
 }
