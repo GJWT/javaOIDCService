@@ -17,6 +17,7 @@
 package org.oidc.service.oidc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,9 @@ import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.base.processor.AddNonce;
+import org.oidc.service.base.processor.AddResponseType;
+import org.oidc.service.base.processor.AddScope;
 import org.oidc.service.base.processor.PickRedirectUri;
 import org.oidc.service.data.State;
 
@@ -50,8 +54,9 @@ public class Authentication extends AbstractService {
     this.responseMessage = new AuthenticationResponse();
     this.expectedResponseClass = AuthenticationResponse.class;
 
+    // TODO: Missing several preconstructors and related functionality still
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new PickRedirectUri(),
-        new PreConstruct());
+        new AddResponseType(), new AddScope(), new AddNonce());
     this.postConstructors = new ArrayList<RequestArgumentProcessor>();
   }
 
@@ -74,47 +79,5 @@ public class Authentication extends AbstractService {
       throws MissingRequiredAttributeException {
     Message response = new AuthenticationRequest(requestArguments);
     return response;
-  }
-
-  private class PreConstruct implements RequestArgumentProcessor {
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void processRequestArguments(Map<String, Object> requestArguments,
-        AbstractService service) throws ValueException {
-      if (requestArguments == null || service == null || service.getServiceContext() == null) {
-        return;
-      }
-      ServiceContext context = service.getServiceContext();
-      // Set response type, default is code if not otherwise defined.
-      // TODO: Do we want to verify the type of the claim first?
-      String responseType = (String) requestArguments.get("response_type");
-      // TODO: Verify policy for Behavior and it's claims. Can they be null? Assumed here so.
-      if (responseType == null && context.getBehavior() != null
-          && context.getBehavior().getClaims() != null) {
-        if (context.getBehavior().getClaims().containsKey("response_types")) {
-          responseType = (String) ((List<String>) context.getBehavior().getClaims()
-              .get("response_types")).get(0);
-        }
-        if (responseType == null) {
-          // default response type
-          responseType = "code";
-        }
-        requestArguments.put("response_type", responseType);
-      }
-      if (!requestArguments.containsKey("scope")) {
-        requestArguments.put("scope", "openid");
-      }
-      // TODO: If there is no value openid in scope, add it. This
-      // will mean we need to verify the type of existing unverified scope claim.
-
-      // TODO: Create nonce if needed. The need is checked from response_type argument and the the
-      // type of the claims should be verified first.
-
-      // TODO: Python implementation handles here somehow also passing "request_object_signing_alg",
-      // "algorithm", "sig_kid" and "request_method" values forward. See how to do it in Java.
-
-    }
-
   }
 }
