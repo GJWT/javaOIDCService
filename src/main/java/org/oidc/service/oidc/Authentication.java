@@ -54,9 +54,10 @@ public class Authentication extends AbstractService {
     this.responseMessage = new AuthenticationResponse();
     this.expectedResponseClass = AuthenticationResponse.class;
 
-    // TODO: Missing several preconstructors and related functionality still
+    // TODO: Missing preconstructor for State
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new PickRedirectUri(),
         new AddResponseType(), new AddScope(), new AddNonce());
+    //TODO: Missing storing of nonce, request object creation including crypto
     this.postConstructors = new ArrayList<RequestArgumentProcessor>();
   }
 
