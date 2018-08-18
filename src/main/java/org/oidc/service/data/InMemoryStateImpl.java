@@ -61,10 +61,9 @@ public class InMemoryStateImpl implements State {
             && message instanceof AccessTokenResponse)
         || (MessageType.REFRESH_TOKEN_REQUEST.equals(messageType)
             && message instanceof RefreshAccessTokenRequest)
-        ||
-        // TODO: (MessageType.REFRESH_TOKEN_RESPONSE.equals(messageType) && message instanceof
-        // RefreshAccessTokenResponse) ||
-        (MessageType.USER_INFO.equals(messageType) && message instanceof UserInfoRequest));
+        || (MessageType.REFRESH_TOKEN_RESPONSE.equals(messageType)
+            && message instanceof AccessTokenResponse)
+        || (MessageType.USER_INFO.equals(messageType) && message instanceof UserInfoRequest));
   }
 
   @Override
