@@ -17,7 +17,7 @@
 package org.oidc.common;
 
 /**
- * Different types of request/response
+ * Message types stored to state db.
  */
 public enum MessageType {
   AUTHORIZATION_REQUEST, AUTHORIZATION_RESPONSE, TOKEN_RESPONSE, REFRESH_TOKEN_REQUEST, REFRESH_TOKEN_RESPONSE, USER_INFO;

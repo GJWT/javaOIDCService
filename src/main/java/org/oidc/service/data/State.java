@@ -33,13 +33,13 @@ import org.oidc.msg.Message;
 public interface State {
 
   /**
-   * Gets State based off of stateKey
+   * Gets State Record containing all items based off of stateKey
    * 
    * @param stateKey
-   *          the key that identifies the State object
-   * @return State State object connected to given key
+   *          the key that identifies the State Record object
+   * @return State Record connected to a given key, null if not existing.
    **/
-  State getState(String stateKey);
+  StateRecord getState(String stateKey);
 
   /**
    * Store a message
@@ -50,8 +50,10 @@ public interface State {
    *          the key under which the information is stored in cache
    * @param messageType
    *          type of message which will be used as sub-key
+   * @return true if storing succeeded. If there is no record for state or message type and message
+   *         mismatch, false is returned.
    **/
-  void storeItem(Message message, String stateKey, MessageType messageType);
+  boolean storeItem(Message message, String stateKey, MessageType messageType);
 
   /**
    * Retrieves data from cache (which can be of type json) and deserializes to message according to
@@ -70,7 +72,8 @@ public interface State {
    * 
    * @param stateKey
    *          the key that identifies the State object
-   * @return issuer ID is the ID attached to a particular State identified by the stateKey
+   * @return issuer ID is the ID attached to a particular State identified by the stateKey. Null if
+   *         not available.
    **/
   String getIssuer(String stateKey);
 
@@ -90,7 +93,7 @@ public interface State {
    *         params in the message. If the param does not appear in the item, it will not appear in
    *         the returned dictionary.
    **/
-  Map<String, String> extendRequestArgs(Map<String, String> args, MessageType messageType,
+  Map<String, Object> extendRequestArgs(Map<String, Object> args, MessageType messageType,
       String stateKey, List<String> parameters);
 
   /**
@@ -108,7 +111,7 @@ public interface State {
    *          a list of message types specifying which messages we are interested in.
    * @return A possibly augmented map of arguments.
    **/
-  Map<String, String> multipleExtendRequestArgs(Map<String, String> args, String stateKey,
+  Map<String, Object> multipleExtendRequestArgs(Map<String, Object> args, String stateKey,
       List<String> parameters, List<MessageType> messageTypes);
 
   /**
@@ -128,7 +131,7 @@ public interface State {
    * 
    * @param nonce
    *          an arbitrary string that can be used only once
-   * @return state the state value
+   * @return state the state value, null if not found.
    **/
   String getStateKeyByNonce(String nonce);
 
