@@ -25,6 +25,8 @@ import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
+import org.oidc.service.base.InvalidConfigurationPropertyException;
+import org.oidc.service.base.RequestArgumentProcessor;
 
 /**
  * This class has utility methods for various services
@@ -79,6 +81,38 @@ public class ServiceUtil {
     } else {
       throw new UnsupportedSerializationTypeException(
           "Unsupported serialization type: " + serializationType);
+    }
+  }
+
+  /**
+   * Constructs a {@link RequestArgumentProcessor} from its given fully qualified class name. The
+   * class is expected to have an accessible constructor without arguments.
+   * 
+   * @param processorName
+   *          The fully qualified class name of the processor.
+   * @return A constructed object of the given class name.
+   * @throws InvalidConfigurationPropertyException
+   *           If the class is not found or it's not an instance of the
+   *           {@link RequestArgumentProcessor} interface.
+   */
+  public static RequestArgumentProcessor getRequestArgumentProcessor(String processorName)
+      throws InvalidConfigurationPropertyException {
+    Object object;
+    try {
+      Class<?> rawClass = Class.forName(processorName);
+      object = rawClass.newInstance();
+    } catch (ClassNotFoundException e) {
+      throw new InvalidConfigurationPropertyException("Could not find a class for " + processorName,
+          e);
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new InvalidConfigurationPropertyException(
+          "Could not instantiate the class for " + processorName, e);
+    }
+    if (object instanceof RequestArgumentProcessor) {
+      return (RequestArgumentProcessor) object;
+    } else {
+      throw new InvalidConfigurationPropertyException(
+          "Incompatible class type for " + processorName);
     }
   }
 }
