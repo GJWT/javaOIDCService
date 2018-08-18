@@ -16,6 +16,7 @@
 
 package org.oidc.service.base;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -24,8 +25,15 @@ import java.util.StringTokenizer;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.SerializationType;
+import org.oidc.msg.DeserializationException;
+import org.oidc.msg.SerializationException;
 import org.oidc.service.util.Constants;
+import org.oidc.service.util.ServiceUtil;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Strings;
 
 /**
@@ -72,6 +80,10 @@ public class ServiceConfig {
    */
   private boolean shouldAllowNonStandardIssuer;
 
+  public ServiceConfig() {
+    
+  }
+  
   public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod,
       HttpMethod httpMethod, SerializationType serializationType,
       SerializationType deSerializationType, boolean shouldAllowHttp,
@@ -102,23 +114,7 @@ public class ServiceConfig {
     }
     StringTokenizer tokenizer = new StringTokenizer(spaceSeparated, " ");
     while (tokenizer.hasMoreTokens()) {
-      String processor = tokenizer.nextToken();
-      Object object;
-      try {
-        Class<?> rawClass = Class.forName(processor);
-        object = rawClass.newInstance();
-      } catch (ClassNotFoundException e) {
-        throw new InvalidConfigurationPropertyException("Could not find a class for " + processor,
-            e);
-      } catch (InstantiationException | IllegalAccessException e) {
-        throw new InvalidConfigurationPropertyException(
-            "Could not instantiate the class for " + processor, e);
-      }
-      if (object instanceof RequestArgumentProcessor) {
-        result.add((RequestArgumentProcessor) object);
-      } else {
-        throw new InvalidConfigurationPropertyException("Incompatible class type for " + processor);
-      }
+      result.add(ServiceUtil.getRequestArgumentProcessor(tokenizer.nextToken()));
     }
     return result;
   }
@@ -200,4 +196,29 @@ public class ServiceConfig {
   public void setShouldAllowNonStandardIssuer(boolean shouldAllowNonStandardIssuer) {
     this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
   }
+  
+  public String toYaml() throws SerializationException {
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    SimpleModule module = new SimpleModule();
+    module.addSerializer(ServiceConfig.class, new ServiceConfigSerializer());
+    mapper.registerModule(module);
+    try {
+      return mapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      throw new SerializationException("Could not serialize this configuration to YAML", e);
+    }
+  }
+  
+  public static ServiceConfig fromYaml(String yaml) throws DeserializationException {
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    SimpleModule module = new SimpleModule();
+    module.addDeserializer(ServiceConfig.class, new ServiceConfigDeserializer());
+    mapper.registerModule(module);
+    try {
+      return mapper.readValue(yaml, ServiceConfig.class);
+    } catch (IOException e) {
+      throw new DeserializationException("Could not deserialize the given YAML to configuration", e);
+    }
+  }
+
 }
