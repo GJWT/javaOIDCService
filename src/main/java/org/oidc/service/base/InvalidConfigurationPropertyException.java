@@ -16,11 +16,13 @@
 
 package org.oidc.service.base;
 
+import java.io.IOException;
+
 /**
  * An exception for any service configuration property values being invalid.
  */
-public class InvalidConfigurationPropertyException extends Exception {
-  
+public class InvalidConfigurationPropertyException extends IOException {
+
   public InvalidConfigurationPropertyException(String message) {
     super(message);
   }
