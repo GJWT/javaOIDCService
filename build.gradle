@@ -31,6 +31,7 @@ dependencies {
     compile group: 'com.auth0', name: 'jawa-jwt', version: '3.2.0-SNAPSHOT'
     compile group: 'org.oidc', name: 'javaOIDCMessage', version: '1.0-SNAPSHOT'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.2'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.6'
     compile 'commons-validator:commons-validator:1.6'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.11'
 }
