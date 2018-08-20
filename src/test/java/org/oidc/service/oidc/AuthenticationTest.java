@@ -28,6 +28,7 @@ import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.data.InMemoryStateImpl;
 
 /**
  * Unit tests for {@link Authentication}.
@@ -41,7 +42,7 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
   @Before
   public void init() {
     serviceContext = new ServiceContext();
-    service = new Authentication(serviceContext, null, null);
+    service = new Authentication(serviceContext, new InMemoryStateImpl(), null);
     service.setEndpoint("https://www.example.com/authorize");
     List<String> redirectUris = new ArrayList<String>();
     redirectUris.add("https://example.com/cb");
