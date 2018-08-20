@@ -41,6 +41,7 @@ import org.oidc.service.base.ServiceContext;
 import org.oidc.service.base.processor.AddNonce;
 import org.oidc.service.base.processor.AddResponseType;
 import org.oidc.service.base.processor.AddScope;
+import org.oidc.service.base.processor.AddState;
 import org.oidc.service.base.processor.PickRedirectUri;
 import org.oidc.service.data.State;
 
@@ -54,10 +55,9 @@ public class Authentication extends AbstractService {
     this.responseMessage = new AuthenticationResponse();
     this.expectedResponseClass = AuthenticationResponse.class;
 
-    // TODO: Missing preconstructor for State
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new PickRedirectUri(),
-        new AddResponseType(), new AddScope(), new AddNonce());
-    //TODO: Missing storing of nonce, request object creation including crypto
+    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new AddState(),
+        new PickRedirectUri(), new AddResponseType(), new AddScope(), new AddNonce());
+    // TODO: Missing storing of nonce, request object creation including crypto
     this.postConstructors = new ArrayList<RequestArgumentProcessor>();
   }
 
