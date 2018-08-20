@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
+import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RegistrationRequest;
@@ -102,7 +103,7 @@ public class RegistrationTest extends BaseServiceTest<Registration> {
 
   @Test
   public void testUpdateContextSpec()
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+      throws MissingRequiredAttributeException, ValueException, InvalidClaimException, DeserializationException {
     service.updateServiceContext(buildSpecExampleResponse());
     Assert.assertNotNull(serviceContext.getClientId());
     Assert.assertEquals("s6BhdRkqt3", serviceContext.getClientId());
@@ -125,7 +126,7 @@ public class RegistrationTest extends BaseServiceTest<Registration> {
     return response;
   }
 
-  protected RegistrationResponse buildSpecExampleResponse() throws InvalidClaimException {
+  protected RegistrationResponse buildSpecExampleResponse() throws InvalidClaimException, DeserializationException {
     String json = "{\n" + "   \"client_id\": \"s6BhdRkqt3\",\n" + "   \"client_secret\":\n"
         + "     \"ZJYCqe3GGRvdrudKyZS0XhGv_Z45DuKhCUk0gBR1vZk\",\n"
         + "   \"client_secret_expires_at\": 1577858400,\n" + "   \"registration_access_token\":\n"

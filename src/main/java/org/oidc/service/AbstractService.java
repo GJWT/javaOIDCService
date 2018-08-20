@@ -266,7 +266,7 @@ public abstract class AbstractService implements Service {
       } else if (SerializationType.JSON.equals(this.serializationType)) {
         this.responseMessage.fromJson(responseBody);
       }
-    } catch (IOException | InvalidClaimException e) {
+    } catch (IOException e) {
       logger.error("Error while deserializing");
       throw new DeserializationException("Could not deserialize the given message", e);
     }
