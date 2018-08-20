@@ -126,10 +126,12 @@ public class InMemoryStateImpl implements State {
   }
 
   @Override
-  public String createState(String issuer) {
-    byte[] rand = new byte[32];
-    new SecureRandom().nextBytes(rand);
-    String state = Base64.getUrlEncoder().encodeToString(rand);
+  public String createStateRecord(String issuer, String state) {
+    if (state == null || state.isEmpty()) {
+      byte[] rand = new byte[32];
+      new SecureRandom().nextBytes(rand);
+      state = Base64.getUrlEncoder().encodeToString(rand);
+    }
     Map<String, Object> claims = new HashMap<String, Object>();
     claims.put("iss", issuer);
     records.put(state, new StateRecord(claims));

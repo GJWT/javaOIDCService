@@ -37,7 +37,7 @@ public class InMemoryStateImplTest {
 
   @Before
   public void init() {
-    state = stateDb.createState("issuer");
+    state = stateDb.createStateRecord("issuer", null);
   }
 
   @Test

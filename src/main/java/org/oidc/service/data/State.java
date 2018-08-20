@@ -23,26 +23,24 @@ import org.oidc.msg.Message;
 
 /**
  * Contract for cache which can be implemented by developers using in-memory or DB.
- * 
+ * <p>
  * The State cache is a key,value data store. We name the keys stateKey. The values that are bound
- * to the keys have an internal structure that again is key,value based. Here the keys are
- * messagetypes and the values are the JSON representation of the corresponding Message. Beside
- * messagetypes, there is one other key and that is ‘issuer’ which has as value the issuer ID of the
- * Authorization Server.
+ * to the keys have an internal structure that again is key,value based {@link StateRecord} message.
+ * </p>
  **/
 public interface State {
 
   /**
-   * Gets State Record containing all items based off of stateKey
+   * Gets StateRecord containing all items based off of stateKey.
    * 
    * @param stateKey
    *          the key that identifies the State Record object
-   * @return State Record connected to a given key, null if not existing.
+   * @return StateRecord connected to a given key, null if not existing.
    **/
   StateRecord getState(String stateKey);
 
   /**
-   * Store a message
+   * Store a message.
    * 
    * @param message
    *          request or response
@@ -56,8 +54,7 @@ public interface State {
   boolean storeItem(Message message, String stateKey, MessageType messageType);
 
   /**
-   * Retrieves data from cache (which can be of type json) and deserializes to message according to
-   * message type
+   * Retrieves message from cache according to message type.
    * 
    * @param stateKey
    *          the key that identifies the State object
@@ -68,7 +65,7 @@ public interface State {
   Message getItem(String stateKey, MessageType messageType);
 
   /**
-   * Gets issuer ID based off of stateKey
+   * Gets issuer ID based off of stateKey.
    * 
    * @param stateKey
    *          the key that identifies the State object
@@ -78,7 +75,7 @@ public interface State {
   String getIssuer(String stateKey);
 
   /**
-   * Add a set of parameters and their value to a set of request args
+   * Add a set of parameters and their value to a set of request args.
    * 
    * @param args
    *          map of claims
@@ -136,12 +133,16 @@ public interface State {
   String getStateKeyByNonce(String nonce);
 
   /**
-   * Makes a new entry in the cache, stores the issuer with a new stateKey, and then returns the
-   * stateKey (random 32-character string)
+   * Makes a new entry StateRecord in the cache, keys it with state parameter, and then returns the
+   * stateKey (i.e. state parameter). If state is set to null or is empty, the state value is
+   * generated as random 32-character string.
    * 
    * @param issuer
    *          issuer that is bound to State
-   * @return key connected to created State
+   * @param state
+   *          value of the state parameter used for keying the StateRecord. If null or empty, the
+   *          state value is generated.
+   * @return stateKey(i.e. state) value keying the newly created StateRecord
    **/
-  String createState(String issuer);
+  String createStateRecord(String issuer, String state);
 }
