@@ -24,8 +24,11 @@ import org.oidc.service.AbstractService;
 import org.oidc.service.base.RequestArgumentProcessor;
 
 /**
- * Class add request object to the request if post constructor arguments have a string value of
- * 'request' or 'request_uri' for key 'request_method'. TODO additional arguments.
+ * Class to add request object to the request if post constructor arguments have a string value of
+ * 'request' or 'request_uri' for key 'request_method'. TODO additional arguments. If any of the
+ * handled arguments is of wrong type or of unexpected value, processing fails silently.
+ * 
+ * Class is not usable yet.
  */
 public class AddRequestObject implements RequestArgumentProcessor {
 
@@ -37,8 +40,35 @@ public class AddRequestObject implements RequestArgumentProcessor {
     }
     try {
       String requestMethod = new StringClaimValidator()
-          .validate(service.getPostConstructorArgs().get("nonce"));
-      // TODO:Implementation
+          .validate(service.getPostConstructorArgs().get("request_method"));
+      if (!"request".equals(requestMethod) || !"request_uri".equals(requestMethod)) {
+        return;
+      }
+      // Resolve algorithm
+      String algorithm;
+      if (service.getPostConstructorArgs().containsKey("request_object_signing_alg")) {
+        algorithm = new StringClaimValidator()
+            .validate(service.getPostConstructorArgs().get("request_object_signing_alg"));
+      } else {
+        if (service.getServiceContext().getBehavior() != null && service.getServiceContext()
+            .getBehavior().getClaims().containsKey("request_object_signing_alg")) {
+          algorithm = (String) service.getServiceContext().getBehavior().getClaims()
+              .get("request_object_signing_alg");
+
+        } else {
+          algorithm = "RS256";
+        }
+      }
+      // Resolve keys
+      if (!service.getPostConstructorArgs().containsKey("keys")) {
+        // Resolve encryption keys
+        // Algorithm to keytype
+        // kid for args or service context
+        // get key from jar
+      }
+      // verify keytype if from arguments
+      // Form request object
+      // RO to request arguments or uri handling
     } catch (InvalidClaimException e) {
       // Indicating exception is not handled on purpose.
       return;
