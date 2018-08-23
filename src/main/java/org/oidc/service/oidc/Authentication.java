@@ -43,6 +43,7 @@ import org.oidc.service.base.processor.AddResponseType;
 import org.oidc.service.base.processor.AddScope;
 import org.oidc.service.base.processor.AddState;
 import org.oidc.service.base.processor.PickRedirectUri;
+import org.oidc.service.base.processor.StoreAuthenticationRequest;
 import org.oidc.service.base.processor.StoreNonce;
 import org.oidc.service.data.State;
 
@@ -59,7 +60,7 @@ public class Authentication extends AbstractService {
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new AddState(),
         new PickRedirectUri(), new AddResponseType(), new AddScope(), new AddNonce());
     this.postConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new StoreNonce(),
-        new AddRequestObject());
+        new AddRequestObject(), new StoreAuthenticationRequest());
   }
 
   @Override
