@@ -18,7 +18,6 @@ package org.oidc.service.oidc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +38,12 @@ import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.base.processor.AddNonce;
+import org.oidc.service.base.processor.AddRequestObject;
 import org.oidc.service.base.processor.AddResponseType;
 import org.oidc.service.base.processor.AddScope;
 import org.oidc.service.base.processor.AddState;
 import org.oidc.service.base.processor.PickRedirectUri;
+import org.oidc.service.base.processor.StoreNonce;
 import org.oidc.service.data.State;
 
 public class Authentication extends AbstractService {
@@ -57,8 +58,8 @@ public class Authentication extends AbstractService {
 
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new AddState(),
         new PickRedirectUri(), new AddResponseType(), new AddScope(), new AddNonce());
-    // TODO: Missing storing of nonce, request object creation including crypto
-    this.postConstructors = new ArrayList<RequestArgumentProcessor>();
+    this.postConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new StoreNonce(),
+        new AddRequestObject());
   }
 
   @Override
