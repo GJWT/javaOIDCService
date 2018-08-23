@@ -16,9 +16,12 @@
 
 package org.oidc.service.base.processor;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.SerializationException;
+import org.oidc.msg.oidc.RequestObject;
 import org.oidc.msg.validator.StringClaimValidator;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.RequestArgumentProcessor;
@@ -39,9 +42,11 @@ public class AddRequestObject implements RequestArgumentProcessor {
       return;
     }
     try {
+      
       String requestMethod = new StringClaimValidator()
           .validate(service.getPostConstructorArgs().get("request_method"));
-      if (!"request".equals(requestMethod) || !"request_uri".equals(requestMethod)) {
+      
+      if (!"request".equals(requestMethod) && !"request_uri".equals(requestMethod)) {
         return;
       }
       // Resolve algorithm
@@ -61,15 +66,26 @@ public class AddRequestObject implements RequestArgumentProcessor {
       }
       // Resolve keys
       if (!service.getPostConstructorArgs().containsKey("keys")) {
-        // Resolve encryption keys
-        // Algorithm to keytype
-        // kid for args or service context
-        // get key from jar
+        // TODO: Resolve encryption keys
+        // TODO: Algorithm to keytype
+        // TODO: kid for args or service context
+        // TODO: get key from jar
       }
-      // verify keytype if from arguments
+      // TODO: verify keytype if from arguments
       // Form request object
+      Map<String, Object> requestObjectRequestArguments = new HashMap<String, Object>(
+          requestArguments);
+      // Ensure absence of request and request_uri parameters
+      requestObjectRequestArguments.remove("redirect");
+      requestObjectRequestArguments.remove("redirect_uri");
+      RequestObject requestObject = new RequestObject(requestObjectRequestArguments);
+      if ("request".equals(requestMethod)) {
+        // TODO: use resolved key and algorithm
+        requestArguments.put("request", requestObject.toJwt(null, "none"));
+      } // else TODO: support for request_uri
+
       // RO to request arguments or uri handling
-    } catch (InvalidClaimException e) {
+    } catch (SerializationException | InvalidClaimException e) {
       // Indicating exception is not handled on purpose.
       return;
     }
