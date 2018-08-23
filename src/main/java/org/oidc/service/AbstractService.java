@@ -62,7 +62,7 @@ public abstract class AbstractService implements Service {
    * Message that describes the response.
    */
   protected Message responseMessage;
-  
+
   /**
    * Expected class for the successful response message.
    */
@@ -133,6 +133,16 @@ public abstract class AbstractService implements Service {
    * The processors run after message construction.
    */
   protected List<RequestArgumentProcessor> postConstructors;
+
+  /**
+   * Arguments for processors run before message construction.
+   */
+  private Map<String, Object> preConstructorArgs = new HashMap<String, Object>();
+
+  /**
+   * Arguments for processors run before message construction.
+   */
+  private Map<String, Object> postConstructorArgs = new HashMap<String, Object>();
 
   /**
    * Configuration that is specific to every service Additional configuration arguments that could
@@ -208,7 +218,7 @@ public abstract class AbstractService implements Service {
           + this.responseMessage.getClass().getName());
     }
     if (!response.verify()) {
-      //TODO
+      // TODO
       throw new InvalidClaimException("TODO: add details here");
     }
     doUpdateServiceContext(response, stateKey);
@@ -378,7 +388,7 @@ public abstract class AbstractService implements Service {
       httpArguments.setHeader(httpHeader);
       httpArguments.setUrl(getEndpoint());
     }
-    
+
     if (HttpMethod.GET.equals(httpArguments.getHttpMethod())) {
       if (getEndpoint() != null) {
         httpArguments.setUrl(getEndpoint() + requestMessage.toUrlEncoded());
@@ -436,11 +446,11 @@ public abstract class AbstractService implements Service {
   public void setResponseMessage(Message responseMessage) {
     this.responseMessage = responseMessage;
   }
-  
+
   public Class<? extends Message> getExpectedResponseClass() {
     return this.expectedResponseClass;
   }
-  
+
   public void setExpectedResponseClass(Class<? extends Message> responseClass) {
     this.expectedResponseClass = responseClass;
   }
@@ -545,11 +555,54 @@ public abstract class AbstractService implements Service {
   public void setAddedClaims(AddedClaims addedClaims) {
     this.addedClaims = addedClaims;
   }
-  
+
+  /**
+   * Get arguments for processors run before message construction. Guaranteed not to be null.
+   * 
+   * @return Map of arguments.
+   */
+  public Map<String, Object> getPreConstructorArgs() {
+    return preConstructorArgs;
+  }
+
+  /**
+   * Set arguments for processors run before message construction. Cannot be nullified.
+   * 
+   * @param preConstructorArgs
+   *          Map of arguments.
+   */
+  public void setPreConstructorArgs(Map<String, Object> preConstructorArgs) {
+    if (preConstructorArgs == null) {
+      return;
+    }
+    this.preConstructorArgs = preConstructorArgs;
+  }
+
+  /**
+   * Get arguments for processors run after message construction.
+   * 
+   * @return Map of arguments.
+   */
+  public Map<String, Object> getPostConstructorArgs() {
+    return postConstructorArgs;
+  }
+
+  /**
+   * Set arguments for processors run after message construction. Cannot be nullified.
+   * 
+   * @param postConstructorArgs
+   *          Map of arguments.
+   */
+  public void setPostConstructorArgs(Map<String, Object> postConstructorArgs) {
+    if (postConstructorArgs == null) {
+    }
+    this.postConstructorArgs = postConstructorArgs;
+  }
+
   public List<RequestArgumentProcessor> getPreConstructors() {
     return this.preConstructors;
   }
-  
+
   public void setPreConstructors(List<RequestArgumentProcessor> processors) {
     this.preConstructors = processors;
   }
@@ -557,7 +610,7 @@ public abstract class AbstractService implements Service {
   public List<RequestArgumentProcessor> getPostConstructors() {
     return this.postConstructors;
   }
-  
+
   public void setPostConstructors(List<RequestArgumentProcessor> processors) {
     this.postConstructors = processors;
   }
