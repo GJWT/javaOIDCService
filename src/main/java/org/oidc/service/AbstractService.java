@@ -572,10 +572,9 @@ public abstract class AbstractService implements Service {
    *          Map of arguments.
    */
   public void setPreConstructorArgs(Map<String, Object> preConstructorArgs) {
-    if (preConstructorArgs == null) {
-      return;
+    if (preConstructorArgs != null) {
+      this.preConstructorArgs = preConstructorArgs;
     }
-    this.preConstructorArgs = preConstructorArgs;
   }
 
   /**
@@ -594,9 +593,9 @@ public abstract class AbstractService implements Service {
    *          Map of arguments.
    */
   public void setPostConstructorArgs(Map<String, Object> postConstructorArgs) {
-    if (postConstructorArgs == null) {
+    if (postConstructorArgs != null) {
+      this.postConstructorArgs = postConstructorArgs;
     }
-    this.postConstructorArgs = postConstructorArgs;
   }
 
   public List<RequestArgumentProcessor> getPreConstructors() {
