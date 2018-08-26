@@ -80,7 +80,32 @@ public class Authentication extends AbstractService {
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
       throws MissingRequiredAttributeException {
-    Message response = new AuthenticationRequest(requestArguments);
-    return response;
+    return new AuthenticationRequest(requestArguments);
   }
+
+  @Override
+  public Message postParseResponse(Message responseMessage, String stateKey) {
+    if (!(responseMessage instanceof AuthenticationResponse)) {
+      return responseMessage;
+    }
+    AuthenticationResponse response = (AuthenticationResponse) responseMessage;
+    response.setKeyJar(getServiceContext().getKeyJar());
+    response.setIssuer(getServiceContext().getIssuer());
+    response.setClientId(getServiceContext().getClientId());
+    response.setSkew(getServiceContext().getClockSkew());
+    if (getServiceContext().getBehavior() != null
+        && getServiceContext().getBehavior().getClaims() != null) {
+      response.setSigAlg((String) getServiceContext().getBehavior().getClaims()
+          .get("id_token_signed_response_alg"));
+      response.setEncAlg((String) getServiceContext().getBehavior().getClaims()
+          .get("id_token_encrypted_response_alg"));
+      response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
+          .get("id_token_encrypted_response_enc"));
+    }
+    if (getServiceContext().getAllow().containsKey("missing_kid")) {
+      response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid"));
+    }
+    return responseMessage;
+  }
+
 }
