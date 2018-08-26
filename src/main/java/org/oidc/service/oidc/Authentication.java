@@ -23,15 +23,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.oidc.common.EndpointName;
+import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
+import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.AuthenticationRequest;
 import org.oidc.msg.oidc.AuthenticationResponse;
+import org.oidc.msg.oidc.IDToken;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessor;
@@ -66,7 +69,30 @@ public class Authentication extends AbstractService {
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    // TODO
+    if (!(responseMessage instanceof AuthenticationResponse)) {
+      throw new ValueException("response not instance of AuthenticationResponse");
+    }
+    if (responseMessage.getClaims().containsKey("id_token")) {
+      IDToken idToken = new IDToken();
+      try {
+        // ID Token has already been verified in this stage
+        idToken.fromJwt((String) responseMessage.getClaims().get("id_token"), null, null);
+      } catch (DeserializationException e) {
+        throw new InvalidClaimException(String.format("Unable to decode id token '%s'",
+            (String) responseMessage.getClaims().get("id_token")));
+      }
+      if (!stateKey
+          .equals(getState().getStateKeyByNonce((String) idToken.getClaims().get("nonce")))) {
+        throw new ValueException(
+            String.format("nonce '%s' in the id token is not matching state record '%s'",
+                (String) idToken.getClaims().get("nonce"), stateKey));
+      }
+    }
+    if (responseMessage.getClaims().containsKey("expires_in")) {
+      responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
+          + (long) responseMessage.getClaims().get("expires_in"));
+    }
+    getState().storeItem(response, stateKey, MessageType.AUTHORIZATION_RESPONSE);
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
