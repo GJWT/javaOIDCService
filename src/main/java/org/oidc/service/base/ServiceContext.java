@@ -46,6 +46,10 @@ import org.oidc.service.util.Constants;
  * registration, but information is also picked up during the conversation with a server.
  **/
 public class ServiceContext {
+  
+  /** Clock Skew allowed for expiration evaluations. */
+  private long clockSkew = 0;
+
   /**
    * Used to store keys
    */
@@ -268,6 +272,23 @@ public class ServiceContext {
     }
   }
 
+  /**
+   * Get Clock Skew allowed for expiration evaluations.
+   * 
+   * @return Clock Skew allowed for expiration evaluations
+   */
+  public long getClockSkew() {
+    return clockSkew;
+  }
+
+  /**
+   * Set Clock Skew allowed for expiration evaluations.
+   * 
+   * @param clockSkew  Clock Skew allowed for expiration evaluations
+   */
+  public void setClockSkew(long clockSkew) {
+    this.clockSkew = clockSkew;
+  }
   public KeyJar getKeyJar() {
     return keyJar;
   }
