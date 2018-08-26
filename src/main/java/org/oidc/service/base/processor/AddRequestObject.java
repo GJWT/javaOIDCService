@@ -16,8 +16,11 @@
 
 package org.oidc.service.base.processor;
 
+import com.auth0.msg.Key;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.SerializationException;
@@ -28,10 +31,30 @@ import org.oidc.service.base.RequestArgumentProcessor;
 
 /**
  * Class to add request object to the request if post constructor arguments have a string value of
- * 'request' or 'request_uri' for key 'request_method'. TODO additional arguments. If any of the
- * handled arguments is of wrong type or of unexpected value, processing fails silently.
+ * 'request' or 'request_uri' for key 'request_method'. Argument list:
  * 
- * Class is not usable yet.
+ * <p>
+ * 'request_method' - processor is executed if set to 'request' or 'request_uri'.
+ * </p>
+ * 
+ * <p>
+ * 'request_object_signing_alg' - algorithm name as listed in
+ * https://tools.ietf.org/html/rfc7518#section-3.1. If not set defaults to RS256.
+ * </p>
+ * 
+ * <p>
+ * 'key' - Instance of type Key used for signing the request object. If not set key is searched from
+ * key jar.
+ * </p>
+ * 
+ * <p>
+ * 'sig_kid' - Additional argument for searching the key from key jar.
+ * </p>
+ *  
+ *  <p>
+ * If any of the handled arguments is of wrong type or of unexpected value, processing fails
+ * silently.
+ * </p>
  */
 public class AddRequestObject implements RequestArgumentProcessor {
 
@@ -42,15 +65,17 @@ public class AddRequestObject implements RequestArgumentProcessor {
       return;
     }
     try {
-      
+
       String requestMethod = new StringClaimValidator()
           .validate(service.getPostConstructorArgs().get("request_method"));
-      
+
       if (!"request".equals(requestMethod) && !"request_uri".equals(requestMethod)) {
         return;
       }
       // Resolve algorithm
       String algorithm;
+      // TODO: Rolands version has secondary input arg "algorithm". Add if needed or remove this
+      // comment.
       if (service.getPostConstructorArgs().containsKey("request_object_signing_alg")) {
         algorithm = new StringClaimValidator()
             .validate(service.getPostConstructorArgs().get("request_object_signing_alg"));
@@ -64,14 +89,35 @@ public class AddRequestObject implements RequestArgumentProcessor {
           algorithm = "RS256";
         }
       }
-      // Resolve keys
-      if (!service.getPostConstructorArgs().containsKey("keys")) {
-        // TODO: Resolve encryption keys
-        // TODO: Algorithm to keytype
-        // TODO: kid for args or service context
-        // TODO: get key from jar
+      // Resolve keys if algorithm is not none
+      Key key = null;
+      if (!"none".equals(algorithm)) {
+        // primarily from arguments
+        if (service.getPostConstructorArgs().containsKey("key")) {
+          if (service.getPostConstructorArgs().get("key") instanceof Key) {
+            key = (Key) service.getPostConstructorArgs().get("key");
+          } else {
+            throw new InvalidClaimException("Argument 'key' not of type 'Key'");
+          }
+        } else {
+          String keyType = algorithmToKeytypeForJWS(algorithm);
+          // TODO: if kid is not in arguments, search for kid in service context or remove this
+          // comment if secondary source is not needed.
+          String kid = service.getPostConstructorArgs().containsKey("sig_kid")
+              ? new StringClaimValidator().validate(service.getPostConstructorArgs().get("sig_kid"))
+              : null;
+          Map<String, String> args = new HashMap<String, String>();
+          args.put("alg", algorithm);
+          // TODO: verify does "" equal to "me"? Correct if not or remove this comment.
+          List<Key> keys = service.getServiceContext().getKeyJar().getSigningKey(keyType, "", kid,
+              args);
+          if (keys == null || keys.size() == 0) {
+            throw new MissingRequiredAttributeException(
+                "Unable to resolve signing key from key jar");
+          }
+          key = keys.get(0);
+        }
       }
-      // TODO: verify keytype if from arguments
       // Form request object
       Map<String, Object> requestObjectRequestArguments = new HashMap<String, Object>(
           requestArguments);
@@ -80,14 +126,34 @@ public class AddRequestObject implements RequestArgumentProcessor {
       requestObjectRequestArguments.remove("redirect_uri");
       RequestObject requestObject = new RequestObject(requestObjectRequestArguments);
       if ("request".equals(requestMethod)) {
-        // TODO: use resolved key and algorithm
-        requestArguments.put("request", requestObject.toJwt(null, "none"));
+        requestArguments.put("request", requestObject.toJwt(key, algorithm));
       } // else TODO: support for request_uri
 
       // RO to request arguments or uri handling
-    } catch (SerializationException | InvalidClaimException e) {
+    } catch (SerializationException | InvalidClaimException | MissingRequiredAttributeException e) {
       // Indicating exception is not handled on purpose.
       return;
+    }
+  }
+
+  /**
+   * Temporarily here until made public in jawa-jwt.
+   * 
+   * @param algorithm
+   *          algorithm to convert to keytype.
+   * @return keytype.
+   */
+  private String algorithmToKeytypeForJWS(String algorithm) {
+    if (algorithm == null || algorithm.toLowerCase().equals("none")) {
+      return "none";
+    } else if (algorithm.startsWith("RS") || algorithm.startsWith("PS")) {
+      return "RSA";
+    } else if (algorithm.startsWith("HS") || algorithm.startsWith("A")) {
+      return "oct";
+    } else if (algorithm.startsWith("ES") || algorithm.startsWith("ECDH-ES")) {
+      return "EC";
+    } else {
+      return null;
     }
   }
 }
