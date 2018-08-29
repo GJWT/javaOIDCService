@@ -35,12 +35,18 @@ import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
+import org.oidc.service.util.ServiceUtil;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * An OIDC provider info discovery service.
+ */
 public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoDiscovery {
 
+  /**
+   * Mappings between client preferences (registration request) and provider capabilities.
+   */
   public static final Map<String, String> PREFERENCE_TO_PROVIDER = ImmutableMap
       .<String, String>builder()
       .put("request_object_signing_alg", "request_object_signing_alg_values_supported")
@@ -59,6 +65,9 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       .put("response_types", "response_types_supported").put("grant_types", "grant_types_supported")
       .build();
 
+  /**
+   * The default values for some provider configuration parameters.
+   */
   public static final Map<String, String> PROVIDER_DEFAULT = ImmutableMap.<String, String>builder()
       .put("token_endpoint_auth_method", "client_secret_basic")
       .put("id_token_signed_response_alg", "RS256").build();
@@ -83,12 +92,8 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
     }
     matchPreferences((ProviderConfigurationResponse) response);
 
-    // TODO: implement the following:
-    /*
-     * if 'pre_load_keys' in self.conf and self.conf['pre_load_keys']: _jwks =
-     * self.service_context.keyjar.export_jwks_as_json( issuer=resp['issuer']) logger.info(
-     * 'Preloaded keys for {}: {}'.format(resp['issuer'], _jwks))
-     */
+    // TODO: the OAuth2 super-class uses KeyJar.loadKeys() -method, but it's functionality is not yet clear
+    // TODO: Python has a configuration parameter 'pre_load_keys' for actually downloading the keys
   }
 
   /**
@@ -111,7 +116,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       String preferenceKey = entry.getKey();
       String providerKey = entry.getValue();
       Object preferenceValue = preferences.getClaims().get(preferenceKey);
-      if (nullOrEmpty(preferenceValue)) {
+      if (ServiceUtil.nullOrEmptyStringOrList(preferenceValue)) {
         continue;
       }
       Object providerValue = pcr.getClaims().get(providerKey);
@@ -157,7 +162,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
     }
     for (Entry<String, Object> entry : getServiceContext().getClientPreferences().getClaims()
         .entrySet()) {
-      if (nullOrEmpty(entry.getValue())
+      if (ServiceUtil.nullOrEmptyStringOrList(entry.getValue())
           || getServiceContext().getBehavior().getClaims().containsKey(entry.getKey())) {
         continue;
       }
@@ -175,17 +180,5 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
         .put("token_endpoint", EndpointName.TOKEN)
         .put("end_session_endpoint", EndpointName.END_SESSION)
         .put("userinfo_endpoint", EndpointName.USER_INFO).build().get(key);
-  }
-
-  /**
-   * Checks if the given parameter is either null, or an empty String or List.
-   * 
-   * @param value
-   *          The object to be checked.
-   * @return True is null or empty String or List, false otherwise.
-   */
-  protected static boolean nullOrEmpty(Object value) {
-    return (value == null || (value instanceof String && Strings.isNullOrEmpty((String) value))
-        || (value instanceof List && ((List<?>) value).isEmpty()));
   }
 }
