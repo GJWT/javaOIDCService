@@ -61,6 +61,7 @@ public class Authentication extends AbstractService {
     this.responseMessage = new AuthenticationResponse();
     this.isSynchronous = false;
     this.serializationType = SerializationType.URL_ENCODED;
+    this.deserializationType = SerializationType.URL_ENCODED;
     this.expectedResponseClass = AuthenticationResponse.class;
 
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new AddState(),
