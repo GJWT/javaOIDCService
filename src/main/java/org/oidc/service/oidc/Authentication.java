@@ -25,6 +25,7 @@ import java.util.Map;
 import org.oidc.common.EndpointName;
 import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
@@ -58,6 +59,8 @@ public class Authentication extends AbstractService {
     this.endpointName = EndpointName.AUTHORIZATION;
     this.requestMessage = new AuthenticationRequest();
     this.responseMessage = new AuthenticationResponse();
+    this.isSynchronous = false;
+    this.serializationType = SerializationType.URL_ENCODED;
     this.expectedResponseClass = AuthenticationResponse.class;
 
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new AddState(),
