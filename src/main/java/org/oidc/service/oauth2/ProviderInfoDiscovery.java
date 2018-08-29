@@ -16,6 +16,8 @@
 
 package org.oidc.service.oauth2;
 
+import java.io.IOException;
+import java.security.KeyException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -37,6 +39,8 @@ import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
 
 import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
+import com.auth0.jwt.exceptions.oicmsg_exceptions.JWKException;
+import com.auth0.jwt.exceptions.oicmsg_exceptions.ValueError;
 import com.auth0.msg.KeyJar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -97,7 +101,12 @@ public class ProviderInfoDiscovery extends AbstractService {
 
     KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
         : getServiceContext().getKeyJar();
-    // TODO: load keys from response to KeyJar
+    try {
+      keyJar.loadKeys(response.getClaims(), issuer, false);
+    } catch (KeyException | ImportException | IOException | JWKException | ValueError e) {
+      // TODO: the exception descriptions are still not clear
+    }
+    // TODO: find out what kind of checks are needed at this point
     getServiceContext().setKeyJar(keyJar);
     
   }
