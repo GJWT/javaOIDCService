@@ -122,8 +122,8 @@ public class AddRequestObject implements RequestArgumentProcessor {
       Map<String, Object> requestObjectRequestArguments = new HashMap<String, Object>(
           requestArguments);
       // Ensure absence of request and request_uri parameters
-      requestObjectRequestArguments.remove("redirect");
-      requestObjectRequestArguments.remove("redirect_uri");
+      requestObjectRequestArguments.remove("request");
+      requestObjectRequestArguments.remove("request_uri");
       RequestObject requestObject = new RequestObject(requestObjectRequestArguments);
       if ("request".equals(requestMethod)) {
         requestArguments.put("request", requestObject.toJwt(key, algorithm));
