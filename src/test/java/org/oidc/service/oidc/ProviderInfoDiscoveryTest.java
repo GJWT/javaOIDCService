@@ -41,6 +41,7 @@ import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.util.ServiceUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -171,7 +172,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
     service.updateServiceContext(pcr);
     for (Entry<String, Object> entry : serviceContext.getClientPreferences().getClaims()
         .entrySet()) {
-      if (!ProviderInfoDiscovery.nullOrEmpty(entry.getValue())) {
+      if (!ServiceUtil.nullOrEmptyStringOrList(entry.getValue())) {
         Object behaviourValue = serviceContext.getBehavior().getClaims().get(entry.getKey());
         Object preferredValue = entry.getValue();
         Assert.assertEquals(behaviourValue instanceof List && !(preferredValue instanceof List)

@@ -20,6 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.msg.InvalidClaimException;
@@ -114,5 +116,17 @@ public class ServiceUtil {
       throw new InvalidConfigurationPropertyException(
           "Incompatible class type for " + processorName);
     }
+  }
+
+  /**
+   * Checks if the given parameter is either null, or an empty String or List.
+   * 
+   * @param value
+   *          The object to be checked.
+   * @return True is null or empty String or List, false otherwise.
+   */
+  public static boolean nullOrEmptyStringOrList(Object value) {
+    return (value == null || (value instanceof String && Strings.isNullOrEmpty((String) value))
+        || (value instanceof List && ((List<?>) value).isEmpty()));
   }
 }
