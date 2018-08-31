@@ -25,14 +25,15 @@ import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
-import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
+import org.oidc.msg.ErrorDetails;
+import org.oidc.msg.ErrorType;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.SerializationException;
 import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
@@ -42,7 +43,6 @@ import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
 import com.auth0.jwt.exceptions.oicmsg_exceptions.JWKException;
 import com.auth0.jwt.exceptions.oicmsg_exceptions.ValueError;
 import com.auth0.msg.KeyJar;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -101,11 +101,15 @@ public class ProviderInfoDiscovery extends AbstractService {
 
     KeyJar keyJar = (getServiceContext().getKeyJar() == null) ? new KeyJar()
         : getServiceContext().getKeyJar();
+    
+    //TODO: load keys disabled at the moment
+    /*
     try {
       keyJar.loadKeys(response.getClaims(), issuer, false);
     } catch (KeyException | ImportException | IOException | JWKException | ValueError e) {
       // TODO: the exception descriptions are still not clear
     }
+    */
     // TODO: find out what kind of checks are needed at this point
     getServiceContext().setKeyJar(keyJar);
     
@@ -130,7 +134,7 @@ public class ProviderInfoDiscovery extends AbstractService {
    *           If the issuer cannot be resolved from the current data.
    */
   protected String getOpEndpoint(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException {
+      throws RequestArgumentProcessingException {
     for (String value : Arrays.asList((String) requestArguments.get("issuer"),
         getServiceContext().getIssuer(), getEndpoint())) {
       if (!Strings.isNullOrEmpty(value)) {
@@ -138,20 +142,19 @@ public class ProviderInfoDiscovery extends AbstractService {
         return String.format(Constants.OIDCONF_PATTERN, value.replaceAll("/\\s*$", ""));
       }
     }
-    throw new MissingRequiredAttributeException("Issuer cannot be resolved from the current data");
+    throw new RequestArgumentProcessingException(new ErrorDetails("issuer", ErrorType.MISSING_REQUIRED_VALUE, "The value cannot be resolved from the current data"));
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+      throws RequestArgumentProcessingException {
     httpArguments.setUrl(getOpEndpoint(requestArguments));
     return httpArguments;
   }
 
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException {
+      throws RequestArgumentProcessingException {
     return null;
   }
 }

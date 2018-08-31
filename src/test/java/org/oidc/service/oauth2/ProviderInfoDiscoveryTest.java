@@ -30,6 +30,7 @@ import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.util.Constants;
 
@@ -48,7 +49,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
     issuer = "https://www.example.com";
   }
 
-  @Test(expected = MissingRequiredAttributeException.class)
+  @Test(expected = RequestArgumentProcessingException.class)
   public void testHttpParamsMissingIssuer() throws Exception {
     service.getRequestParameters(new HashMap<String, Object>());
   }

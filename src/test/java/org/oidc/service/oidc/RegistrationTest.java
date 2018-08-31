@@ -33,9 +33,8 @@ import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceContext;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Unit tests for {@link Registration} service.
@@ -63,18 +62,17 @@ public class RegistrationTest extends BaseServiceTest<Registration> {
     Assert.assertFalse(request.verify());
   }
 
-  @Test(expected = MissingRequiredAttributeException.class)
+  @Test
   public void testHttpParametersNoUrl() throws Exception {
     RegistrationResponse behaviour = new RegistrationResponse();
     service.setEndpoint(null);
     serviceContext.setBehavior(behaviour);
-    service.getRequestParameters(null);
+    HttpArguments httpArguments = service.getRequestParameters(null);
+    Assert.assertNull(httpArguments.getUrl());
   }
 
   @Test
-  public void testHttpParameters()
-      throws JsonProcessingException, ValueException, MissingRequiredAttributeException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+  public void testHttpParameters() throws UnsupportedSerializationTypeException, RequestArgumentProcessingException, SerializationException {
     RegistrationResponse behaviour = new RegistrationResponse();
     serviceContext.setBehavior(behaviour);
     HttpArguments httpArguments = service.getRequestParameters(null);

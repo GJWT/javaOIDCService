@@ -16,9 +16,7 @@
 
 package org.oidc.service.oidc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -26,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
-import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
+import org.oidc.msg.Error;
+import org.oidc.msg.ErrorDetails;
+import org.oidc.msg.ErrorType;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oidc.JsonResponseDescriptor;
 import org.oidc.msg.oidc.Link;
@@ -36,6 +36,7 @@ import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.WebfingerRequest;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
@@ -49,11 +50,6 @@ import org.oidc.service.util.URIUtil;
  * https://tools.ietf.org/html/rfc7033
  */
 public class Webfinger extends AbstractService {
-
-  /**
-   * Constants
-   */
-  private static final String UTF_8 = "UTF-8";
 
   public Webfinger(ServiceContext serviceContext, State state, ServiceConfig config) {
     super(serviceContext, state, config);
@@ -106,11 +102,18 @@ public class Webfinger extends AbstractService {
    * @return
    * @throws Exception
    */
-  protected String getEndpointWithoutQuery(String resource) throws ValueException,
-      MalformedURLException, UnsupportedEncodingException {
-    String host;
+  protected String getEndpointWithoutQuery(String resource) throws RequestArgumentProcessingException {
+    String host = null;
+    Error error = new Error();
     if (resource.startsWith("http")) {
-      URL url = new URL(resource);
+      URL url;
+      try {
+        url = new URL(resource);
+      } catch (MalformedURLException e) {
+        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The value cannot be converted into a URL", e);
+        error.getDetails().add(details);
+        throw new RequestArgumentProcessingException(error);
+      }
       host = url.getHost();
       int port = url.getPort();
       if (port != -1) {
@@ -124,45 +127,58 @@ public class Webfinger extends AbstractService {
         if (hostArrSplit != null && hostArrSplit.length > 0) {
           host = hostArrSplit[0];
         } else {
-          throw new ValueException("host cannot be split properly");
+          ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The host in address cannot be split properly");
+          error.getDetails().add(details);
         }
       } else {
-        throw new ValueException("host cannot be split properly");
+        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The host in address cannot be split properly");
+        error.getDetails().add(details);
       }
     } else if (resource.startsWith("device:")) {
       String[] resourceArrSplit = resource.split(":");
       if (resourceArrSplit != null && resourceArrSplit.length > 1) {
         host = resourceArrSplit[1].replace("/", "#").replace("?", "#").split("#")[0];
       } else {
-        throw new ValueException("resource cannot be split properly");
+        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The resource cannot be split properly");
+        error.getDetails().add(details);
       }
     } else {
-      throw new MalformedURLException(resource + " has an unknown schema");
+      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "Unknown scheme in the resource");
+      error.getDetails().add(details);
+    }
+    if (!error.getDetails().isEmpty() || host == null) {
+      throw new RequestArgumentProcessingException(error);
     }
     return String.format(Constants.WEB_FINGER_URL, host);
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
-    String resource = URIUtil
-        .normalizeUrl((String) requestArguments.get(Constants.WEBFINGER_RESOURCE));
-    requestArguments.put(Constants.WEBFINGER_RESOURCE, resource);
+      throws RequestArgumentProcessingException {
+    String resource;
+    Error error = new Error();
     try {
-      String endpoint = getEndpointWithoutQuery(resource);
+      resource = URIUtil.normalizeUrl((String) requestArguments.get(Constants.WEBFINGER_RESOURCE));
+      requestArguments.put(Constants.WEBFINGER_RESOURCE, resource);
+    } catch (ValueException e) {
+      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "Could not normalize the URI", e);
+      error.getDetails().add(details);
+      throw new RequestArgumentProcessingException(error);
+    }
+    String endpoint = getEndpointWithoutQuery(resource);
+    try {
       httpArguments.setUrl(endpoint + this.requestMessage.toUrlEncoded());
-    } catch (UnsupportedEncodingException e) {
-      throw new SerializationException(e.getMessage(), e);
-    } catch (MalformedURLException  e) {
-      throw new InvalidClaimException(e.getMessage(), e);
+    } catch (SerializationException e) {
+      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "Could not serialize the request", e);
+      error.getDetails().add(details);
+      throw new RequestArgumentProcessingException(error);
     }
     return httpArguments;
   }
 
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException {
+      throws RequestArgumentProcessingException {
     for (String value : Arrays.asList((String) requestArguments.get(Constants.WEBFINGER_RESOURCE),
         getAddedClaims() == null ? null : getAddedClaims().getResource(),
         this.serviceContext.getBaseUrl())) {
@@ -172,7 +188,7 @@ public class Webfinger extends AbstractService {
       }
     }
     if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_RESOURCE))) {
-      throw new MissingRequiredAttributeException("resource attribute is missing");
+      throw new RequestArgumentProcessingException(new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.MISSING_REQUIRED_VALUE));
     }
     if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_REL))) {
       requestArguments.put(Constants.WEBFINGER_REL, linkRelationType);

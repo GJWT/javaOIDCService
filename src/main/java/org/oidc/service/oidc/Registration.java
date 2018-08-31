@@ -26,15 +26,14 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -45,8 +44,6 @@ import org.oidc.service.base.processor.AddPostLogoutRedirectUris;
 import org.oidc.service.base.processor.AddRedirectUris;
 import org.oidc.service.base.processor.AddRequestUri;
 import org.oidc.service.data.State;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class Registration extends AbstractService {
 
@@ -59,7 +56,7 @@ public class Registration extends AbstractService {
     this.responseMessage = new RegistrationResponse();
     this.httpMethod = HttpMethod.POST;
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(
-        new AddClientBehaviourPreference(), new AddRedirectUris(), new AddRequestUri(),
+        (RequestArgumentProcessor) new AddClientBehaviourPreference(), new AddRedirectUris(), new AddRequestUri(),
         new AddPostLogoutRedirectUris(), new AddJwksUriOrJwks());
     this.postConstructors = Arrays.asList((RequestArgumentProcessor) new AddOidcResponseTypes());
     this.serializationType = SerializationType.JSON;
@@ -84,15 +81,14 @@ public class Registration extends AbstractService {
 
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException {
+      throws RequestArgumentProcessingException {
     Message response = new RegistrationRequest(requestArguments);
     return response;
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+      throws RequestArgumentProcessingException {
 
     // TODO: this or abstract service should check that request contains mandatory fields
 

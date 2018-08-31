@@ -16,8 +16,6 @@
 
 package org.oidc.service.oidc;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +29,6 @@ import org.oidc.common.AddedClaims;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -39,11 +36,10 @@ import org.oidc.msg.oidc.JsonResponseDescriptor;
 import org.oidc.msg.oidc.Link;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.util.Constants;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class WebfingerTest extends BaseServiceTest<Webfinger> {
 
@@ -108,7 +104,7 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
         "https://www.yahoo.com/.well-known/webfinger?resource=https%3A%2F%2Fwww.yahoo.com&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
-  @Test(expected = MissingRequiredAttributeException.class)
+  @Test(expected = RequestArgumentProcessingException.class)
   public void testGetQueryWithEmptyResource() throws Exception {
     service.getRequestParameters(buildArgsWithResource(""));
   }
@@ -138,7 +134,7 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
         "https://baseUrl/.well-known/webfinger?resource=https%3A%2F%2FbaseUrl&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
   }
 
-  @Test(expected = MissingRequiredAttributeException.class)
+  @Test(expected = RequestArgumentProcessingException.class)
   public void testGetRequestParametersNullResourceAndNullAddedClaimsResourceAndNullBaseUrl()
       throws Exception {
     service.getRequestParameters(null);
@@ -166,10 +162,7 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
   }
 
   @Test
-  public void testGetRequestParameters()
-      throws MalformedURLException, MissingRequiredAttributeException,
-      ValueException, UnsupportedEncodingException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+  public void testGetRequestParameters() throws UnsupportedSerializationTypeException, RequestArgumentProcessingException, SerializationException {
     Map<String, String> requestParametersMap = new HashMap<String, String>() {
       {
         put("example.com", "example.com");

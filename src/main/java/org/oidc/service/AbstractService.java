@@ -39,6 +39,7 @@ import org.oidc.msg.SerializationException;
 import org.oidc.msg.oauth2.ResponseMessage;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.HttpHeader;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -161,7 +162,6 @@ public abstract class AbstractService implements Service {
    */
   private static final String HTTP_METHOD = "httpMethod";
   private static final String AUTHENTICATION_METHOD = "authenticationMethod";
-  private static final String SERIALIZATION_TYPE = "serializationType";
   /**
    * Open ID connection provider
    */
@@ -351,8 +351,8 @@ public abstract class AbstractService implements Service {
    * @throws InvalidClaimException
    */
   public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+      throws UnsupportedSerializationTypeException, RequestArgumentProcessingException,
+      SerializationException {
     if (requestArguments == null) {
       requestArguments = new HashMap<String, Object>();
     }
@@ -396,21 +396,16 @@ public abstract class AbstractService implements Service {
     }
 
     httpArguments = finalizeGetRequestParameters(httpArguments, requestArguments);
-
-    if (httpArguments.getUrl() == null) {
-      throw new MissingRequiredAttributeException("Could not resolve endpoint URL");
-    }
-
+    //TODO: check getUrl() here or leave it to the user?
     return httpArguments;
   }
 
   public abstract HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException;
+      throws RequestArgumentProcessingException;
 
   protected Message constructRequest(Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException {
+      throws RequestArgumentProcessingException {
     if (this.preConstructors != null) {
       for (RequestArgumentProcessor processor : this.preConstructors) {
         processor.processRequestArguments(requestArguments, this);
@@ -429,7 +424,7 @@ public abstract class AbstractService implements Service {
   }
 
   protected abstract Message doConstructRequest(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException;
+      throws RequestArgumentProcessingException;
 
   public Message getRequestMessage() {
     return requestMessage;

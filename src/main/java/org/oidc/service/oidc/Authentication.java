@@ -16,8 +16,6 @@
 
 package org.oidc.service.oidc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,17 +25,16 @@ import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.AuthenticationRequest;
 import org.oidc.msg.oidc.AuthenticationResponse;
 import org.oidc.msg.oidc.IDToken;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
@@ -64,10 +61,12 @@ public class Authentication extends AbstractService {
     this.deserializationType = SerializationType.URL_ENCODED;
     this.expectedResponseClass = AuthenticationResponse.class;
 
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new AddState(),
-        new PickRedirectUri(), new AddResponseType(), new AddScope(), new AddNonce());
-    this.postConstructors = (List<RequestArgumentProcessor>) Arrays.asList(new StoreNonce(),
-        new AddRequestObject(), new StoreAuthenticationRequest());
+    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(
+        (RequestArgumentProcessor) new AddState(), new PickRedirectUri(), new AddResponseType(),
+        new AddScope(), new AddNonce());
+    this.postConstructors = (List<RequestArgumentProcessor>) Arrays.asList(
+        (RequestArgumentProcessor) new StoreNonce(), new AddRequestObject(),
+        new StoreAuthenticationRequest());
   }
 
   @Override
@@ -100,16 +99,14 @@ public class Authentication extends AbstractService {
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
-      Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+      Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
 
     return httpArguments;
   }
 
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException {
+      throws RequestArgumentProcessingException {
     return new AuthenticationRequest(requestArguments);
   }
 

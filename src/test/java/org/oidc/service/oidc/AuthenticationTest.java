@@ -24,7 +24,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.oidc.common.HttpMethod;
-import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
@@ -53,12 +52,6 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
     map.put("response_type", "code");
     map.put("scope", "openid");
     map.put("client_id", "clientid_x");
-  }
-
-  @Test(expected = MissingRequiredAttributeException.class)
-  public void testHttpGetParametersMissingEndpoint() throws Exception {
-    service.setEndpoint(null);
-    service.getRequestParameters(new HashMap<String, Object>());
   }
 
   @Test

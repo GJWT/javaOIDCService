@@ -36,6 +36,7 @@ import org.oidc.msg.oauth2.AccessTokenRequest;
 import org.oidc.msg.oauth2.AccessTokenResponse;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
@@ -79,15 +80,14 @@ public class AccessToken extends AbstractService {
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments)
-      throws ValueException, MissingRequiredAttributeException, JsonProcessingException,
-      UnsupportedSerializationTypeException, SerializationException, InvalidClaimException {
+      throws RequestArgumentProcessingException {
 
     return httpArguments;
   }
 
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
-      throws MissingRequiredAttributeException {
+      throws RequestArgumentProcessingException {
     return new AccessTokenRequest(requestArguments);
   }
 

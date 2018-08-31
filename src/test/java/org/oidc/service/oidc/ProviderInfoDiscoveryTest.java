@@ -16,12 +16,10 @@
 
 package org.oidc.service.oidc;
 
-import java.io.UnsupportedEncodingException;
-
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Assert;
@@ -30,12 +28,10 @@ import org.junit.Test;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
-import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.ProviderConfigurationResponse;
 import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.service.BaseServiceTest;
@@ -43,7 +39,7 @@ import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.util.ServiceUtil;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.auth0.msg.KeyJar;
 
 /**
  * Unit tests for {@link ProviderInfoDiscovery}.
@@ -69,10 +65,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
   }
 
   @Test
-  public void test()
-      throws JsonProcessingException, MalformedURLException, UnsupportedEncodingException,
-      UnsupportedSerializationTypeException, MissingRequiredAttributeException,
-      ValueException, SerializationException, InvalidClaimException, DeserializationException {
+  public void test() throws DeserializationException, MissingRequiredAttributeException, ValueException, InvalidClaimException {
     Message message = service.parseResponse(exampleValidResponse());
     service.updateServiceContext((ProviderConfigurationResponse) message);
     Assert.assertNotNull(serviceContext.getBehavior());
@@ -183,6 +176,7 @@ public class ProviderInfoDiscoveryTest extends BaseServiceTest<ProviderInfoDisco
     Assert.assertNull(serviceContext.getBehavior().getClaims().get("token_endpoint_auth_method"));
   }
 
+  
   public void testDefaults() throws Exception {
     Message message = service.parseResponse(minimalValidResponse());
     Assert.assertTrue(message instanceof ProviderConfigurationResponse);
