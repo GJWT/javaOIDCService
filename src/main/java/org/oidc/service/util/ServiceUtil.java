@@ -16,7 +16,6 @@
 
 package org.oidc.service.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -74,8 +73,7 @@ public class ServiceUtil {
    * @throws InvalidClaimException
    */
   public static String getHttpBody(Message request, SerializationType serializationType)
-      throws UnsupportedSerializationTypeException, JsonProcessingException, SerializationException,
-      InvalidClaimException {
+      throws UnsupportedSerializationTypeException, SerializationException {
     if (SerializationType.URL_ENCODED.equals(serializationType)) {
       return request.toUrlEncoded();
     } else if (SerializationType.JSON.equals(serializationType)) {
