@@ -16,7 +16,6 @@
 
 package org.oidc.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
@@ -27,6 +26,9 @@ import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 import org.oidc.service.base.HttpArguments;
+import org.oidc.service.base.RequestArgumentProcessingException;
+import org.oidc.service.base.ServiceContext;
+import org.oidc.service.data.State;
 
 /**
  * Provides the methods that are needed to support any request-response protocol such as OIDC,
@@ -48,9 +50,8 @@ public interface Service {
    * @return HttpArguments
    */
   HttpArguments getRequestParameters(Map<String, Object> requestArguments)
-      throws UnsupportedSerializationTypeException, JsonProcessingException,
-      MissingRequiredAttributeException, ValueException, SerializationException,
-      InvalidClaimException;
+      throws UnsupportedSerializationTypeException, RequestArgumentProcessingException,
+      SerializationException;
 
   /**
    * This the start of a pipeline that will:
@@ -130,4 +131,32 @@ public interface Service {
    */
   void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
+  
+  /**
+   * Get the request message for this service.
+   * 
+   * @return The request message for this service.
+   */
+  Message getRequestMessage();
+  
+  /**
+   * Get the service context attached to this service.
+   * 
+   * @return The service context attached to this service.
+   */
+  ServiceContext getServiceContext();
+  
+  /**
+   * Get the map of arguments sent to the post constructors.
+   * 
+   * @return The map of arguments sent to the post constructors.
+   */
+  Map<String, Object> getPostConstructorArgs();
+  
+  /**
+   * Get the state attached to this service.
+   * 
+   * @return The state attached to this service.
+   */
+  State getState();
 }
