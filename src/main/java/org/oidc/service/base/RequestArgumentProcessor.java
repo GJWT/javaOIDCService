@@ -18,12 +18,11 @@ package org.oidc.service.base;
 
 import java.util.Map;
 
-import org.oidc.common.ValueException;
-import org.oidc.service.AbstractService;
+import org.oidc.service.Service;
 
 public interface RequestArgumentProcessor {
 
   public void processRequestArguments(Map<String, Object> requestArguments,
-      AbstractService service) throws ValueException;
+      Service service) throws RequestArgumentProcessingException;
 
 }
