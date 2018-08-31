@@ -18,15 +18,15 @@ package org.oidc.service.base.processor;
 
 import java.util.Map;
 
-import org.oidc.common.ValueException;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
-public class AddJwksUriOrJwks implements RequestArgumentProcessor {
+public class AddJwksUriOrJwks extends AbstractRequestArgumentProcessor {
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments.containsKey("jwks_uri")) {
       if (requestArguments.containsKey("jwks")) {
         requestArguments.remove("jwks");

@@ -18,9 +18,9 @@ package org.oidc.service.base.processor;
 
 import java.util.List;
 import java.util.Map;
-import org.oidc.common.ValueException;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceContext;
 
 /**
@@ -28,12 +28,11 @@ import org.oidc.service.base.ServiceContext;
  * already set in request arguments method tries to locate registration data and it's field
  * response_types. If located, response_type receives the index 0 value of response_types.
  */
-public class AddResponseType implements RequestArgumentProcessor {
+public class AddResponseType extends AbstractRequestArgumentProcessor {
 
-  @SuppressWarnings("unchecked")
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments == null || service == null || service.getServiceContext() == null) {
       return;
     }

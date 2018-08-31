@@ -19,22 +19,22 @@ package org.oidc.service.base.processor;
 import java.util.Map;
 
 import org.oidc.common.MessageType;
-import org.oidc.common.ValueException;
+import org.oidc.msg.Error;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.validator.StringClaimValidator;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
  * Class stores Authentication request to stateDb. If any of the preconditions needed to store the
  * value is not met (as there is no statedb, state or state is of wrong type etc.) the class fails
  * silently.
  */
-public class StoreAuthenticationRequest implements RequestArgumentProcessor {
+public class StoreAuthenticationRequest extends AbstractRequestArgumentProcessor {
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments == null || service == null || service.getState() == null) {
       return;
     }

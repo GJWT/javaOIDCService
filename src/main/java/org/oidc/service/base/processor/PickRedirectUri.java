@@ -18,9 +18,9 @@ package org.oidc.service.base.processor;
 
 import java.util.List;
 import java.util.Map;
-import org.oidc.common.ValueException;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceContext;
 
 /**
@@ -34,12 +34,11 @@ import org.oidc.service.base.ServiceContext;
  * Class does not fall to any next options if any of the mapped values fails to exist.
  * </p>
  */
-public class PickRedirectUri implements RequestArgumentProcessor {
+public class PickRedirectUri extends AbstractRequestArgumentProcessor {
 
-  @SuppressWarnings("unchecked")
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments == null || requestArguments.containsKey("redirect_uri") || service == null
         || service.getServiceContext() == null) {
       return;

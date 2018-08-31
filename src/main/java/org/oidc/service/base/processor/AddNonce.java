@@ -21,37 +21,35 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.oidc.common.ValueException;
-import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.validator.ArrayClaimValidator;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.msg.ParameterVerification;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
  * Class ensures nonce value exists if response_type contains id_token value.
  */
-public class AddNonce implements RequestArgumentProcessor {
+public class AddNonce extends AbstractRequestArgumentProcessor {
+
+  {
+    paramVerDefs.put("response_type",
+        ParameterVerification.OPTIONAL_LIST_OF_SP_SEP_STRINGS.getValue());
+  }
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments == null) {
       return;
     }
     if (!requestArguments.containsKey("nonce") && requestArguments.containsKey("response_type")) {
-      try {
-        String responseType = new ArrayClaimValidator()
-            .validate(requestArguments.get("response_type"));
-        if (Pattern.compile("\\bid_token\\b").matcher(responseType).find()) {
-          // TODO: We do create nonce here. Do we not need to store it for comparison?
-          byte[] rand = new byte[32];
-          new SecureRandom().nextBytes(rand);
-          String nonce = Base64.getUrlEncoder().encodeToString(rand);
-          requestArguments.put("nonce", nonce);
-        }
-      } catch (InvalidClaimException e) {
-        throw new ValueException(
-            String.format("Argument response_type validation failed '%s'", e.getMessage()));
+      String responseType = (String) requestArguments.get("response_type");
+      if (Pattern.compile("\\bid_token\\b").matcher(responseType).find()) {
+        // TODO: We do create nonce here. Do we not need to store it for comparison?
+        byte[] rand = new byte[32];
+        new SecureRandom().nextBytes(rand);
+        String nonce = Base64.getUrlEncoder().encodeToString(rand);
+        requestArguments.put("nonce", nonce);
       }
     }
   }

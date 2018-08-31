@@ -17,27 +17,29 @@
 package org.oidc.service.base.processor;
 
 import java.util.Map;
-import org.oidc.common.ValueException;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.msg.ParameterVerification;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
  * Class creates a {@link StateRecord} to {@link State} database for state parameter value. If state
  * parameter is not request argument or is of wrong type, state value is created and set as request
  * argument.
  */
-public class AddState implements RequestArgumentProcessor {
+public class AddState extends AbstractRequestArgumentProcessor {
+  
+  {
+    paramVerDefs.put("state", ParameterVerification.SINGLE_OPTIONAL_STRING.getValue());
+  }
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments == null || service == null) {
       return;
     }
-    String state = null;
-    if (requestArguments.containsKey("state") && requestArguments.get("state") instanceof String) {
-      state = (String) requestArguments.get("state");
-    }
+    String state = (String) requestArguments.get("state");
     requestArguments.put("state",
         service.getState().createStateRecord(service.getServiceContext().getIssuer(), state));
   }

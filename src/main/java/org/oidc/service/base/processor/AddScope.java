@@ -18,21 +18,24 @@ package org.oidc.service.base.processor;
 
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.oidc.common.ValueException;
-import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.validator.ArrayClaimValidator;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.msg.ParameterVerification;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
  * Class ensures scope arguments exists and has values openid. If needed, the scope value is created
  * or manipulated.
  */
-public class AddScope implements RequestArgumentProcessor {
+public class AddScope extends AbstractRequestArgumentProcessor {
+  
+  {
+    paramVerDefs.put("scope", ParameterVerification.OPTIONAL_LIST_OF_SP_SEP_STRINGS.getValue());
+  }
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments == null) {
       return;
     }
@@ -40,16 +43,10 @@ public class AddScope implements RequestArgumentProcessor {
     if (!requestArguments.containsKey("scope")) {
       requestArguments.put("scope", "openid");
     } else {
-      try {
-        String spaceSeparatedScopes = new ArrayClaimValidator()
-            .validate(requestArguments.get("scope"));
-        if (!Pattern.compile("\\bopenid\\b").matcher(spaceSeparatedScopes).find()) {
-          spaceSeparatedScopes += spaceSeparatedScopes.length() > 0 ? " openid" : "openid";
-          requestArguments.put("scope", spaceSeparatedScopes);
-        }
-      } catch (InvalidClaimException e) {
-        throw new ValueException(
-            String.format("Argument scope validation failed '%s'", e.getMessage()));
+      String spaceSeparatedScopes = (String) requestArguments.get("scope");
+      if (!Pattern.compile("\\bopenid\\b").matcher(spaceSeparatedScopes).find()) {
+        spaceSeparatedScopes += spaceSeparatedScopes.length() > 0 ? " openid" : "openid";
+        requestArguments.put("scope", spaceSeparatedScopes);
       }
     }
   }

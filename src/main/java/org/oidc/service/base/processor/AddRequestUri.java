@@ -21,20 +21,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.oidc.common.ValueException;
+import org.oidc.msg.Error;
+import org.oidc.msg.ErrorDetails;
+import org.oidc.msg.ErrorType;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.msg.oidc.ProviderConfigurationResponse;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceContext;
 
 import com.google.common.base.Strings;
 
-public class AddRequestUri implements RequestArgumentProcessor {
+public class AddRequestUri extends AbstractRequestArgumentProcessor {
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     ServiceContext context = service.getServiceContext();
     if (!Strings.isNullOrEmpty(context.getRequestsDirectory())) {
       ASConfigurationResponse opConfiguration = context.getProviderConfigurationResponse();
@@ -44,8 +47,10 @@ public class AddRequestUri implements RequestArgumentProcessor {
         try {
           List<String> uris = context.generateRequestUris(context.getRequestsDirectory());
           requestArguments.put("request_uris", uris);
-        } catch (NoSuchAlgorithmException | InvalidClaimException e) {
-          new ValueException("Could not generate a request URI", e);
+        } catch (NoSuchAlgorithmException | InvalidClaimException | ValueException e) {
+          ErrorDetails details = new ErrorDetails("request_uris", ErrorType.MISSING_REQUIRED_VALUE,
+              "Could not construct 'request_uris' parameter", e);
+          error.getDetails().add(details);
         }
       }
     }

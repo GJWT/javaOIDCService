@@ -19,14 +19,15 @@ package org.oidc.service.base.processor;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
-public class AddRedirectUris implements RequestArgumentProcessor {
+public class AddRedirectUris extends AbstractRequestArgumentProcessor {
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments,
-      AbstractService service) {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (!requestArguments.containsKey("redirect_uris")) {
       if (service.getServiceContext().getCallBack() != null) {
         requestArguments.put("redirect_uris",

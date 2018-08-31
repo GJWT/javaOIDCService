@@ -17,31 +17,29 @@
 package org.oidc.service.base.processor;
 
 import java.util.Map;
-import org.oidc.common.ValueException;
-import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.validator.StringClaimValidator;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.msg.ParameterVerification;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
  * Class stores nonce as a key for stateKey in stateDB. If any of the preconditions needed to store
  * the value is not met (as there is no statedn, nonce or state etc). the class fails silently.
  */
-public class StoreNonce implements RequestArgumentProcessor {
+public class StoreNonce extends AbstractRequestArgumentProcessor {
+
+  {
+    paramVerDefs.put("nonce", ParameterVerification.SINGLE_OPTIONAL_STRING.getValue());
+    paramVerDefs.put("state", ParameterVerification.SINGLE_OPTIONAL_STRING.getValue());
+  }
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (requestArguments == null || service == null || service.getState() == null) {
       return;
     }
-    try {
-      service.getState().storeStateKeyForNonce(
-          new StringClaimValidator().validate(requestArguments.get("nonce")),
-          new StringClaimValidator().validate(requestArguments.get("state")));
-    } catch (InvalidClaimException e) {
-      // Indicating exception is not handled on purpose.
-      return;
-    }
+    service.getState().storeStateKeyForNonce((String) requestArguments.get("nonce"),
+        (String) requestArguments.get("state"));
   }
 }

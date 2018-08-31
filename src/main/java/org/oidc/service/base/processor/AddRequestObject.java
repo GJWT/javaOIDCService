@@ -21,13 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
-import org.oidc.common.ValueException;
+import org.oidc.msg.Error;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RequestObject;
 import org.oidc.msg.validator.StringClaimValidator;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
  * Class to add request object to the request if post constructor arguments have a string value of
@@ -56,11 +56,14 @@ import org.oidc.service.base.RequestArgumentProcessor;
  * silently.
  * </p>
  */
-public class AddRequestObject implements RequestArgumentProcessor {
+public class AddRequestObject extends AbstractRequestArgumentProcessor {
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
+    
+    //TODO: under construction - how to do the validation for post constructor args?
+    
     if (requestArguments == null || service == null) {
       return;
     }

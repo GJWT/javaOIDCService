@@ -19,15 +19,15 @@ package org.oidc.service.base.processor;
 import java.util.List;
 import java.util.Map;
 
-import org.oidc.common.ValueException;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
-public class AddPostLogoutRedirectUris implements RequestArgumentProcessor {
+public class AddPostLogoutRedirectUris extends AbstractRequestArgumentProcessor {
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, AbstractService service)
-      throws ValueException {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     if (!requestArguments.containsKey("post_logout_redirect_uris")) {
       List<String> uris = service.getServiceContext().getPostLogoutRedirectUris();
       if (uris != null && !uris.isEmpty()) {

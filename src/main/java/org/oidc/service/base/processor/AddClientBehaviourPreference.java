@@ -18,14 +18,15 @@ package org.oidc.service.base.processor;
 
 import java.util.Map;
 
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.RequestArgumentProcessor;
+import org.oidc.msg.Error;
+import org.oidc.service.Service;
+import org.oidc.service.base.RequestArgumentProcessingException;
 
-public class AddClientBehaviourPreference implements RequestArgumentProcessor {
+public class AddClientBehaviourPreference extends AbstractRequestArgumentProcessor {
 
   @Override
-  public void processRequestArguments(Map<String, Object> requestArguments,
-      AbstractService service) {
+  protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
+      Error error) throws RequestArgumentProcessingException {
     for (String key : service.getRequestMessage().getParameterVerificationDefinitions().keySet()) {
       if (requestArguments.containsKey(key)) {
         continue;
