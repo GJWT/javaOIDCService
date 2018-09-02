@@ -23,7 +23,8 @@ import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
- * Class stores nonce as a key for stateKey in stateDB. Class assumes stateDB is available.
+ * Class stores nonce as a key for stateKey in stateDB if they both exist. Class assumes stateDB is
+ * available.
  */
 public class StoreNonce extends AbstractRequestArgumentProcessor {
 
@@ -35,7 +36,9 @@ public class StoreNonce extends AbstractRequestArgumentProcessor {
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    service.getState().storeStateKeyForNonce((String) requestArguments.get("nonce"),
-        (String) requestArguments.get("state"));
+    if (requestArguments.containsKey("nonce") && requestArguments.containsKey("state")) {
+      service.getState().storeStateKeyForNonce((String) requestArguments.get("nonce"),
+          (String) requestArguments.get("state"));
+    }
   }
 }
