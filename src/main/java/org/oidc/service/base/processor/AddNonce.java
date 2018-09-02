@@ -45,7 +45,6 @@ public class AddNonce extends AbstractRequestArgumentProcessor {
     if (!requestArguments.containsKey("nonce") && requestArguments.containsKey("response_type")) {
       String responseType = (String) requestArguments.get("response_type");
       if (Pattern.compile("\\bid_token\\b").matcher(responseType).find()) {
-        // TODO: We do create nonce here. Do we not need to store it for comparison?
         byte[] rand = new byte[32];
         new SecureRandom().nextBytes(rand);
         String nonce = Base64.getUrlEncoder().encodeToString(rand);
