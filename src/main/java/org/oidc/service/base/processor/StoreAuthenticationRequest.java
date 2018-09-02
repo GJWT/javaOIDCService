@@ -26,18 +26,13 @@ import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
- * Class stores Authentication request to stateDb. If any of the preconditions needed to store the
- * value is not met (as there is no statedb, state or state is of wrong type etc.) the class fails
- * silently.
+ * Class stores Authentication request to stateDb. Class assumes stateDB is available.
  */
 public class StoreAuthenticationRequest extends AbstractRequestArgumentProcessor {
 
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    if (requestArguments == null || service == null || service.getState() == null) {
-      return;
-    }
     try {
       String state = new StringClaimValidator().validate(requestArguments.get("state"));
       service.getState().storeItem(service.getRequestMessage(), state,

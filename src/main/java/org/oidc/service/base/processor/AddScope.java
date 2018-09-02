@@ -36,9 +36,6 @@ public class AddScope extends AbstractRequestArgumentProcessor {
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    if (requestArguments == null) {
-      return;
-    }
     // Manipulate scope. Ensure openid scope is defined.
     if (!requestArguments.containsKey("scope")) {
       requestArguments.put("scope", "openid");

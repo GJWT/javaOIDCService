@@ -39,9 +39,6 @@ public class AddNonce extends AbstractRequestArgumentProcessor {
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    if (requestArguments == null) {
-      return;
-    }
     if (!requestArguments.containsKey("nonce") && requestArguments.containsKey("response_type")) {
       String responseType = (String) requestArguments.get("response_type");
       if (Pattern.compile("\\bid_token\\b").matcher(responseType).find()) {

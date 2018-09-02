@@ -36,9 +36,6 @@ public class AddState extends AbstractRequestArgumentProcessor {
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    if (requestArguments == null || service == null) {
-      return;
-    }
     String state = (String) requestArguments.get("state");
     requestArguments.put("state",
         service.getState().createStateRecord(service.getServiceContext().getIssuer(), state));
