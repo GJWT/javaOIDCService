@@ -128,7 +128,7 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
                 ErrorType.VALUE_NOT_ALLOWED));
         throw new RequestArgumentProcessingException(error);
       }
-    } 
+    }
     // TODO: support for request_uri
   }
 
