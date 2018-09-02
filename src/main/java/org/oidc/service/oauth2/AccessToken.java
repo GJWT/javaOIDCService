@@ -16,8 +16,8 @@
 
 package org.oidc.service.oauth2;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.oidc.common.ClientAuthenticationMethod;
@@ -27,18 +27,18 @@ import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.SerializationException;
 import org.oidc.msg.oauth2.AccessTokenRequest;
 import org.oidc.msg.oauth2.AccessTokenResponse;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessingException;
+import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.base.processor.ExtendAccessTokenRequestArguments;
 import org.oidc.service.data.State;
 
 public class AccessToken extends AbstractService {
@@ -56,13 +56,9 @@ public class AccessToken extends AbstractService {
     this.expectedResponseClass = AccessTokenResponse.class;
     this.defaultAuthenticationMethod = ClientAuthenticationMethod.CLIENT_SECRET_BASIC;
 
-    /** TODO: Add preCosntructors
-     * 1. verify state parameter exists as req param or as preContrs param
-     * 2. get with state auth req and response. Extends your arguments with request/response
-     * 3. Set grant_type if not set
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(...);
-    */
-   
+    this.preConstructors = (List<RequestArgumentProcessor>) Arrays
+        .asList((RequestArgumentProcessor) new ExtendAccessTokenRequestArguments());
+
   }
 
   @Override
@@ -79,8 +75,7 @@ public class AccessToken extends AbstractService {
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
-      Map<String, Object> requestArguments)
-      throws RequestArgumentProcessingException {
+      Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
 
     return httpArguments;
   }
