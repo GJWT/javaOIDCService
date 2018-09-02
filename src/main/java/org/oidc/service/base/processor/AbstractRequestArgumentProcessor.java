@@ -35,37 +35,53 @@ import org.oidc.service.base.RequestArgumentProcessor;
 public abstract class AbstractRequestArgumentProcessor implements RequestArgumentProcessor {
 
   /** Parameter requirements. */
-  protected final Map<String, ParameterVerificationDefinition> paramVerDefs = new HashMap<String, ParameterVerificationDefinition>();
+  protected final Map<String, ParameterVerificationDefinition> paramVerDefs = 
+      new HashMap<String, ParameterVerificationDefinition>();
+  protected final Map<String, ParameterVerificationDefinition> preParamVerDefs =
+      new HashMap<String, ParameterVerificationDefinition>();
+  protected final Map<String, ParameterVerificationDefinition> postParamVerDefs = 
+      new HashMap<String, ParameterVerificationDefinition>();
 
   /** Allowed values for desired parameters. */
   protected final Map<String, List<?>> allowedValues = new HashMap<String, List<?>>();
 
-  @Override
-  public void processRequestArguments(Map<String, Object> requestArguments, Service service)
+  private void verifyArguments(Map<String, Object> arguments,
+      Map<String, ParameterVerificationDefinition> argumentParamVerDefs, Error error)
       throws RequestArgumentProcessingException {
-    Error error = new Error();
-    for (String paramName : paramVerDefs.keySet()) {
+    for (String paramName : argumentParamVerDefs.keySet()) {
       // If parameter is defined as REQUIRED, it must exist.
-      if (paramVerDefs.get(paramName).isRequired() && (!requestArguments.containsKey(paramName)
-          || requestArguments.get(paramName) == null)) {
+      if (argumentParamVerDefs.get(paramName).isRequired()
+          && (!arguments.containsKey(paramName) || arguments.get(paramName) == null)) {
         ErrorDetails details = new ErrorDetails(paramName, ErrorType.MISSING_REQUIRED_VALUE);
         error.getDetails().add(details);
       }
-      Object value = requestArguments.get(paramName);
+      Object value = arguments.get(paramName);
       if (value == null) {
         continue;
       }
       // If parameter exists, we verify the type of it and possibly transform it.
       try {
-        Object transformed = paramVerDefs.get(paramName).getClaimValidator().validate(value);
-        requestArguments.put(paramName, transformed);
+        Object transformed = argumentParamVerDefs.get(paramName).getClaimValidator()
+            .validate(value);
+        arguments.put(paramName, transformed);
       } catch (InvalidClaimException e) {
         ErrorDetails details = new ErrorDetails(paramName, ErrorType.INVALID_VALUE_FORMAT, e);
         error.getDetails().add(details);
       }
     }
+  }
+
+  @Override
+  public void processRequestArguments(Map<String, Object> requestArguments, Service service)
+      throws RequestArgumentProcessingException {
+    Error error = new Error();
+    verifyArguments(requestArguments, paramVerDefs, error);
+    verifyArguments(service.getPreConstructorArgs(), preParamVerDefs, error);
+    verifyArguments(service.getPostConstructorArgs(), postParamVerDefs, error);
     try {
-      processVerifiedArguments(requestArguments, service, error);
+      if (error.getDetails().isEmpty()) {
+        processVerifiedArguments(requestArguments, service, error);
+      }
     } catch (RequestArgumentProcessingException e) {
       error = e.getError();
     }
