@@ -154,6 +154,13 @@ public interface Service {
   Map<String, Object> getPostConstructorArgs();
   
   /**
+   * Get the map of arguments sent to the pre constructors.
+   * 
+   * @return The map of arguments sent to the pre constructors.
+   */
+  Map<String, Object> getPreConstructorArgs();
+  
+  /**
    * Get the state attached to this service.
    * 
    * @return The state attached to this service.
