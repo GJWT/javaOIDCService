@@ -16,6 +16,7 @@
 
 package org.oidc.service.oidc;
 
+import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ValueException;
@@ -93,6 +94,16 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
       response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid"));
     }
     return responseMessage;
+  }
+  
+  @Override
+  public ClientAuthenticationMethod getDefaultAuthenticationMethod() {
+    if (getServiceContext().getBehavior().getClaims().containsKey("token_endpoint_auth_method")) {
+      String method = (String) getServiceContext().getBehavior().getClaims()
+          .get("token_endpoint_auth_method");
+      return ClientAuthenticationMethod.fromClaimValue(method);
+    }
+    return defaultAuthenticationMethod;
   }
 
 }
