@@ -41,6 +41,9 @@ import org.oidc.service.base.ServiceContext;
 import org.oidc.service.base.processor.ExtendAccessTokenRequestArguments;
 import org.oidc.service.data.State;
 
+/**
+ * OAUTH2 provider access token service.
+ */
 public class AccessToken extends AbstractService {
 
   public AccessToken(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
