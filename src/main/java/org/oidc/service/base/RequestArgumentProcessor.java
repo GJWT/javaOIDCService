@@ -20,9 +20,25 @@ import java.util.Map;
 
 import org.oidc.service.Service;
 
+/**
+ * The request argument processors are used when request messages are built for the given
+ * {@link Service}. The implementations of this interface can be called prior and after the actual
+ * construction of the request message.
+ */
 public interface RequestArgumentProcessor {
 
-  public void processRequestArguments(Map<String, Object> requestArguments,
-      Service service) throws RequestArgumentProcessingException;
+  /**
+   * Processes the given request arguments by exploiting the current state of them and the given
+   * service.
+   * 
+   * @param requestArguments
+   *          The request arguments to be populated.
+   * @param service
+   *          The service for which the request message is being constructed.
+   * @throws RequestArgumentProcessingException
+   *           If anything unexpected happens during processing.
+   */
+  public void processRequestArguments(Map<String, Object> requestArguments, Service service)
+      throws RequestArgumentProcessingException;
 
 }
