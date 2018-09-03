@@ -34,13 +34,12 @@ import org.oidc.service.base.RequestArgumentProcessor;
  */
 public abstract class AbstractRequestArgumentProcessor implements RequestArgumentProcessor {
 
-  /** Parameter requirements. */
-  protected final Map<String, ParameterVerificationDefinition> paramVerDefs = 
-      new HashMap<String, ParameterVerificationDefinition>();
-  protected final Map<String, ParameterVerificationDefinition> preParamVerDefs =
-      new HashMap<String, ParameterVerificationDefinition>();
-  protected final Map<String, ParameterVerificationDefinition> postParamVerDefs = 
-      new HashMap<String, ParameterVerificationDefinition>();
+  /** Parameter requirements for request arguments. */
+  protected final Map<String, ParameterVerificationDefinition> paramVerDefs = new HashMap<String, ParameterVerificationDefinition>();
+  /** Parameter requirements for pre constructor arguments. */
+  protected final Map<String, ParameterVerificationDefinition> preParamVerDefs = new HashMap<String, ParameterVerificationDefinition>();
+  /** Parameter requirements for post constructor arguments. */
+  protected final Map<String, ParameterVerificationDefinition> postParamVerDefs = new HashMap<String, ParameterVerificationDefinition>();
 
   /** Allowed values for desired parameters. */
   protected final Map<String, List<?>> allowedValues = new HashMap<String, List<?>>();
@@ -71,9 +70,20 @@ public abstract class AbstractRequestArgumentProcessor implements RequestArgumen
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void processRequestArguments(Map<String, Object> requestArguments, Service service)
       throws RequestArgumentProcessingException {
+    if (requestArguments == null) {
+      throw new RequestArgumentProcessingException(new ErrorDetails("requestArguments",
+          ErrorType.MISSING_REQUIRED_VALUE, "The request arguments cannot be null"));
+    }
+    if (service == null) {
+      throw new RequestArgumentProcessingException(new ErrorDetails("service",
+          ErrorType.MISSING_REQUIRED_VALUE, "The service cannot be null"));     
+    }
     Error error = new Error();
     verifyArguments(requestArguments, paramVerDefs, error);
     verifyArguments(service.getPreConstructorArgs(), preParamVerDefs, error);
@@ -90,6 +100,21 @@ public abstract class AbstractRequestArgumentProcessor implements RequestArgumen
     }
   }
 
+  /**
+   * Processes the request, pre constructor and post constructor arguments for the service. All the
+   * arguments are verified to be in-line with the parameter requirements for this processor.
+   * 
+   * @param requestArguments
+   *          The request arguments.
+   * @param service
+   *          The service for which the arguments are processed.
+   * @param error
+   *          The errors detected so far. They are included inside the thrown
+   *          {@link RequestArgumentProcessingException} if any new errors occur.
+   * @throws RequestArgumentProcessingException
+   *           If any errors occured during the processing. The details exists in the {@link Error}
+   *           wrapped inside the exception.
+   */
   protected abstract void processVerifiedArguments(Map<String, Object> requestArguments,
       Service service, Error error) throws RequestArgumentProcessingException;
 
