@@ -48,6 +48,9 @@ import org.oidc.service.base.processor.StoreAuthenticationRequest;
 import org.oidc.service.base.processor.StoreNonce;
 import org.oidc.service.data.State;
 
+/**
+ * OIDC provider authentication service.
+ */
 public class Authentication extends AbstractService {
 
   public Authentication(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
