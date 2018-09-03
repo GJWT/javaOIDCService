@@ -21,7 +21,14 @@ import java.util.Map;
 import org.oidc.msg.Error;
 import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
+import org.oidc.service.base.ServiceContext;
 
+/**
+ * Iterates over all the claims that are defined as required or optional for the given
+ * {@link Service}'s request message. If they don't exist in the given request arguments, they are
+ * added there from either {̛@link ServiceContext#getBehaviour} or
+ * {@link ServiceContext#getClientPreferences()}, if they are set in their claims map.
+ */
 public class AddClientBehaviourPreference extends AbstractRequestArgumentProcessor {
 
   @Override
