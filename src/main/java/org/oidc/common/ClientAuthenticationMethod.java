@@ -17,8 +17,40 @@
 package org.oidc.common;
 
 /**
- * Types of ClientAuthenticationMethods
+ * Types of ClientAuthenticationMethods.
  */
 public enum ClientAuthenticationMethod {
-  CLIENT_SECRET_BASIC, CLIENT_SECRET_POST, BEARER_HEADER, BEARER_BODY, CLIENT_SECRET_JWT, PRIVATE_KEY_JWT, NONE;
+
+  CLIENT_SECRET_BASIC, CLIENT_SECRET_POST, BEARER_HEADER, BEARER_BODY, 
+  CLIENT_SECRET_JWT, PRIVATE_KEY_JWT, NONE;
+
+  /**
+   * Convert oidc claim value to authentication method enumeration.
+   * 
+   * @param value
+   *          claim value to convert.
+   * @return authentication method enumeration, null if there is no match
+   */
+  public static ClientAuthenticationMethod fromClaimValue(String value) {
+    switch (value) {
+      case "client_secret_basic":
+        return CLIENT_SECRET_BASIC;
+      case "client_secret_post":
+        return CLIENT_SECRET_POST;
+      case "bearer_header":
+        return BEARER_HEADER;
+      case "bearer_body":
+        return BEARER_BODY;
+      case "client_secret_jwt":
+        return CLIENT_SECRET_JWT;
+      case "private_key_jwt":
+        return PRIVATE_KEY_JWT;
+      case "none":
+        return NONE;
+      default:
+        break;
+    }
+    return null;
+  }
+
 }
