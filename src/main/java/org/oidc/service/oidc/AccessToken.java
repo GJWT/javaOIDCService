@@ -72,7 +72,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
   }
 
   @Override
-  public Message postParseResponse(Message responseMessage, String stateKey) {
+  public Message prepareMessageForVerification(Message responseMessage) {
     if (!(responseMessage instanceof AccessTokenResponse)) {
       return responseMessage;
     }

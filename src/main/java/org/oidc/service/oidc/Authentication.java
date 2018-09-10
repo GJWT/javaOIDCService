@@ -114,7 +114,7 @@ public class Authentication extends AbstractService {
   }
 
   @Override
-  public Message postParseResponse(Message responseMessage, String stateKey) {
+  public Message prepareMessageForVerification(Message responseMessage) {
     if (!(responseMessage instanceof AuthenticationResponse)) {
       return responseMessage;
     }

@@ -217,10 +217,12 @@ public abstract class AbstractService implements Service {
       throw new ValueException("Unexpected response message type, not instance of "
           + this.responseMessage.getClass().getName());
     }
+    /*
     if (!response.verify()) {
       // TODO
       throw new InvalidClaimException("TODO: add details here");
     }
+    */
     doUpdateServiceContext(response, stateKey);
   }
 
@@ -281,22 +283,42 @@ public abstract class AbstractService implements Service {
       throw new DeserializationException("Could not deserialize the given message", e);
     }
 
-    // TODO
-    /*
-     * if(response instanceof AuthorizationResponse && Strings.isNullOrEmpty(response.getScope())) {
-     * response.setScope(addedClaims.getScope()); }
-     */
-
-    this.responseMessage = this.postParseResponse(this.responseMessage, stateKey);
+    this.responseMessage = prepareMessageForVerification(this.responseMessage);
 
     if (this.responseMessage == null) {
       throw new DeserializationException("Missing or faulty response");
     }
-
-    return this.responseMessage;
+    try {
+      this.responseMessage.verify();
+    } catch (InvalidClaimException e) {
+      throw new DeserializationException(
+          String.format("Deserialized message failed to verify '%s'", e.getMessage()));
+    }
+    return postParseResponse(this.responseMessage, stateKey);
   }
 
-  public Message postParseResponse(Message responseMessage, String stateKey) {
+  /**
+   * Prepare message for verification. Each service have their own version of this method.
+   * @param responseMessage the message for to prepare.
+   * @return prepared message.
+   */
+  public Message prepareMessageForVerification(Message responseMessage) {
+    return responseMessage;
+  }
+  
+  /**
+   * This method does post processing of the service response. Each service have their own version
+   * of this method.
+   * 
+   * @param responseMessage
+   *          the message for post processing.
+   * @param stateKey
+   *          to store state.
+   * @return post processed response.
+   * @throws DeserializationException
+   */
+  public Message postParseResponse(Message responseMessage, String stateKey)
+      throws DeserializationException {
     return responseMessage;
   }
 
