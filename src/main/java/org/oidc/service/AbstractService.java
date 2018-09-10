@@ -272,18 +272,20 @@ public abstract class AbstractService implements Service {
       }
     }
 
+    this.responseMessage = prepareMessageForVerification(this.responseMessage);
     try {
       if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
         this.responseMessage.fromUrlEncoded(urlInfo);
       } else if (SerializationType.JSON.equals(this.serializationType)) {
         this.responseMessage.fromJson(responseBody);
       }
+      // TODO: Add deserialization from jwt. Add new interface to identify if the message is able to
+      // deserialize itself from jwt. prepareMessageForVerification has already populated needed
+      // parameters.
     } catch (IOException e) {
       logger.error("Error while deserializing");
       throw new DeserializationException("Could not deserialize the given message", e);
     }
-
-    this.responseMessage = prepareMessageForVerification(this.responseMessage);
 
     if (this.responseMessage == null) {
       throw new DeserializationException("Missing or faulty response");
