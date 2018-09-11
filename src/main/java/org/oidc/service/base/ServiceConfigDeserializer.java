@@ -23,6 +23,7 @@ import java.util.List;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.SerializationType;
+import org.oidc.common.ServiceName;
 import org.oidc.service.util.Constants;
 import org.oidc.service.util.ServiceUtil;
 
@@ -52,6 +53,15 @@ public class ServiceConfigDeserializer extends StdDeserializer<ServiceConfig> {
 
     ServiceConfig config = new ServiceConfig();
 
+    if (node.get(Constants.SERVICE_CONFIG_KEY_SERVICE_NAME) != null) {
+      try {
+        config.setServiceName(ServiceName.valueOf(
+            node.get(Constants.SERVICE_CONFIG_KEY_SERVICE_NAME).asText()));
+      } catch (IllegalArgumentException e) {
+        throw new InvalidConfigurationPropertyException(
+            "Invalid value for " + Constants.SERVICE_CONFIG_KEY_SERVICE_NAME, e);
+      }
+    }
     if (node.get(Constants.SERVICE_CONFIG_KEY_ENDPOINT) != null) {
       config.setEndpoint(node.get(Constants.SERVICE_CONFIG_KEY_ENDPOINT).asText());
     }

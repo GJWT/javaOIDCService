@@ -21,6 +21,7 @@ public class Constants {
   /**
    * Service configuration property keys.
    */
+  public static final String SERVICE_CONFIG_KEY_SERVICE_NAME = "service_name";
   public static final String SERVICE_CONFIG_KEY_ENDPOINT = "service_endpoint";
   public static final String SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD = "service_default_authentication_method";
   public static final String SERVICE_CONFIG_KEY_HTTP_METHOD = "service_http_method";
