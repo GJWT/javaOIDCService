@@ -53,7 +53,7 @@ public class Webfinger extends AbstractService {
 
   public Webfinger(ServiceContext serviceContext, State state, ServiceConfig config) {
     super(serviceContext, state, config);
-    this.serviceName = ServiceName.WEB_FINGER;
+    this.serviceName = ServiceName.WEBFINGER;
     this.requestMessage = new WebfingerRequest();
     this.responseMessage = new JsonResponseDescriptor();
     this.expectedResponseClass = JsonResponseDescriptor.class;
