@@ -81,13 +81,16 @@ public class Webfinger extends AbstractService {
       String rel = (String) link.getClaims().get("rel");
       if (!Strings.isNullOrEmpty(rel) && rel.equals(linkRelationType)) {
         String href = (String) link.getClaims().get("href");
-        // allows for non-standard behavior for schema and issuer
-        if (!serviceConfig.isShouldAllowHttp() || !serviceConfig.isShouldAllowNonStandardIssuer()) {
-          throw new ValueException("http link not allowed: " + href);
+        if (href != null) {
+          // allows for non-standard behavior for schema and issuer
+          if (href.startsWith("http:") && (!serviceConfig.isShouldAllowHttp()
+              || !serviceConfig.isShouldAllowNonStandardIssuer())) {
+            throw new ValueException("http link not allowed: " + href);
+          }
+          this.serviceContext.setIssuer(href);
+          // pick the first one
+          break;
         }
-        this.serviceContext.setIssuer(href);
-        // pick the first one
-        break;
       }
     }
   }
@@ -102,7 +105,8 @@ public class Webfinger extends AbstractService {
    * @return
    * @throws Exception
    */
-  protected String getEndpointWithoutQuery(String resource) throws RequestArgumentProcessingException {
+  protected String getEndpointWithoutQuery(String resource)
+      throws RequestArgumentProcessingException {
     String host = null;
     Error error = new Error();
     if (resource.startsWith("http")) {
@@ -110,7 +114,8 @@ public class Webfinger extends AbstractService {
       try {
         url = new URL(resource);
       } catch (MalformedURLException e) {
-        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The value cannot be converted into a URL", e);
+        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
+            ErrorType.VALUE_NOT_ALLOWED, "The value cannot be converted into a URL", e);
         error.getDetails().add(details);
         throw new RequestArgumentProcessingException(error);
       }
@@ -127,11 +132,13 @@ public class Webfinger extends AbstractService {
         if (hostArrSplit != null && hostArrSplit.length > 0) {
           host = hostArrSplit[0];
         } else {
-          ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The host in address cannot be split properly");
+          ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
+              ErrorType.VALUE_NOT_ALLOWED, "The host in address cannot be split properly");
           error.getDetails().add(details);
         }
       } else {
-        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The host in address cannot be split properly");
+        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
+            ErrorType.VALUE_NOT_ALLOWED, "The host in address cannot be split properly");
         error.getDetails().add(details);
       }
     } else if (resource.startsWith("device:")) {
@@ -139,11 +146,13 @@ public class Webfinger extends AbstractService {
       if (resourceArrSplit != null && resourceArrSplit.length > 1) {
         host = resourceArrSplit[1].replace("/", "#").replace("?", "#").split("#")[0];
       } else {
-        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "The resource cannot be split properly");
+        ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
+            ErrorType.VALUE_NOT_ALLOWED, "The resource cannot be split properly");
         error.getDetails().add(details);
       }
     } else {
-      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "Unknown scheme in the resource");
+      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
+          ErrorType.VALUE_NOT_ALLOWED, "Unknown scheme in the resource");
       error.getDetails().add(details);
     }
     if (!error.getDetails().isEmpty() || host == null) {
@@ -153,15 +162,15 @@ public class Webfinger extends AbstractService {
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
-      Map<String, Object> requestArguments)
-      throws RequestArgumentProcessingException {
+      Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
     String resource;
     Error error = new Error();
     try {
       resource = URIUtil.normalizeUrl((String) requestArguments.get(Constants.WEBFINGER_RESOURCE));
       requestArguments.put(Constants.WEBFINGER_RESOURCE, resource);
     } catch (ValueException e) {
-      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "Could not normalize the URI", e);
+      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
+          ErrorType.VALUE_NOT_ALLOWED, "Could not normalize the URI", e);
       error.getDetails().add(details);
       throw new RequestArgumentProcessingException(error);
     }
@@ -169,7 +178,8 @@ public class Webfinger extends AbstractService {
     try {
       httpArguments.setUrl(endpoint + this.requestMessage.toUrlEncoded());
     } catch (SerializationException e) {
-      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.VALUE_NOT_ALLOWED, "Could not serialize the request", e);
+      ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
+          ErrorType.VALUE_NOT_ALLOWED, "Could not serialize the request", e);
       error.getDetails().add(details);
       throw new RequestArgumentProcessingException(error);
     }
@@ -188,7 +198,8 @@ public class Webfinger extends AbstractService {
       }
     }
     if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_RESOURCE))) {
-      throw new RequestArgumentProcessingException(new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.MISSING_REQUIRED_VALUE));
+      throw new RequestArgumentProcessingException(
+          new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.MISSING_REQUIRED_VALUE));
     }
     if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_REL))) {
       requestArguments.put(Constants.WEBFINGER_REL, linkRelationType);
