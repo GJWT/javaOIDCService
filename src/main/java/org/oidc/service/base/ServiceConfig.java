@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.SerializationType;
+import org.oidc.common.ServiceName;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.SerializationException;
 import org.oidc.service.util.Constants;
@@ -40,7 +41,11 @@ import com.google.common.base.Strings;
  * Configuration that is specific to every service
  */
 public class ServiceConfig {
-
+  
+  /**
+   * The name for this service.
+   */
+  private ServiceName serviceName;
   /**
    * A URL defined where this service can be found at the Authorization server
    */
@@ -124,6 +129,14 @@ public class ServiceConfig {
     this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
   }
 
+  public ServiceName getServiceName() {
+    return serviceName;
+  }
+  
+  public void setServiceName(ServiceName name) {
+    serviceName = name;
+  }
+  
   public String getEndpoint() {
     return endpoint;
   }

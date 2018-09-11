@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.SerializationType;
+import org.oidc.common.ServiceName;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.SerializationException;
 import org.oidc.service.util.Constants;
@@ -143,7 +144,8 @@ public class ServiceConfigTest {
         "service_http_method: \"GET\"\n" + 
         "service_serialization_type: \"URL_ENCODED\"\n" + 
         "service_allow_non_standard_issuer: true\n" + 
-        "service_allow_http: true";
+        "service_allow_http: true\n" + 
+        "service_name: WEBFINGER";
     ServiceConfig config = ServiceConfig.fromYaml(yaml);
     Assert.assertEquals(ClientAuthenticationMethod.CLIENT_SECRET_BASIC, config.getDefaultAuthenticationMethod());
     Assert.assertEquals(SerializationType.JSON, config.getDeSerializationType());
@@ -152,6 +154,7 @@ public class ServiceConfigTest {
     Assert.assertEquals(SerializationType.URL_ENCODED, config.getSerializationType());
     Assert.assertTrue(config.isShouldAllowHttp());
     Assert.assertTrue(config.isShouldAllowNonStandardIssuer());
+    Assert.assertEquals(ServiceName.WEBFINGER, config.getServiceName());
   }
   
   @Test(expected = DeserializationException.class)
