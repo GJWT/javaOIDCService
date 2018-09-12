@@ -93,24 +93,23 @@ public class UserInfo extends AbstractService {
     if (!(responseMessage instanceof OpenIDSchema)) {
       return responseMessage;
     }
-    // TODO: userinfo response needs to be able to deserialize itself from jwt. Add following
-    // parameters to openid schema.
-    // Then openid schema needs to implement TBD interface with method fromJWT().
-    /*
-     * OpenIDSchema response = (OpenIDSchema) responseMessage;
-     * response.setKeyJar(getServiceContext().getKeyJar());
-     * response.setIssuer(getServiceContext().getIssuer());
-     * response.setClientId(getServiceContext().getClientId());
-     * response.setSkew(getServiceContext().getClockSkew()); if (getServiceContext().getBehavior()
-     * != null && getServiceContext().getBehavior().getClaims() != null) {
-     * response.setSigAlg((String) getServiceContext().getBehavior().getClaims()
-     * .get("userinfo_signed_response_alg")); response.setEncAlg((String)
-     * getServiceContext().getBehavior().getClaims() .get("userinfo_encrypted_response_alg"));
-     * response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
-     * .get("userinfo_encrypted_response_enc")); } if
-     * (getServiceContext().getAllow().containsKey("missing_kid")) {
-     * response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid")); }
-     */
+
+    OpenIDSchema response = (OpenIDSchema) responseMessage;
+    response.setKeyJar(getServiceContext().getKeyJar());
+    response.setIssuer(getServiceContext().getIssuer());
+    if (getServiceContext().getBehavior() != null
+        && getServiceContext().getBehavior().getClaims() != null) {
+      response.setSigAlg((String) getServiceContext().getBehavior().getClaims()
+          .get("userinfo_signed_response_alg"));
+      response.setEncAlg((String) getServiceContext().getBehavior().getClaims()
+          .get("userinfo_encrypted_response_alg"));
+      response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
+          .get("userinfo_encrypted_response_enc"));
+    }
+    if (getServiceContext().getAllow().containsKey("missing_kid")) {
+      response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid"));
+    }
+
     return responseMessage;
   }
 

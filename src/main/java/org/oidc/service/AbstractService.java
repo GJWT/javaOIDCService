@@ -16,6 +16,7 @@
 
 package org.oidc.service;
 
+import com.auth0.msg.KeyJar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
+import org.oidc.msg.CryptoMessage;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
@@ -218,11 +220,9 @@ public abstract class AbstractService implements Service {
           + this.responseMessage.getClass().getName());
     }
     /*
-    if (!response.verify()) {
-      // TODO
-      throw new InvalidClaimException("TODO: add details here");
-    }
-    */
+     * if (!response.verify()) { // TODO throw new InvalidClaimException("TODO: add details here");
+     * }
+     */
     doUpdateServiceContext(response, stateKey);
   }
 
@@ -272,42 +272,47 @@ public abstract class AbstractService implements Service {
       }
     }
 
-    this.responseMessage = prepareMessageForVerification(this.responseMessage);
+    // TODO: the if else logic does not guarantee successful outcome. This and other things in this
+    // abstract class need still tender care.
+    responseMessage = prepareMessageForVerification(this.responseMessage);
     try {
       if (SerializationType.URL_ENCODED.equals(this.serializationType)) {
-        this.responseMessage.fromUrlEncoded(urlInfo);
+        responseMessage.fromUrlEncoded(urlInfo);
       } else if (SerializationType.JSON.equals(this.serializationType)) {
-        this.responseMessage.fromJson(responseBody);
+        responseMessage.fromJson(responseBody);
+      } else if (SerializationType.JWT.equals(this.serializationType)
+          && responseMessage instanceof CryptoMessage) {
+        CryptoMessage msg = (CryptoMessage) responseMessage;
+        responseMessage.fromJwt(responseBody, msg.getKeyJar(), msg.getIssuer(),
+            msg.getNoKidIssuers(), msg.getAllowMissingKid(), msg.getTrustJku());
       }
-      // TODO: Add deserialization from jwt. Add new interface to identify if the message is able to
-      // deserialize itself from jwt. prepareMessageForVerification has already populated needed
-      // parameters.
     } catch (IOException e) {
       logger.error("Error while deserializing");
       throw new DeserializationException("Could not deserialize the given message", e);
     }
-
-    if (this.responseMessage == null) {
+    if (responseMessage == null) {
       throw new DeserializationException("Missing or faulty response");
     }
     try {
-      this.responseMessage.verify();
+      responseMessage.verify();
     } catch (InvalidClaimException e) {
       throw new DeserializationException(
           String.format("Deserialized message failed to verify '%s'", e.getMessage()));
     }
-    return postParseResponse(this.responseMessage, stateKey);
+    return postParseResponse(responseMessage, stateKey);
   }
 
   /**
    * Prepare message for verification. Each service have their own version of this method.
-   * @param responseMessage the message for to prepare.
+   * 
+   * @param responseMessage
+   *          the message for to prepare.
    * @return prepared message.
    */
   public Message prepareMessageForVerification(Message responseMessage) {
     return responseMessage;
   }
-  
+
   /**
    * This method does post processing of the service response. Each service have their own version
    * of this method.
@@ -420,13 +425,12 @@ public abstract class AbstractService implements Service {
     }
 
     httpArguments = finalizeGetRequestParameters(httpArguments, requestArguments);
-    //TODO: check getUrl() here or leave it to the user?
+    // TODO: check getUrl() here or leave it to the user?
     return httpArguments;
   }
 
   public abstract HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
-      Map<String, Object> requestArguments)
-      throws RequestArgumentProcessingException;
+      Map<String, Object> requestArguments) throws RequestArgumentProcessingException;
 
   protected Message constructRequest(Map<String, Object> requestArguments)
       throws RequestArgumentProcessingException {
