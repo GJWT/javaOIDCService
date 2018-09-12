@@ -130,33 +130,35 @@ public class UserInfo extends AbstractService {
     } else {
       // TODO: log warning about not being able to verify sub
     }
-    if (responseMessage.getClaims().containsKey("_claim_sources")
-        && responseMessage.getClaims().containsKey("_claim_names")) {
-      GenericMessage claimNames = new GenericMessage();
-      claimNames.fromJson((String) responseMessage.getClaims().get("_claim_names"));
-      GenericMessage claimSources = new GenericMessage();
-      claimSources.fromJson((String) responseMessage.getClaims().get("_claim_sources"));
-      for (Entry<String, Object> entry : claimNames.getClaims().entrySet()) {
-        String claim = entry.getKey();
-        String src = (String) entry.getValue();
-        ClaimSource claimSource = new ClaimSource();
-        claimSource.fromJson((String) claimSources.getClaims().get(src));
-        if (claimSource.getClaims().containsKey("JWT")) {
-          GenericMessage claimSourcesJwt = new GenericMessage();
-          // TODO set verification keys
-          claimSourcesJwt.fromJwt((String) claimSource.getClaims().get("JWT"), null, null);
-          if (claimSourcesJwt.getClaims().containsKey(src)) {
-            // TODO:aggregated claims are converted to notmal claims. Verify that really is
-            // intention.
-            responseMessage.getClaims().put(claim, claimSourcesJwt.getClaims().get(src));
-          }
-        } else if (claimSource.getClaims().containsKey("endpoint")) {
-          // TODO: What to do with distributed claims?
+    if (!responseMessage.getClaims().containsKey("_claim_sources")
+        || !responseMessage.getClaims().containsKey("_claim_names")) {
+      return responseMessage;
+    }
+    GenericMessage claimNames = new GenericMessage();
+    claimNames.fromJson((String) responseMessage.getClaims().get("_claim_names"));
+    GenericMessage claimSources = new GenericMessage();
+    claimSources.fromJson((String) responseMessage.getClaims().get("_claim_sources"));
+    for (Entry<String, Object> entry : claimNames.getClaims().entrySet()) {
+      String claim = entry.getKey();
+      String src = (String) entry.getValue();
+      ClaimSource claimSource = new ClaimSource();
+      claimSource.fromJson((String) claimSources.getClaims().get(src));
+      if (claimSource.getClaims().containsKey("JWT")) {
+        GenericMessage claimSourcesJwt = new GenericMessage();
+        // TODO verify what is needed to verify aggregated claims
+        claimSourcesJwt.fromJwt((String) claimSource.getClaims().get("JWT"),
+            getServiceContext().getKeyJar(), "");
+        if (claimSourcesJwt.getClaims().containsKey(src) && !"sub".equals(claim)) {
+          // TODO:aggregated claims are copied here to normal claims. Verify that really is
+          // intention.
+          responseMessage.getClaims().put(claim, claimSourcesJwt.getClaims().get(src));
         }
-
+      } else if (claimSource.getClaims().containsKey("endpoint")) {
+        // TODO: What to do with distributed claims?
       }
 
     }
+
     return responseMessage;
   }
 
