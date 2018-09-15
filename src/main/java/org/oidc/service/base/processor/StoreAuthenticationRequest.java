@@ -20,26 +20,24 @@ import java.util.Map;
 
 import org.oidc.common.MessageType;
 import org.oidc.msg.Error;
-import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.validator.StringClaimValidator;
+import org.oidc.msg.ParameterVerification;
 import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
- * Class stores Authentication request to stateDb. Class assumes stateDB is available.
+ * Class stores Authentication request to stateDb.
  */
 public class StoreAuthenticationRequest extends AbstractRequestArgumentProcessor {
+
+  {
+    paramVerDefs.put("state", ParameterVerification.SINGLE_REQUIRED_STRING.getValue());
+  }
 
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    try {
-      String state = new StringClaimValidator().validate(requestArguments.get("state"));
-      service.getState().storeItem(service.getRequestMessage(), state,
-          MessageType.AUTHORIZATION_REQUEST);
-    } catch (InvalidClaimException e) {
-      // Indicating exception is not handled on purpose.
-      return;
-    }
+
+    service.getState().storeItem(service.getRequestMessage(),
+        (String) requestArguments.get("state"), MessageType.AUTHORIZATION_REQUEST);
   }
 }
