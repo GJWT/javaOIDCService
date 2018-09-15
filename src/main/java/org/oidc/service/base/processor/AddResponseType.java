@@ -35,7 +35,6 @@ public class AddResponseType extends AbstractRequestArgumentProcessor {
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
     ServiceContext context = service.getServiceContext();
-    // Manipulate response type, default is code if not otherwise defined.
     if (!requestArguments.containsKey("response_type") && context.getBehavior() != null
         && context.getBehavior().getClaims() != null) {
       String responseType = null;
