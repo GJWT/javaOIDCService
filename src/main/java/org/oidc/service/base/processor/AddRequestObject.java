@@ -65,7 +65,6 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
     String requestMethod = (String) service.getPostConstructorArgs().get("request_method");
-    // TODO: allowed values for request_method
     if (!"request".equals(requestMethod) && !"request_uri".equals(requestMethod)) {
       return;
     }
