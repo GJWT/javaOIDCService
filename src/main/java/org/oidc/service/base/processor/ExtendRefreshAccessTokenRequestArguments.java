@@ -62,8 +62,6 @@ public class ExtendRefreshAccessTokenRequestArguments extends AbstractRequestArg
     service.getState().extendRequestArgs(args, MessageType.REFRESH_TOKEN_RESPONSE, state,
         new ArrayList<String>(
             service.getRequestMessage().getParameterVerificationDefinitions().keySet()));
-    // TODO: Verify merging the two maps is really the desired functionality. Remove this tag or
-    // correct logic if needed.
     requestArguments.putAll(args);
   }
 }
