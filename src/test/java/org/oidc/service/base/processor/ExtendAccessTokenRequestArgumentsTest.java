@@ -28,7 +28,7 @@ import org.oidc.msg.oidc.AuthenticationResponse;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
- * Unit tests for {@link StoreNonce}.
+ * Unit tests for {@link ExtendAccessTokenRequestArguments}.
  */
 public class ExtendAccessTokenRequestArgumentsTest
     extends BaseRequestArgumentProcessorTest<ExtendAccessTokenRequestArguments> {
