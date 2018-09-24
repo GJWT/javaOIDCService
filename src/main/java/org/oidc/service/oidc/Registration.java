@@ -76,6 +76,8 @@ public class Registration extends AbstractService {
     getServiceContext()
         .setRegistrationAccessToken((String) response.getClaims().get("registration_access_token"));
     getServiceContext().setRegistrationResponse((RegistrationResponse) response);
+    //TODO: the behaviour should probably be merged with the client preferences
+    getServiceContext().setBehavior((RegistrationResponse) response);
     this.responseMessage = response;
   }
 
