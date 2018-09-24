@@ -19,6 +19,7 @@ package org.oidc.service;
 import java.util.Map;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
+import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
 import org.oidc.common.ValueException;
 import org.oidc.msg.DeserializationException;
@@ -166,4 +167,11 @@ public interface Service {
    * @return The state attached to this service.
    */
   State getState();
+  
+  /**
+   * Get the name for this service.
+   * 
+   * @return The name for this service.
+   */
+  ServiceName getServiceName();
 }
