@@ -28,7 +28,7 @@ import org.oidc.service.base.RequestArgumentProcessingException;
  * or manipulated.
  */
 public class AddScope extends AbstractRequestArgumentProcessor {
-  
+
   {
     paramVerDefs.put("scope", ParameterVerification.OPTIONAL_LIST_OF_SP_SEP_STRINGS.getValue());
   }
@@ -40,7 +40,8 @@ public class AddScope extends AbstractRequestArgumentProcessor {
     if (!requestArguments.containsKey("scope")) {
       requestArguments.put("scope", "openid");
     } else {
-      String spaceSeparatedScopes = (String) requestArguments.get("scope");
+      String spaceSeparatedScopes = (String) requestArguments.get("scope") == null ? ""
+          : (String) requestArguments.get("scope");
       if (!Pattern.compile("\\bopenid\\b").matcher(spaceSeparatedScopes).find()) {
         spaceSeparatedScopes += spaceSeparatedScopes.length() > 0 ? " openid" : "openid";
         requestArguments.put("scope", spaceSeparatedScopes);
