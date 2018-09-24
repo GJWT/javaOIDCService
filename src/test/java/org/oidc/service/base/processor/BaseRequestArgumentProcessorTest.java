@@ -32,6 +32,7 @@ import org.oidc.service.Service;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.data.InMemoryStateImpl;
 import org.oidc.service.data.State;
 
 /**
@@ -75,11 +76,11 @@ public abstract class BaseRequestArgumentProcessorTest<T extends AbstractRequest
   protected class MockService extends AbstractService {
 
     public MockService() {
-      this(new ServiceContext(), null);
+      this(new ServiceContext(), new InMemoryStateImpl());
     }
     
     public MockService(Message request) {
-      this(new ServiceContext(), null);
+      this(new ServiceContext(), new InMemoryStateImpl());
       setRequestMessage(request);
     }
     

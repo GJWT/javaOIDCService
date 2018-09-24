@@ -18,7 +18,10 @@ package org.oidc.service.base.processor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.oidc.msg.Error;
+import org.oidc.msg.ParameterVerification;
 import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.ServiceContext;
@@ -36,16 +39,24 @@ import org.oidc.service.base.ServiceContext;
  */
 public class PickRedirectUri extends AbstractRequestArgumentProcessor {
 
+  {
+    paramVerDefs.put("redirect_uri", ParameterVerification.SINGLE_OPTIONAL_STRING.getValue());
+    paramVerDefs.put("response_mode", ParameterVerification.SINGLE_OPTIONAL_STRING.getValue());
+    paramVerDefs.put("response_type",
+        ParameterVerification.OPTIONAL_LIST_OF_SP_SEP_STRINGS.getValue());
+  }
+
+  @SuppressWarnings("unchecked")
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    if (requestArguments == null || requestArguments.containsKey("redirect_uri") || service == null
-        || service.getServiceContext() == null) {
+
+    if (requestArguments.containsKey("redirect_uri")) {
       return;
     }
     ServiceContext context = service.getServiceContext();
     if (context.getCallBack() == null) {
-      if (context.getRedirectUris() != null && context.getRedirectUris().size() > 0) {
+      if (context.getRedirectUris() != null && !context.getRedirectUris().isEmpty()) {
         requestArguments.put("redirect_uri", context.getRedirectUris().get(0));
       }
       return;
@@ -57,22 +68,19 @@ public class PickRedirectUri extends AbstractRequestArgumentProcessor {
       return;
     }
     String responseType = (String) requestArguments.get("response_type");
-    // TODO: Verify policy for Behaviour and it's claims. Can they be null? Assumed here so.
     if (responseType == null && context.getBehavior() != null
-        && context.getBehavior().getClaims() != null) {
-      if (context.getBehavior().getClaims().containsKey("response_types")) {
-        responseType = (String) ((List<String>) context.getBehavior().getClaims()
-            .get("response_types")).get(0);
-      }
+        && context.getBehavior().getClaims().containsKey("response_types")) {
+      responseType = (String) ((List<String>) context.getBehavior().getClaims()
+          .get("response_types")).get(0);
     }
     if (responseType == null) {
-      // default response type
+      // We resolve the redirect uri by default response type
       responseType = "code";
     }
-    if ("code".equals(responseType) && context.getCallBack().get("code") != null) {
+    if (Pattern.compile("\\bcode\\b").matcher(responseType).find()
+        && context.getCallBack().get("code") != null) {
       requestArguments.put("redirect_uri", context.getCallBack().get("code"));
     } else if (context.getCallBack().get("implicit") != null) {
-      // TODO: Verify this is really the case that everything else defaults to implicit value.
       requestArguments.put("redirect_uri", context.getCallBack().get("implicit"));
     }
   }

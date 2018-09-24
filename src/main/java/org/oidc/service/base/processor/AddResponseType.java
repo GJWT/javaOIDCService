@@ -26,7 +26,7 @@ import org.oidc.service.base.ServiceContext;
 /**
  * Class for adding response_type if not already set in request arguments. If response_type is not
  * already set in request arguments method tries to locate registration data and it's field
- * response_types. If located, response_type receives the index 0 value of response_types. 
+ * response_types. If located, response_type receives the index 0 value of response_types.
  */
 public class AddResponseType extends AbstractRequestArgumentProcessor {
 
@@ -35,7 +35,6 @@ public class AddResponseType extends AbstractRequestArgumentProcessor {
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
     ServiceContext context = service.getServiceContext();
-    // Manipulate response type, default is code if not otherwise defined.
     if (!requestArguments.containsKey("response_type") && context.getBehavior() != null
         && context.getBehavior().getClaims() != null) {
       String responseType = null;

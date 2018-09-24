@@ -24,7 +24,7 @@ import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
  * Class creates a {@link StateRecord} to {@link State} database for state parameter value. If state
- * parameter is not request argument or is of wrong type, state value is created and set as request
+ * parameter is not request argument, state value is created and set as request
  * argument.
  */
 public class AddState extends AbstractRequestArgumentProcessor {

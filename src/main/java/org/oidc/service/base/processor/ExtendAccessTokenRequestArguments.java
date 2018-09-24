@@ -65,8 +65,6 @@ public class ExtendAccessTokenRequestArguments extends AbstractRequestArgumentPr
     if (!args.containsKey("grant_type")) {
       args.put("grant_type", "authorization_code");
     }
-    // TODO: Verify merging the two maps is really the desired functionality. Remove this tag or
-    // correct logic if needed.
     requestArguments.putAll(args);
   }
 }

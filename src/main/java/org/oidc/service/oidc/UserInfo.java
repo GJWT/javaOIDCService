@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
@@ -30,8 +32,11 @@ import org.oidc.common.ValueException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
+import org.oidc.msg.oidc.ClaimSource;
+import org.oidc.msg.oidc.GenericMessage;
 import org.oidc.msg.oidc.IDToken;
 import org.oidc.msg.oidc.OpenIDSchema;
+import org.oidc.msg.oidc.UserInfoRequest;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessingException;
@@ -50,15 +55,12 @@ public class UserInfo extends AbstractService {
     super(serviceContext, state, serviceConfig);
     this.serviceName = ServiceName.USER_INFO;
     this.endpointName = EndpointName.USER_INFO;
-    // TODO: Python version has Message as the request message, basically the same as our
-    // AbstractMessage.
-    // this.requestMessage = new Message();
+    this.requestMessage = new UserInfoRequest();
     this.responseMessage = new OpenIDSchema();
     this.expectedResponseClass = OpenIDSchema.class;
     this.isSynchronous = true;
     this.defaultAuthenticationMethod = ClientAuthenticationMethod.BEARER_HEADER;
     this.httpMethod = HttpMethod.GET;
-
     // TODO: python implementation ensures state parameter availability for postConstructrors.. bit
     // uncertain if needed.
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays
@@ -69,22 +71,19 @@ public class UserInfo extends AbstractService {
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    // TODO Auto-generated method stub
-
+    state.storeItem(responseMessage, stateKey, MessageType.USER_INFO);
   }
 
   @Override
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
-    // TODO Auto-generated method stub
-    return null;
+    return httpArguments;
   }
 
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
       throws RequestArgumentProcessingException {
-    // TODO The request message construction.
-    return null;
+    return new UserInfoRequest(requestArguments);
   }
 
   @Override
@@ -93,24 +92,21 @@ public class UserInfo extends AbstractService {
     if (!(responseMessage instanceof OpenIDSchema)) {
       return responseMessage;
     }
-    // TODO: userinfo response needs to be able to deserialize itself from jwt. Add following
-    // parameters to openid schema.
-    // Then openid schema needs to implement TBD interface with method fromJWT().
-    /*
-     * OpenIDSchema response = (OpenIDSchema) responseMessage;
-     * response.setKeyJar(getServiceContext().getKeyJar());
-     * response.setIssuer(getServiceContext().getIssuer());
-     * response.setClientId(getServiceContext().getClientId());
-     * response.setSkew(getServiceContext().getClockSkew()); if (getServiceContext().getBehavior()
-     * != null && getServiceContext().getBehavior().getClaims() != null) {
-     * response.setSigAlg((String) getServiceContext().getBehavior().getClaims()
-     * .get("userinfo_signed_response_alg")); response.setEncAlg((String)
-     * getServiceContext().getBehavior().getClaims() .get("userinfo_encrypted_response_alg"));
-     * response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
-     * .get("userinfo_encrypted_response_enc")); } if
-     * (getServiceContext().getAllow().containsKey("missing_kid")) {
-     * response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid")); }
-     */
+    OpenIDSchema response = (OpenIDSchema) responseMessage;
+    response.setKeyJar(getServiceContext().getKeyJar());
+    response.setIssuer(getServiceContext().getIssuer());
+    if (getServiceContext().getBehavior() != null
+        && getServiceContext().getBehavior().getClaims() != null) {
+      response.setSigAlg((String) getServiceContext().getBehavior().getClaims()
+          .get("userinfo_signed_response_alg"));
+      response.setEncAlg((String) getServiceContext().getBehavior().getClaims()
+          .get("userinfo_encrypted_response_alg"));
+      response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
+          .get("userinfo_encrypted_response_enc"));
+    }
+    if (getServiceContext().getAllow().containsKey("missing_kid")) {
+      response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid"));
+    }
     return responseMessage;
   }
 
@@ -134,8 +130,35 @@ public class UserInfo extends AbstractService {
     } else {
       // TODO: log warning about not being able to verify sub
     }
-    // TODO: add handling of distributed claims
-    state.storeItem(responseMessage, stateKey, MessageType.USER_INFO);
+    if (!responseMessage.getClaims().containsKey("_claim_sources")
+        || !responseMessage.getClaims().containsKey("_claim_names")) {
+      return responseMessage;
+    }
+    GenericMessage claimNames = new GenericMessage();
+    claimNames.fromJson((String) responseMessage.getClaims().get("_claim_names"));
+    GenericMessage claimSources = new GenericMessage();
+    claimSources.fromJson((String) responseMessage.getClaims().get("_claim_sources"));
+    for (Entry<String, Object> entry : claimNames.getClaims().entrySet()) {
+      String claim = entry.getKey();
+      String src = (String) entry.getValue();
+      ClaimSource claimSource = new ClaimSource();
+      claimSource.fromJson((String) claimSources.getClaims().get(src));
+      if (claimSource.getClaims().containsKey("JWT")) {
+        GenericMessage claimSourcesJwt = new GenericMessage();
+        // TODO verify what is needed to verify aggregated claims
+        claimSourcesJwt.fromJwt((String) claimSource.getClaims().get("JWT"),
+            getServiceContext().getKeyJar(), "");
+        if (claimSourcesJwt.getClaims().containsKey(src) && !"sub".equals(claim)) {
+          // TODO:aggregated claims are copied here to normal claims. Verify that really is
+          // intention.
+          responseMessage.getClaims().put(claim, claimSourcesJwt.getClaims().get(src));
+        }
+      } else if (claimSource.getClaims().containsKey("endpoint")) {
+        // TODO: What to do with distributed claims?
+      }
+
+    }
+
     return responseMessage;
   }
 
