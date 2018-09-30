@@ -19,6 +19,7 @@ package org.oidc.service.base;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -41,7 +42,7 @@ import com.google.common.base.Strings;
  * Configuration that is specific to every service
  */
 public class ServiceConfig {
-  
+
   /**
    * The name for this service.
    */
@@ -86,9 +87,9 @@ public class ServiceConfig {
   private boolean shouldAllowNonStandardIssuer;
 
   public ServiceConfig() {
-    
+
   }
-  
+
   public ServiceConfig(String endpoint, ClientAuthenticationMethod defaultAuthenticationMethod,
       HttpMethod httpMethod, SerializationType serializationType,
       SerializationType deSerializationType, boolean shouldAllowHttp,
@@ -132,11 +133,11 @@ public class ServiceConfig {
   public ServiceName getServiceName() {
     return serviceName;
   }
-  
+
   public void setServiceName(ServiceName name) {
     serviceName = name;
   }
-  
+
   public String getEndpoint() {
     return endpoint;
   }
@@ -209,7 +210,7 @@ public class ServiceConfig {
   public void setShouldAllowNonStandardIssuer(boolean shouldAllowNonStandardIssuer) {
     this.shouldAllowNonStandardIssuer = shouldAllowNonStandardIssuer;
   }
-  
+
   public String toYaml() throws SerializationException {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     SimpleModule module = new SimpleModule();
@@ -221,7 +222,7 @@ public class ServiceConfig {
       throw new SerializationException("Could not serialize this configuration to YAML", e);
     }
   }
-  
+
   public static ServiceConfig fromYaml(String yaml) throws DeserializationException {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     SimpleModule module = new SimpleModule();
@@ -230,7 +231,27 @@ public class ServiceConfig {
     try {
       return mapper.readValue(yaml, ServiceConfig.class);
     } catch (IOException e) {
-      throw new DeserializationException("Could not deserialize the given YAML to configuration", e);
+      throw new DeserializationException("Could not deserialize the given YAML to configuration",
+          e);
+    }
+  }
+
+  public static ServiceConfig fromJson(String json) throws DeserializationException {
+    Map<String, Object> map = ServiceUtil.parseJsonStringToMap(json);
+    ServiceConfigMessage message = new ServiceConfigMessage(map);
+    if (!message.verify()) {
+      throw new DeserializationException(
+          "Invalid contents in the given JSON. " + message.getError().getDetails());
+    }
+    ObjectMapper mapper = new ObjectMapper();
+    SimpleModule module = new SimpleModule();
+    module.addDeserializer(ServiceConfig.class, new ServiceConfigDeserializer());
+    mapper.registerModule(module);
+    try {
+      return mapper.readValue(json, ServiceConfig.class);
+    } catch (IOException e) {
+      throw new DeserializationException("Could not deserialize the given JSON to configuration",
+          e);
     }
   }
 
