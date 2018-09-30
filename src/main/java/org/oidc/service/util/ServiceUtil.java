@@ -144,16 +144,31 @@ public class ServiceUtil {
    * @return The contents of the file as map.
    * @throws DeserializationException If the contents of the file cannot be parsed for any reason.
    */
-  public static Map<String, Object> parseJsonToMap(String jsonFile) throws DeserializationException {
-    Map<String, Object> map;
+  public static Map<String, Object> parseJsonFileToMap(String jsonFile) throws DeserializationException {
     try {
       byte[] data = Files.readAllBytes(Paths.get(jsonFile));
-      ObjectMapper objectMapper = new ObjectMapper();
-      map = objectMapper.readValue(data, new TypeReference<HashMap<String, Object>>() {
-      });
+      return parseJsonStringToMap(new String(data));
     } catch (IOException e) {
       throw new DeserializationException("Could not deserialize the JSON file from " + jsonFile, e);
     }
-    return map;
+  }
+  
+  /**
+   * Parses the contents of the given JSON string into a map.
+   * 
+   * @param jsonFile The JSON as string.
+   * @return The contents of the file as map.
+   * @throws DeserializationException If the contents of the JSON cannot be parsed for any reason.
+   */
+  public static Map<String, Object> parseJsonStringToMap(String json) throws DeserializationException {
+    Map<String, Object> map;
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+      map = objectMapper.readValue(json, new TypeReference<HashMap<String, Object>>() {
+      });
+    } catch (IOException e) {
+      throw new DeserializationException("Could not deserialize the JSON from " + json, e);
+    }
+    return map;    
   }
 }
