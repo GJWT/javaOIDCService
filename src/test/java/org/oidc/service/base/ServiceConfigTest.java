@@ -104,7 +104,7 @@ public class ServiceConfigTest {
   @Test
   public void testValidYamlTwoPostConstructors() throws DeserializationException {
     String yaml = "---\n" + 
-        "service_post_constructors:\n" + 
+        "post_constructors:\n" + 
         "- \"org.oidc.service.base.processor.AddClientBehaviourPreference\"\n" + 
         "- \"org.oidc.service.base.processor.AddJwksUriOrJwks\"\n"; 
     ServiceConfig config = ServiceConfig.fromYaml(yaml);
@@ -114,14 +114,14 @@ public class ServiceConfigTest {
   @Test(expected = DeserializationException.class)
   public void testInvalidYamlPostConstructorsString() throws DeserializationException {
     String yaml = "---\n" + 
-        "service_post_constructors: \"org.oidc.service.base.processor.AddClientBehaviourPreference\"";
+        "post_constructors: \"org.oidc.service.base.processor.AddClientBehaviourPreference\"";
     ServiceConfig.fromYaml(yaml);
   }
   
   @Test
   public void testValidYamlTwoPreConstructors() throws DeserializationException {
     String yaml = "---\n" + 
-        "service_pre_constructors:\n" + 
+        "pre_constructors:\n" + 
         "- \"org.oidc.service.base.processor.AddClientBehaviourPreference\"\n" + 
         "- \"org.oidc.service.base.processor.AddJwksUriOrJwks\"\n"; 
     ServiceConfig config = ServiceConfig.fromYaml(yaml);
@@ -131,21 +131,21 @@ public class ServiceConfigTest {
   @Test(expected = DeserializationException.class)
   public void testInvalidYamlPreConstructorsString() throws DeserializationException {
     String yaml = "---\n" + 
-        "service_pre_constructors: \"org.oidc.service.base.processor.AddClientBehaviourPreference\"";
+        "pre_constructors: \"org.oidc.service.base.processor.AddClientBehaviourPreference\"";
     ServiceConfig.fromYaml(yaml);
   }
   
   @Test
   public void testValidFromYaml() throws DeserializationException {
     String yaml= "---\n" + 
-        "service_default_authentication_method: \"CLIENT_SECRET_BASIC\"\n" + 
-        "service_deserialization_type: \"JSON\"\n" + 
-        "service_endpoint: \"https://mock.example.org/\"\n" + 
-        "service_http_method: \"GET\"\n" + 
-        "service_serialization_type: \"URL_ENCODED\"\n" + 
-        "service_allow_non_standard_issuer: true\n" + 
-        "service_allow_http: true\n" + 
-        "service_name: WEBFINGER";
+        "default_authentication_method: \"CLIENT_SECRET_BASIC\"\n" + 
+        "deserialization_type: \"JSON\"\n" + 
+        "endpoint: \"https://mock.example.org/\"\n" + 
+        "http_method: \"GET\"\n" + 
+        "serialization_type: \"URL_ENCODED\"\n" + 
+        "allow_non_standard_issuer: true\n" + 
+        "allow_http: true\n" + 
+        "name: WEBFINGER";
     ServiceConfig config = ServiceConfig.fromYaml(yaml);
     Assert.assertEquals(ClientAuthenticationMethod.CLIENT_SECRET_BASIC, config.getDefaultAuthenticationMethod());
     Assert.assertEquals(SerializationType.JSON, config.getDeSerializationType());
@@ -160,28 +160,28 @@ public class ServiceConfigTest {
   @Test(expected = DeserializationException.class)
   public void testInvalidYamlAuthMethod() throws DeserializationException {
     String yaml= "---\n" + 
-        "service_default_authentication_method: \"CLIENT_SECRET_INVALID\"\n";
+        "default_authentication_method: \"CLIENT_SECRET_INVALID\"\n";
     ServiceConfig.fromYaml(yaml);
   }
   
   @Test(expected = DeserializationException.class)
   public void testInvalidYamlHttpMethod() throws DeserializationException {
     String yaml= "---\n" + 
-        "service_http_method: \"INVALID\"\n";
+        "http_method: \"INVALID\"\n";
     ServiceConfig.fromYaml(yaml);
   }
   
   @Test(expected = DeserializationException.class)
   public void testInvalidYamlSerialization() throws DeserializationException {
     String yaml= "---\n" + 
-        "service_serialization_type: \"INVALID\"\n";
+        "serialization_type: \"INVALID\"\n";
     ServiceConfig.fromYaml(yaml);
   }
   
   @Test(expected = DeserializationException.class)
   public void testInvalidYamlDeserialization() throws DeserializationException {
     String yaml= "---\n" + 
-        "service_deserialization_type: \"INVALID\"\n";
+        "deserialization_type: \"INVALID\"\n";
     ServiceConfig.fromYaml(yaml);
   }
   
@@ -196,12 +196,12 @@ public class ServiceConfigTest {
     config.setShouldAllowHttp(true);
     config.setShouldAllowNonStandardIssuer(true);
     String yaml = config.toYaml();
-    Assert.assertTrue(yaml.contains("service_default_authentication_method: \"CLIENT_SECRET_BASIC\""));
-    Assert.assertTrue(yaml.contains("service_deserialization_type: \"JSON\""));
-    Assert.assertTrue(yaml.contains("service_endpoint: \"https://mock.example.org/\""));
-    Assert.assertTrue(yaml.contains("service_http_method: \"GET\""));
-    Assert.assertTrue(yaml.contains("service_serialization_type: \"JSON\""));
-    Assert.assertTrue(yaml.contains("service_allow_non_standard_issuer: true"));
-    Assert.assertTrue(yaml.contains("service_allow_http: true"));
+    Assert.assertTrue(yaml.contains("default_authentication_method: \"CLIENT_SECRET_BASIC\""));
+    Assert.assertTrue(yaml.contains("deserialization_type: \"JSON\""));
+    Assert.assertTrue(yaml.contains("endpoint: \"https://mock.example.org/\""));
+    Assert.assertTrue(yaml.contains("http_method: \"GET\""));
+    Assert.assertTrue(yaml.contains("erialization_type: \"JSON\""));
+    Assert.assertTrue(yaml.contains("allow_non_standard_issuer: true"));
+    Assert.assertTrue(yaml.contains("allow_http: true"));
   }
 }
