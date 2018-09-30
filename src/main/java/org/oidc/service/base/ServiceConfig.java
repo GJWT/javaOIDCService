@@ -224,14 +224,18 @@ public class ServiceConfig {
   }
 
   public static ServiceConfig fromYaml(String yaml) throws DeserializationException {
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    return deserialize(new ObjectMapper(new YAMLFactory()), yaml);
+  }
+
+  protected static ServiceConfig deserialize(ObjectMapper mapper, String content)
+      throws DeserializationException {
     SimpleModule module = new SimpleModule();
     module.addDeserializer(ServiceConfig.class, new ServiceConfigDeserializer());
     mapper.registerModule(module);
     try {
-      return mapper.readValue(yaml, ServiceConfig.class);
+      return mapper.readValue(content, ServiceConfig.class);
     } catch (IOException e) {
-      throw new DeserializationException("Could not deserialize the given YAML to configuration",
+      throw new DeserializationException("Could not deserialize the given content to configuration",
           e);
     }
   }
@@ -243,16 +247,6 @@ public class ServiceConfig {
       throw new DeserializationException(
           "Invalid contents in the given JSON. " + message.getError().getDetails());
     }
-    ObjectMapper mapper = new ObjectMapper();
-    SimpleModule module = new SimpleModule();
-    module.addDeserializer(ServiceConfig.class, new ServiceConfigDeserializer());
-    mapper.registerModule(module);
-    try {
-      return mapper.readValue(json, ServiceConfig.class);
-    } catch (IOException e) {
-      throw new DeserializationException("Could not deserialize the given JSON to configuration",
-          e);
-    }
+    return deserialize(new ObjectMapper(), json);
   }
-
 }
