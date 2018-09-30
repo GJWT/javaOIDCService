@@ -16,13 +16,22 @@
 
 package org.oidc.service.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
@@ -126,5 +135,25 @@ public class ServiceUtil {
   public static boolean nullOrEmptyStringOrList(Object value) {
     return (value == null || (value instanceof String && Strings.isNullOrEmpty((String) value))
         || (value instanceof List && ((List<?>) value).isEmpty()));
+  }
+  
+  /**
+   * Parses the contents of the given JSON file into a map.
+   * 
+   * @param jsonFile The location of the JSON file.
+   * @return The contents of the file as map.
+   * @throws DeserializationException If the contents of the file cannot be parsed for any reason.
+   */
+  public static Map<String, Object> parseJsonToMap(String jsonFile) throws DeserializationException {
+    Map<String, Object> map;
+    try {
+      byte[] data = Files.readAllBytes(Paths.get(jsonFile));
+      ObjectMapper objectMapper = new ObjectMapper();
+      map = objectMapper.readValue(data, new TypeReference<HashMap<String, Object>>() {
+      });
+    } catch (IOException e) {
+      throw new DeserializationException("Could not deserialize the JSON file from " + jsonFile, e);
+    }
+    return map;
   }
 }
