@@ -23,7 +23,7 @@ public class Constants {
    */
   public static final String SERVICE_CONFIG_KEY_SERVICE_NAME = "name";
   public static final String SERVICE_CONFIG_KEY_ENDPOINT = "endpoint";
-  public static final String SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD = "default_authentication_method";
+  public static final String SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD = "default_authn_method";
   public static final String SERVICE_CONFIG_KEY_HTTP_METHOD = "http_method";
   public static final String SERVICE_CONFIG_KEY_SERIALIZATION_TYPE = "serialization_type";
   public static final String SERVICE_CONFIG_KEY_DESERIALIZATION_TYPE = "deserialization_type";
