@@ -138,7 +138,7 @@ public class ServiceConfigTest {
   @Test
   public void testValidFromYaml() throws DeserializationException {
     String yaml= "---\n" + 
-        "default_authentication_method: \"CLIENT_SECRET_BASIC\"\n" + 
+        "default_authn_method: \"CLIENT_SECRET_BASIC\"\n" + 
         "deserialization_type: \"JSON\"\n" + 
         "endpoint: \"https://mock.example.org/\"\n" + 
         "http_method: \"GET\"\n" + 
@@ -160,7 +160,7 @@ public class ServiceConfigTest {
   @Test(expected = DeserializationException.class)
   public void testInvalidYamlAuthMethod() throws DeserializationException {
     String yaml= "---\n" + 
-        "default_authentication_method: \"CLIENT_SECRET_INVALID\"\n";
+        "default_authn_method: \"CLIENT_SECRET_INVALID\"\n";
     ServiceConfig.fromYaml(yaml);
   }
   
@@ -196,12 +196,33 @@ public class ServiceConfigTest {
     config.setShouldAllowHttp(true);
     config.setShouldAllowNonStandardIssuer(true);
     String yaml = config.toYaml();
-    Assert.assertTrue(yaml.contains("default_authentication_method: \"CLIENT_SECRET_BASIC\""));
+    Assert.assertTrue(yaml.contains("default_authn_method: \"CLIENT_SECRET_BASIC\""));
     Assert.assertTrue(yaml.contains("deserialization_type: \"JSON\""));
     Assert.assertTrue(yaml.contains("endpoint: \"https://mock.example.org/\""));
     Assert.assertTrue(yaml.contains("http_method: \"GET\""));
     Assert.assertTrue(yaml.contains("erialization_type: \"JSON\""));
     Assert.assertTrue(yaml.contains("allow_non_standard_issuer: true"));
     Assert.assertTrue(yaml.contains("allow_http: true"));
+  }
+  
+  @Test
+  public void testValidFromJson() throws DeserializationException {
+    String json= "{" + 
+        "\"default_authn_method\": \"CLIENT_SECRET_BASIC\",\n" + 
+        "\"deserialization_type\": \"JSON\",\n" + 
+        "\"endpoint\": \"https://mock.example.org/\",\n" + 
+        "\"http_method\": \"GET\",\n" + 
+        "\"serialization_type\": \"URL_ENCODED\",\n" + 
+        "\"allow_non_standard_issuer\": true,\n" + 
+        "\"allow_http\": true\n }";
+    System.out.println(json);
+    ServiceConfig config = ServiceConfig.fromJson(json);
+    Assert.assertEquals(ClientAuthenticationMethod.CLIENT_SECRET_BASIC, config.getDefaultAuthenticationMethod());
+    Assert.assertEquals(SerializationType.JSON, config.getDeSerializationType());
+    Assert.assertEquals("https://mock.example.org/", config.getEndpoint());
+    Assert.assertEquals(HttpMethod.GET, config.getHttpMethod());
+    Assert.assertEquals(SerializationType.URL_ENCODED, config.getSerializationType());
+    Assert.assertTrue(config.isShouldAllowHttp());
+    Assert.assertTrue(config.isShouldAllowNonStandardIssuer());
   }
 }
