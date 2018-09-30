@@ -65,7 +65,7 @@ public abstract class AbstractService implements Service {
    * Message that describes the response.
    */
   protected Message responseMessage;
-  
+
   /**
    * Message that describes the error response.
    */
@@ -252,7 +252,8 @@ public abstract class AbstractService implements Service {
    * This the start of a pipeline that will:
    * <p>
    * - Deserializes a response into its response message class. - verifies the correctness of the
-   * response by running the verify method belonging to the message class used.
+   * response by running the verify method belonging to the message class used. Selects either error
+   * or success response message class to return.
    *
    * @param responseBody
    *          The response, can be either in a JSON or an urlencoded format
@@ -276,7 +277,7 @@ public abstract class AbstractService implements Service {
         throw new DeserializationException("Invalid URL", e);
       }
     }
-    
+
     // TODO: the if else logic does not guarantee successful outcome. This and other things in this
     // abstract class need still tender care.
     responseMessage = prepareMessageForVerification(this.responseMessage);
