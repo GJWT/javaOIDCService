@@ -65,6 +65,11 @@ public abstract class AbstractService implements Service {
    * Message that describes the response.
    */
   protected Message responseMessage;
+  
+  /**
+   * Message that describes the error response.
+   */
+  protected Message errorResponseMessage = new ResponseMessage();
 
   /**
    * Expected class for the successful response message.
@@ -271,7 +276,7 @@ public abstract class AbstractService implements Service {
         throw new DeserializationException("Invalid URL", e);
       }
     }
-
+    
     // TODO: the if else logic does not guarantee successful outcome. This and other things in this
     // abstract class need still tender care.
     responseMessage = prepareMessageForVerification(this.responseMessage);
@@ -294,6 +299,12 @@ public abstract class AbstractService implements Service {
       throw new DeserializationException("Missing or faulty response");
     }
     try {
+      if (responseMessage instanceof ResponseMessage
+          && ((ResponseMessage) responseMessage).indicatesErrorResponseMessage()) {
+        errorResponseMessage.getClaims().putAll(responseMessage.getClaims());
+        errorResponseMessage.verify();
+        return errorResponseMessage;
+      }
       responseMessage.verify();
     } catch (InvalidClaimException e) {
       throw new DeserializationException(
