@@ -27,7 +27,6 @@ import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
-import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.AuthenticationRequest;
@@ -70,12 +69,12 @@ public class Authentication extends AbstractService {
     defaultConfig.setHttpMethod(HttpMethod.GET);
     defaultConfig.setSerializationType(SerializationType.URL_ENCODED);
     defaultConfig.setDeSerializationType(SerializationType.URL_ENCODED);
-    defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays.asList(
-        (RequestArgumentProcessor) new AddState(), new PickRedirectUri(), new AddResponseType(),
-        new AddScope(), new AddNonce()));
-    defaultConfig.setPostConstructors((List<RequestArgumentProcessor>) Arrays.asList(
-        (RequestArgumentProcessor) new StoreNonce(), new AddRequestObject(),
-        new StoreAuthenticationRequest()));
+    defaultConfig.setPreConstructors(
+        (List<RequestArgumentProcessor>) Arrays.asList((RequestArgumentProcessor) new AddState(),
+            new PickRedirectUri(), new AddResponseType(), new AddScope(), new AddNonce()));
+    defaultConfig.setPostConstructors(
+        (List<RequestArgumentProcessor>) Arrays.asList((RequestArgumentProcessor) new StoreNonce(),
+            new AddRequestObject(), new StoreAuthenticationRequest()));
     return defaultConfig;
   }
 
@@ -85,15 +84,8 @@ public class Authentication extends AbstractService {
     if (!(responseMessage instanceof AuthenticationResponse)) {
       throw new ValueException("response not instance of AuthenticationResponse");
     }
-    if (responseMessage.getClaims().containsKey("id_token")) {
-      IDToken idToken = new IDToken();
-      try {
-        // ID Token has already been verified in this stage
-        idToken.fromJwt((String) responseMessage.getClaims().get("id_token"), null, null);
-      } catch (DeserializationException e) {
-        throw new InvalidClaimException(String.format("Unable to decode id token '%s'",
-            (String) responseMessage.getClaims().get("id_token")));
-      }
+    if (((AuthenticationResponse) responseMessage).getVerifiedIdToken() != null) {
+      IDToken idToken = ((AuthenticationResponse) responseMessage).getVerifiedIdToken();
       if (!stateKey
           .equals(getState().getStateKeyByNonce((String) idToken.getClaims().get("nonce")))) {
         throw new ValueException(

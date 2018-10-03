@@ -20,7 +20,6 @@ import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ValueException;
-import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.AccessTokenRequest;
@@ -41,22 +40,15 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
     this.responseMessage = new AccessTokenResponse();
     this.expectedResponseClass = AccessTokenResponse.class;
   }
-  
+
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     if (!(responseMessage instanceof AccessTokenResponse)) {
       throw new ValueException("response not instance of AccessTokenResponse");
     }
-    if (responseMessage.getClaims().containsKey("id_token")) {
-      IDToken idToken = new IDToken();
-      try {
-        // ID Token has already been verified in this stage
-        idToken.fromJwt((String) responseMessage.getClaims().get("id_token"), null, null);
-      } catch (DeserializationException e) {
-        throw new InvalidClaimException(String.format("Unable to decode id token '%s'",
-            (String) responseMessage.getClaims().get("id_token")));
-      }
+    if (((AccessTokenResponse) responseMessage).getVerifiedIdToken() != null) {
+      IDToken idToken = ((AccessTokenResponse) responseMessage).getVerifiedIdToken();
       if (!stateKey
           .equals(getState().getStateKeyByNonce((String) idToken.getClaims().get("nonce")))) {
         throw new ValueException(
@@ -95,7 +87,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
     }
     return responseMessage;
   }
-  
+
   @Override
   public ClientAuthenticationMethod getDefaultAuthenticationMethod() {
     if (getServiceContext().getBehavior().getClaims().containsKey("token_endpoint_auth_method")) {
