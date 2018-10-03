@@ -249,4 +249,13 @@ public class ServiceConfig {
     }
     return deserialize(new ObjectMapper(), json);
   }
+  
+  public String toString() {
+    StringBuilder builder = new StringBuilder("ServiceConfig: [ ");
+    builder.append("name=" + getServiceName() + ",");
+    builder.append("endpoint=" + getEndpoint() + ",");
+    builder.append("defaultAuthnMethod=" + getDefaultAuthenticationMethod() + ",");
+    builder.append("httpMethod=" + getHttpMethod() + " ]");
+    return builder.toString();
+  }
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.oidc.common.EndpointName;
+import org.oidc.common.HttpMethod;
 import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
@@ -60,16 +61,22 @@ public class Authentication extends AbstractService {
     this.requestMessage = new AuthenticationRequest();
     this.responseMessage = new AuthenticationResponse();
     this.isSynchronous = false;
-    this.serializationType = SerializationType.URL_ENCODED;
-    this.deserializationType = SerializationType.URL_ENCODED;
     this.expectedResponseClass = AuthenticationResponse.class;
+  }
 
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(
+  @Override
+  protected ServiceConfig getDefaultServiceConfig() {
+    ServiceConfig defaultConfig = new ServiceConfig();
+    defaultConfig.setHttpMethod(HttpMethod.GET);
+    defaultConfig.setSerializationType(SerializationType.URL_ENCODED);
+    defaultConfig.setDeSerializationType(SerializationType.URL_ENCODED);
+    defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays.asList(
         (RequestArgumentProcessor) new AddState(), new PickRedirectUri(), new AddResponseType(),
-        new AddScope(), new AddNonce());
-    this.postConstructors = (List<RequestArgumentProcessor>) Arrays.asList(
+        new AddScope(), new AddNonce()));
+    defaultConfig.setPostConstructors((List<RequestArgumentProcessor>) Arrays.asList(
         (RequestArgumentProcessor) new StoreNonce(), new AddRequestObject(),
-        new StoreAuthenticationRequest());
+        new StoreAuthenticationRequest()));
+    return defaultConfig;
   }
 
   @Override

@@ -78,7 +78,6 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
     this.serviceName = ServiceName.PROVIDER_INFO_DISCOVERY;
     this.requestMessage = null; // no request parameters
     this.responseMessage = new ProviderConfigurationResponse();
-    this.httpMethod = HttpMethod.GET;
     this.expectedResponseClass = ProviderConfigurationResponse.class;
   }
 

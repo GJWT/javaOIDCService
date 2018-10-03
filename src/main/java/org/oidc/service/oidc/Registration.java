@@ -51,16 +51,24 @@ public class Registration extends AbstractService {
     super(serviceContext, state, serviceConfig);
     this.serviceName = ServiceName.REGISTRATION;
     this.endpointName = EndpointName.REGISTRATION;
-    this.setEndpoint(serviceContext.getEndpoints().get(this.endpointName));
     this.requestMessage = new RegistrationRequest();
     this.responseMessage = new RegistrationResponse();
-    this.httpMethod = HttpMethod.POST;
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays.asList(
-        (RequestArgumentProcessor) new AddClientBehaviourPreference(), new AddRedirectUris(), new AddRequestUri(),
-        new AddPostLogoutRedirectUris(), new AddJwksUriOrJwks());
-    this.postConstructors = Arrays.asList((RequestArgumentProcessor) new AddOidcResponseTypes());
-    this.serializationType = SerializationType.JSON;
     this.expectedResponseClass = RegistrationResponse.class;
+  }
+
+  @Override
+  protected ServiceConfig getDefaultServiceConfig() {
+    ServiceConfig defaultConfig = new ServiceConfig();
+    defaultConfig.setHttpMethod(HttpMethod.POST);
+    defaultConfig.setSerializationType(SerializationType.JSON);
+    defaultConfig.setDeSerializationType(SerializationType.JSON);
+    defaultConfig.setEndpoint(serviceContext.getEndpoints().get(this.endpointName));
+    defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays.asList(
+        (RequestArgumentProcessor) new AddClientBehaviourPreference(), new AddRedirectUris(),
+        new AddRequestUri(), new AddPostLogoutRedirectUris(), new AddJwksUriOrJwks()));
+    defaultConfig
+        .setPostConstructors(Arrays.asList((RequestArgumentProcessor) new AddOidcResponseTypes()));
+    return defaultConfig;
   }
 
   @Override
@@ -76,7 +84,7 @@ public class Registration extends AbstractService {
     getServiceContext()
         .setRegistrationAccessToken((String) response.getClaims().get("registration_access_token"));
     getServiceContext().setRegistrationResponse((RegistrationResponse) response);
-    //TODO: the behaviour should probably be merged with the client preferences
+    // TODO: the behaviour should probably be merged with the client preferences
     getServiceContext().setBehavior((RegistrationResponse) response);
     this.responseMessage = response;
   }
@@ -89,8 +97,7 @@ public class Registration extends AbstractService {
   }
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
-      Map<String, Object> requestArguments)
-      throws RequestArgumentProcessingException {
+      Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
 
     // TODO: this or abstract service should check that request contains mandatory fields
 

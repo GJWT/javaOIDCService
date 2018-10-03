@@ -31,6 +31,7 @@ import org.oidc.service.AbstractService;
 import org.oidc.service.Service;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessingException;
+import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.InMemoryStateImpl;
 import org.oidc.service.data.State;
@@ -103,6 +104,11 @@ public abstract class BaseRequestArgumentProcessorTest<T extends AbstractRequest
     protected Message doConstructRequest(Map<String, Object> requestArguments)
         throws RequestArgumentProcessingException {
       return null;
+    }
+
+    @Override
+    protected ServiceConfig getDefaultServiceConfig() {
+      return new ServiceConfig();
     }
   }
 }

@@ -55,17 +55,23 @@ public class RefreshAccessToken extends AbstractService {
     this.requestMessage = new RefreshAccessTokenRequest();
     this.responseMessage = new AccessTokenResponse();
     this.isSynchronous = true;
-    this.serializationType = SerializationType.URL_ENCODED;
-    this.deserializationType = SerializationType.JSON;
-    this.httpMethod = HttpMethod.POST;
     this.expectedResponseClass = AccessTokenResponse.class;
-    this.defaultAuthenticationMethod = ClientAuthenticationMethod.BEARER_HEADER;
 
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays
         .asList((RequestArgumentProcessor) new ExtendRefreshAccessTokenRequestArguments());
 
   }
 
+  @Override
+  protected ServiceConfig getDefaultServiceConfig() {
+    ServiceConfig defaultConfig = new ServiceConfig();
+    defaultConfig.setDefaultAuthenticationMethod(ClientAuthenticationMethod.BEARER_HEADER);
+    defaultConfig.setHttpMethod(HttpMethod.POST);
+    defaultConfig.setSerializationType(SerializationType.URL_ENCODED);
+    defaultConfig.setDeSerializationType(SerializationType.JSON);
+    return defaultConfig;
+  }
+  
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {

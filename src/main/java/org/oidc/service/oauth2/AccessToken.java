@@ -53,15 +53,21 @@ public class AccessToken extends AbstractService {
     this.requestMessage = new AccessTokenRequest();
     this.responseMessage = new AccessTokenResponse();
     this.isSynchronous = true;
-    this.serializationType = SerializationType.URL_ENCODED;
-    this.deserializationType = SerializationType.JSON;
-    this.httpMethod = HttpMethod.POST;
     this.expectedResponseClass = AccessTokenResponse.class;
-    this.defaultAuthenticationMethod = ClientAuthenticationMethod.CLIENT_SECRET_BASIC;
 
     this.preConstructors = (List<RequestArgumentProcessor>) Arrays
         .asList((RequestArgumentProcessor) new ExtendAccessTokenRequestArguments());
 
+  }
+  
+  @Override
+  protected ServiceConfig getDefaultServiceConfig() {
+    ServiceConfig defaultConfig = new ServiceConfig();
+    defaultConfig.setDefaultAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+    defaultConfig.setHttpMethod(HttpMethod.POST);
+    defaultConfig.setSerializationType(SerializationType.URL_ENCODED);
+    defaultConfig.setDeSerializationType(SerializationType.JSON);
+    return defaultConfig;
   }
 
   @Override
@@ -88,5 +94,4 @@ public class AccessToken extends AbstractService {
       throws RequestArgumentProcessingException {
     return new AccessTokenRequest(requestArguments);
   }
-
 }

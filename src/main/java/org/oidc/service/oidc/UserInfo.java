@@ -27,6 +27,7 @@ import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
 import org.oidc.msg.DeserializationException;
@@ -59,13 +60,18 @@ public class UserInfo extends AbstractService {
     this.responseMessage = new OpenIDSchema();
     this.expectedResponseClass = OpenIDSchema.class;
     this.isSynchronous = true;
-    this.defaultAuthenticationMethod = ClientAuthenticationMethod.BEARER_HEADER;
-    this.httpMethod = HttpMethod.GET;
+  }
+  
+  @Override
+  protected ServiceConfig getDefaultServiceConfig() {
+    ServiceConfig defaultConfig = new ServiceConfig();
+    defaultConfig.setDefaultAuthenticationMethod(ClientAuthenticationMethod.BEARER_HEADER);
+    defaultConfig.setHttpMethod(HttpMethod.GET);
     // TODO: python implementation ensures state parameter availability for postConstructrors.. bit
     // uncertain if needed.
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays
-        .asList((RequestArgumentProcessor) new ExtendUserInfoRequestArguments());
-
+    defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays
+        .asList((RequestArgumentProcessor) new ExtendUserInfoRequestArguments()));
+    return defaultConfig;
   }
 
   @Override

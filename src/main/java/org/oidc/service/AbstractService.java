@@ -189,16 +189,44 @@ public abstract class AbstractService implements Service {
     this.serviceContext = serviceContext;
     this.state = state;
     this.serviceConfig = serviceConfig;
-    if (serviceConfig != null) {
-      this.setDefaultAuthenticationMethod(serviceConfig.getDefaultAuthenticationMethod());
-      this.setDeserializationType(serviceConfig.getDeSerializationType());
-      this.setEndpoint(serviceConfig.getEndpoint());
-      this.setHttpMethod(serviceConfig.getHttpMethod());
-      this.setPostConstructors(serviceConfig.getPostConstructors());
-      this.setPreConstructors(serviceConfig.getPreConstructors());
-      this.setSerializationType(serviceConfig.getSerializationType());
+    if (serviceConfig != null && serviceConfig.getDefaultAuthenticationMethod() != null) {
+      this.defaultAuthenticationMethod = serviceConfig.getDefaultAuthenticationMethod();
+    } else {
+      this.defaultAuthenticationMethod = getDefaultServiceConfig().getDefaultAuthenticationMethod();
+    }
+    if (serviceConfig != null && serviceConfig.getDeSerializationType() != null) {
+      this.deserializationType = serviceConfig.getDeSerializationType();
+    } else {
+      this.deserializationType = getDefaultServiceConfig().getDeSerializationType();
+    }
+    if (serviceConfig != null && serviceConfig.getEndpoint() != null) {
+      this.endpoint = serviceConfig.getEndpoint();
+    } else {
+      this.endpoint = getDefaultServiceConfig().getEndpoint();
+    }
+    if (serviceConfig != null && serviceConfig.getHttpMethod() != null) {
+      this.httpMethod = serviceConfig.getHttpMethod();
+    } else {
+      this.httpMethod = getDefaultServiceConfig().getHttpMethod();
+    }
+    if (serviceConfig != null && serviceConfig.getPostConstructors() != null) {
+      this.postConstructors = serviceConfig.getPostConstructors();
+    } else {
+      this.postConstructors = getDefaultServiceConfig().getPostConstructors();
+    }
+    if (serviceConfig != null && serviceConfig.getPreConstructors() != null) {
+      this.preConstructors = serviceConfig.getPreConstructors();
+    } else {
+      this.preConstructors = getDefaultServiceConfig().getPreConstructors();
+    }
+    if (serviceConfig != null && serviceConfig.getSerializationType() != null) {
+      this.serializationType = serviceConfig.getSerializationType();
+    } else {
+      this.serializationType = getDefaultServiceConfig().getSerializationType();
     }
   }
+
+  protected abstract ServiceConfig getDefaultServiceConfig();
 
   /**
    * This method will run after the response has been parsed and verified. It requires response and

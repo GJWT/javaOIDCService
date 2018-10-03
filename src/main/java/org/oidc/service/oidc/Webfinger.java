@@ -22,6 +22,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
@@ -65,6 +67,13 @@ public class Webfinger extends AbstractService {
 
   public Webfinger(ServiceContext serviceContext, ServiceConfig serviceConfig) {
     this(serviceContext, null, serviceConfig);
+  }
+  
+  @Override
+  protected ServiceConfig getDefaultServiceConfig() {
+    ServiceConfig defaultConfig = new ServiceConfig();
+    defaultConfig.setHttpMethod(HttpMethod.GET);
+    return defaultConfig;
   }
 
   @Override
