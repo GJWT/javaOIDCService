@@ -66,12 +66,25 @@ public class ServiceConfigDeserializer extends StdDeserializer<ServiceConfig> {
       config.setEndpoint(node.get(Constants.SERVICE_CONFIG_KEY_ENDPOINT).asText());
     }
     if (node.get(Constants.SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD) != null) {
+      String text = node.get(Constants.SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD).asText();
+      boolean resolved = false;
       try {
         config.setDefaultAuthenticationMethod(ClientAuthenticationMethod.valueOf(
-            node.get(Constants.SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD).asText()));
+            text));
       } catch (IllegalArgumentException e) {
-        throw new InvalidConfigurationPropertyException(
-            "Invalid value for " + Constants.SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD, e);
+        try {
+          ClientAuthenticationMethod clientAuth = ClientAuthenticationMethod.fromClaimValue(text);
+          if (clientAuth != null) {
+            config.setDefaultAuthenticationMethod(clientAuth);
+            resolved = true;
+          }
+        } catch (IllegalArgumentException iae) {
+          // exception thrown below if the value was not resolved
+        }
+        if (!resolved) {
+          throw new InvalidConfigurationPropertyException(
+              "Invalid value for " + Constants.SERVICE_CONFIG_KEY_DEFAULT_AUTHENTICATION_METHOD, e);
+        }
       }
     }
     if (node.get(Constants.SERVICE_CONFIG_KEY_ALLOW_NON_STANDARD_ISSUER) != null) {
