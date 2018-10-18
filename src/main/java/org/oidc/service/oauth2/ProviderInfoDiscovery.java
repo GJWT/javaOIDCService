@@ -82,7 +82,7 @@ public class ProviderInfoDiscovery extends AbstractService {
       issuer = ctxIssuer.replaceAll("/\\s*$", "");
     }
     if (getServiceContext().getAllow() != null
-        && getServiceContext().getAllow().get(Constants.ALLOW_PARAM_ISSUER_MISMATCH)) {
+        && getServiceContext().isAllowed(Constants.ALLOW_PARAM_ISSUER_MISMATCH)) {
       // mismatches are allowed, nothing to check
     } else {
       if (!issuer.equals(pcrIssuer)) {
