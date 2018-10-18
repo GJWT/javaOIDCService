@@ -481,14 +481,13 @@ public abstract class AbstractService implements Service {
     }
 
     // TODO: should we gather other configuration? Python checks service_context, self.conf
-    Message response = doConstructRequest(requestArguments);
-
+    setRequestMessage(doConstructRequest(requestArguments));
     if (this.postConstructors != null) {
       for (RequestArgumentProcessor processor : this.postConstructors) {
-        processor.processRequestArguments(response.getClaims(), this);
+        processor.processRequestArguments(getRequestMessage().getClaims(), this);
       }
     }
-    return response;
+    return getRequestMessage();
   }
 
   protected abstract Message doConstructRequest(Map<String, Object> requestArguments)
