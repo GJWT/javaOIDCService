@@ -41,7 +41,8 @@ public class AddClientBehaviourPreference extends AbstractRequestArgumentProcess
       if (service.getServiceContext().getBehavior() != null
           && service.getServiceContext().getBehavior().getClaims().containsKey(key)) {
         requestArguments.put(key, service.getServiceContext().getBehavior().getClaims().get(key));
-      } else if (service.getServiceContext().getClientPreferences() != null) {
+      } else if (service.getServiceContext().getClientPreferences() != null
+          && service.getServiceContext().getClientPreferences().getClaims().containsKey(key)) {
         requestArguments.put(key,
             service.getServiceContext().getClientPreferences().getClaims().get(key));
       }
