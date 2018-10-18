@@ -16,6 +16,7 @@
 
 package org.oidc.service.oidc;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +25,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.oidc.common.HttpMethod;
+import org.oidc.common.MessageType;
+import org.oidc.msg.oidc.AuthenticationRequest;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.InMemoryStateImpl;
+import org.oidc.service.data.State;
 
 /**
  * Unit tests for {@link Authentication}.
@@ -37,35 +41,49 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
   ServiceContext serviceContext;
   String issuer;
   Map<String, Object> map = new HashMap<String, Object>();
+  State state;
+
+  String endpoint = "https://www.example.com/authorize";
+  String callback = "https://example.com/cb";
+  String responseType = "code";
+  String scope = "openid";
+  String clientId = "clientid_x";
 
   @Before
   public void init() {
     serviceContext = new ServiceContext();
-    service = new Authentication(serviceContext, new InMemoryStateImpl(), null);
-    service.setEndpoint("https://www.example.com/authorize");
+    state = new InMemoryStateImpl();
+    service = new Authentication(serviceContext, state, null);
+    service.setEndpoint(endpoint);
     List<String> redirectUris = new ArrayList<String>();
-    redirectUris.add("https://example.com/cb");
+    redirectUris.add(callback);
     serviceContext.setRedirectUris(redirectUris);
     issuer = "https://www.example.com";
     serviceContext.setIssuer(issuer);
     map.clear();
-    map.put("response_type", "code");
-    map.put("scope", "openid");
-    map.put("client_id", "clientid_x");
+    map.put("response_type", responseType);
+    map.put("scope", scope);
+    map.put("client_id", clientId);
   }
 
   @Test
   public void testHttpGetParametersMinimal() throws Exception {
     HttpArguments httpArguments = service.getRequestParameters(map);
     Assert.assertEquals(HttpMethod.GET, httpArguments.getHttpMethod());
-    Assert.assertTrue(httpArguments.getUrl().startsWith("https://www.example.com/authorize"));
-    Assert.assertTrue(httpArguments.getUrl().contains("client_id=clientid_x"));
-    Assert.assertTrue(httpArguments.getUrl().contains("scope=openid"));
-    Assert.assertTrue(httpArguments.getUrl().contains("response_type=code"));
-    Assert
-        .assertTrue(httpArguments.getUrl().contains("redirect_uri=https%3A%2F%2Fexample.com%2Fcb"));
+    Assert.assertTrue(httpArguments.getUrl().startsWith(endpoint));
+    Assert.assertTrue(httpArguments.getUrl().contains("client_id=" + clientId));
+    Assert.assertTrue(httpArguments.getUrl().contains("scope=" + scope));
+    Assert.assertTrue(httpArguments.getUrl().contains("response_type=" + responseType));
+    Assert.assertTrue(
+        httpArguments.getUrl().contains("redirect_uri=" + URLEncoder.encode(callback, "UTF-8")));
+    String stateKey = (String) service.getRequestMessage().getClaims().get("state");
+    AuthenticationRequest storedRequest =
+        (AuthenticationRequest) state.getItem(stateKey, MessageType.AUTHORIZATION_REQUEST);
+    Assert.assertEquals(scope, storedRequest.getClaims().get("scope"));
+    Assert.assertEquals(clientId, storedRequest.getClaims().get("client_id"));
+    Assert.assertEquals(responseType, storedRequest.getClaims().get("response_type"));
   }
-  
+
   @Test
   public void testHttpPostParameters() throws Exception {
     Map<String, Object> requestParameters = new HashMap<String, Object>();
