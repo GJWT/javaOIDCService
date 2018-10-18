@@ -380,7 +380,7 @@ public abstract class AbstractService implements Service {
    * @return the parsed and to some extent verified response
    **/
   public Message parseResponse(String responseBody) throws DeserializationException {
-    return parseResponse(responseBody, SerializationType.JSON, "");
+    return parseResponse(responseBody, this.deserializationType, "");
   }
 
   /**
