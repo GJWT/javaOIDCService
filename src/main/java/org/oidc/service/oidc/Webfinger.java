@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.common.ValueException;
 import org.oidc.msg.Error;
@@ -73,6 +74,7 @@ public class Webfinger extends AbstractService {
   protected ServiceConfig getDefaultServiceConfig() {
     ServiceConfig defaultConfig = new ServiceConfig();
     defaultConfig.setHttpMethod(HttpMethod.GET);
+    defaultConfig.setDeSerializationType(SerializationType.JSON);
     return defaultConfig;
   }
 
