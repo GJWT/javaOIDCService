@@ -148,6 +148,7 @@ public class ServiceContext {
 
   public ServiceContext(KeyJar keyJar, ServiceContextConfig config) {
     endpoints = new HashMap<EndpointName, String>();
+    this.allow = new HashMap<>();
     this.keyJar = keyJar;
     this.config = config;
   }
@@ -344,6 +345,13 @@ public class ServiceContext {
 
   public void setAllow(Map<String, Boolean> allow) {
     this.allow = allow;
+  }
+  
+  public boolean isAllowed(String key) {
+    if (allow.containsKey(key)) {
+      return allow.get(key);
+    }
+    return false;
   }
 
   public RegistrationResponse getBehavior() {
