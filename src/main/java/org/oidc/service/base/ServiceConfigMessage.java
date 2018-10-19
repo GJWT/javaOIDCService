@@ -40,6 +40,9 @@ public class ServiceConfigMessage extends AbstractMessage {
         ParameterVerification.SINGLE_OPTIONAL_STRING.getValue());
     paramVerDefs.put("pre_construct", ParameterVerification.SINGLE_OPTIONAL_MAP.getValue());
     paramVerDefs.put("post_construct", ParameterVerification.SINGLE_OPTIONAL_MAP.getValue());
+    paramVerDefs.put("pre_construct_args", ParameterVerification.SINGLE_OPTIONAL_MAP.getValue());
+    paramVerDefs.put("post_construct_args", ParameterVerification.SINGLE_OPTIONAL_MAP.getValue());
+    paramVerDefs.put("request_args", ParameterVerification.SINGLE_OPTIONAL_MAP.getValue());
   }
 
   public ServiceConfigMessage(Map<String, Object> claims) {

@@ -19,7 +19,7 @@ package org.oidc.service.base;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Map;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.SerializationType;
@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 /**
@@ -129,6 +130,9 @@ public class ServiceConfigDeserializer extends StdDeserializer<ServiceConfig> {
     config.setPreConstructors(
         getDeserializedProcessors(node, Constants.SERVICE_CONFIG_KEY_PRE_CONSTRUCTORS));
 
+    config.setPreConstructorArgs(getDeserializedMap(node, "pre_construct_args"));
+    config.setPostConstructorArgs(getDeserializedMap(node, "post_construct_args"));
+    config.setRequestArguments(getDeserializedMap(node, "request_args"));
     return config;
   }
 
@@ -146,5 +150,11 @@ public class ServiceConfigDeserializer extends StdDeserializer<ServiceConfig> {
       processors.add(ServiceUtil.getRequestArgumentProcessor(processorNames.get(i).asText()));
     }
     return processors;
+  }
+  
+  protected Map<String, Object> getDeserializedMap(JsonNode node, String fieldName) {
+    JsonNode mapNode = node.get(fieldName);
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.convertValue(mapNode, Map.class);
   }
 }
