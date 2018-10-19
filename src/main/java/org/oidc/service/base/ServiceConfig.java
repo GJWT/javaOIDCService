@@ -76,6 +76,18 @@ public class ServiceConfig {
    */
   protected List<RequestArgumentProcessor> postConstructors;
   /**
+   * The arguments for the processors run before message construction.
+   */
+  protected Map<String, Object> preConstructorArgs;
+  /**
+   * The arguments for the processors run after message construction.
+   */
+  protected Map<String, Object> postConstructorArgs;
+  /**
+   * The (additional) arguments for the request message.
+   */
+  protected Map<String, Object> requestArguments;
+  /**
    * The OIDC standard in many places states that you *MUST* use HTTPS and not HTTP. In a number of
    * use cases, that causes a problem. Therefore, the libraries should still be used in those use
    * cases, hence there has to be a way to turn off the default 'only HTTPS is allowed'.
@@ -194,7 +206,31 @@ public class ServiceConfig {
   public void setPostConstructors(List<RequestArgumentProcessor> postConstruct) {
     this.postConstructors = postConstruct;
   }
-
+  
+  public Map<String, Object> getPreConstructorArgs() {
+    return preConstructorArgs;
+  }
+  
+  public void setPreConstructorArgs(Map<String, Object> preConstructArgs) {
+    this.preConstructorArgs = preConstructArgs;
+  }
+  
+  public Map<String, Object> getPostConstructorArgs() {
+    return postConstructorArgs;
+  }
+  
+  public void setPostConstructorArgs(Map<String, Object> postConstructArgs) {
+    this.postConstructorArgs = postConstructArgs;
+  }
+  
+  public Map<String, Object> getRequestArguments() {
+    return requestArguments;
+  }
+  
+  public void setRequestArguments(Map<String, Object> requestArgs) {
+    this.requestArguments = requestArgs;
+  }  
+  
   public boolean isShouldAllowHttp() {
     return shouldAllowHttp;
   }
