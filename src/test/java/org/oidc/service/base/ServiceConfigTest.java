@@ -214,7 +214,10 @@ public class ServiceConfigTest {
         "\"http_method\": \"GET\",\n" + 
         "\"serialization_type\": \"URL_ENCODED\",\n" + 
         "\"allow_non_standard_issuer\": true,\n" + 
-        "\"allow_http\": true\n }";
+        "\"allow_http\": true,\n" +
+        "\"request_args\": { \"response_mode\" : \"query\" },\n" +
+        "\"pre_construct_args\": { \"pre_test\" : \"preValue\" }, \n" +
+        "\"post_construct_args\": { \"post_test\" : \"postValue\" } \n }";
     System.out.println(json);
     ServiceConfig config = ServiceConfig.fromJson(json);
     Assert.assertEquals(ClientAuthenticationMethod.CLIENT_SECRET_BASIC, config.getDefaultAuthenticationMethod());
@@ -224,5 +227,14 @@ public class ServiceConfigTest {
     Assert.assertEquals(SerializationType.URL_ENCODED, config.getSerializationType());
     Assert.assertTrue(config.isShouldAllowHttp());
     Assert.assertTrue(config.isShouldAllowNonStandardIssuer());
+    Assert.assertTrue(config.getRequestArguments() != null);
+    Assert.assertEquals(1, config.getRequestArguments().size());
+    Assert.assertEquals("query", config.getRequestArguments().get("response_mode"));
+    Assert.assertTrue(config.getPreConstructorArgs() != null);
+    Assert.assertEquals(1, config.getPreConstructorArgs().size());
+    Assert.assertEquals("preValue", config.getPreConstructorArgs().get("pre_test"));
+    Assert.assertTrue(config.getPostConstructorArgs() != null);
+    Assert.assertEquals(1, config.getPostConstructorArgs().size());
+    Assert.assertEquals("postValue", config.getPostConstructorArgs().get("post_test"));
   }
 }
