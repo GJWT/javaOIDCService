@@ -139,7 +139,14 @@ public interface Service {
    * @return The request message for this service.
    */
   Message getRequestMessage();
-  
+
+  /**
+   * Get the response message for this service.
+   * 
+   * @return The response message for this service.
+   */
+  Message getResponseMessage();
+
   /**
    * Get the service context attached to this service.
    * 
