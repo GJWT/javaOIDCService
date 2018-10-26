@@ -187,7 +187,7 @@ public class Webfinger extends AbstractService {
     }
     String endpoint = getEndpointWithoutQuery(resource);
     try {
-      httpArguments.setUrl(endpoint + this.requestMessage.toUrlEncoded());
+      httpArguments.setUrl(endpoint + "?" + this.requestMessage.toUrlEncoded());
     } catch (SerializationException e) {
       ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
           ErrorType.VALUE_NOT_ALLOWED, "Could not serialize the request", e);

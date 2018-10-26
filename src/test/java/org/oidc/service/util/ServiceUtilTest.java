@@ -75,7 +75,7 @@ public class ServiceUtilTest {
     Message request = new MockMessage(claims);
     String httpBody = ServiceUtil.getHttpBody(request, SerializationType.URL_ENCODED);
     System.out.println(httpBody);
-    Assert.assertEquals("?issuer=issuer", httpBody);
+    Assert.assertEquals("issuer=issuer", httpBody);
   }
 
   @Test
