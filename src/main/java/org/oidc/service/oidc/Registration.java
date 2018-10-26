@@ -100,7 +100,7 @@ public class Registration extends AbstractService {
       Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
 
     // TODO: this or abstract service should check that request contains mandatory fields
-
+    httpArguments.getHeader().setContentType("application/json");
     return httpArguments;
   }
 }
