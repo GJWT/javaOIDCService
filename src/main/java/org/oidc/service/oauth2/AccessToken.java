@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.StringUtils;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
@@ -85,7 +87,15 @@ public class AccessToken extends AbstractService {
 
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
-
+    httpArguments.getHeader().setContentType("application/x-www-form-urlencoded");
+    String clientId = (String) serviceContext.getBehavior().getClaims().get("client_id");
+    String clientSecret = (String) serviceContext.getBehavior().getClaims().get("client_secret");
+    String method = (String) serviceContext.getBehavior().getClaims().get("token_endpoint_auth_method");
+    if ("client_secret_basic".equals(method)) {
+      String authorization = StringUtils.newStringUtf8(Base64.encodeBase64((clientId + ":" + clientSecret).getBytes()));
+      httpArguments.getHeader().setAuthorization("Basic " + authorization);
+    }
+    //TODO: support other client authentication methods
     return httpArguments;
   }
 
