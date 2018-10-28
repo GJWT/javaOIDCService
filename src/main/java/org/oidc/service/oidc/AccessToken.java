@@ -16,6 +16,8 @@
 
 package org.oidc.service.oidc;
 
+import java.util.Date;
+
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
@@ -58,7 +60,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
     }
     if (responseMessage.getClaims().containsKey("expires_in")) {
       responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
-          + (long) responseMessage.getClaims().get("expires_in"));
+          + ((Date) responseMessage.getClaims().get("expires_in")).getTime() / 1000);
     }
     getState().storeItem(response, stateKey, MessageType.TOKEN_RESPONSE);
   }
