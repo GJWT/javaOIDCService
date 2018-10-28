@@ -67,6 +67,7 @@ public class UserInfo extends AbstractService {
     ServiceConfig defaultConfig = new ServiceConfig();
     defaultConfig.setDefaultAuthenticationMethod(ClientAuthenticationMethod.BEARER_HEADER);
     defaultConfig.setHttpMethod(HttpMethod.GET);
+    defaultConfig.setDeSerializationType(SerializationType.JSON);
     // TODO: python implementation ensures state parameter availability for postConstructrors.. bit
     // uncertain if needed.
     defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays
