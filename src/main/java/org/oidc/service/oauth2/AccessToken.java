@@ -95,6 +95,10 @@ public class AccessToken extends AbstractService {
       String authorization = StringUtils.newStringUtf8(Base64.encodeBase64((clientId + ":" + clientSecret).getBytes()));
       httpArguments.getHeader().setAuthorization("Basic " + authorization);
     }
+    if ("client_secret_post".equals(method)) {
+      String authnParameters = "&client_id=" + clientId + "&client_secret=" + clientSecret;
+      httpArguments.setBody(httpArguments.getBody() + authnParameters);
+    }
     //TODO: support other client authentication methods
     return httpArguments;
   }
