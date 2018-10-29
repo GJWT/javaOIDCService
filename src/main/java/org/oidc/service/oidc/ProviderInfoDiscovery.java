@@ -140,8 +140,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
           }
         } else {
           if (((List<?>) providerValue).contains(preferenceValue)) {
-            this.getServiceContext().getBehavior().addClaim(preferenceKey,
-                Arrays.asList(preferenceValue));
+            this.getServiceContext().getBehavior().addClaim(preferenceKey, preferenceValue);
           }
         }
       } else {
