@@ -16,7 +16,6 @@
 
 package org.oidc.service;
 
-import com.auth0.msg.KeyJar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.IOException;
@@ -48,8 +47,6 @@ import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
 import org.oidc.service.util.Constants;
 import org.oidc.service.util.ServiceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is the base class for all services and provides default implementation for various methods.
@@ -173,8 +170,6 @@ public abstract class AbstractService implements Service {
    * Open ID connection provider
    */
   protected static final String linkRelationType = Constants.OIDC_ISSUER;
-
-  private static final Logger logger = LoggerFactory.getLogger(AbstractService.class);
 
   /**
    * @param serviceContext
@@ -321,7 +316,6 @@ public abstract class AbstractService implements Service {
             msg.getNoKidIssuers(), msg.getAllowMissingKid(), msg.getTrustJku());
       }
     } catch (IOException e) {
-      logger.error("Error while deserializing");
       throw new DeserializationException("Could not deserialize the given message", e);
     }
     if (responseMessage == null) {
