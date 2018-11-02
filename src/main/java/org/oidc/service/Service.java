@@ -47,10 +47,13 @@ public interface Service {
    * Content-type and Authorization. - serialize the request message into the necessary format
    * (JSON, urlencoded, signed JWT)
    * 
-   * @param requestArguments
-   * @return HttpArguments
+   * @param requestArguments The request arguments used for constructing the message.
+   * @return The information needed for building the HTTP request to OP.
+   * @throws UnsupportedSerializationTypeException If the serialization type is not supported.
+   * @throws RequestArgumentProcessingException If the request arguments are invalid.
+   * @throws SerializationException If the request cannot be serialized.
    */
-  HttpArguments getRequestParameters(Map<String, Object> requestArguments)
+  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
       throws UnsupportedSerializationTypeException, RequestArgumentProcessingException,
       SerializationException;
 
@@ -60,15 +63,13 @@ public interface Service {
    * - Deserializes a response into its response message class. - verifies the correctness of the
    * response by running the verify method belonging to the message class used.
    * 
-   * @param response
-   *          The response, can be either in a JSON or an urlencoded format
-   * @param serializationType
-   *          which serialization that was used
-   * @param stateKey
-   *          The key that corresponds to the appropriate State object
-   * @return the parsed and to some extent verified response
+   * @param response The response, can be either in a JSON or an urlencoded format.
+   * @param serializationType Which serialization that was used.
+   * @param stateKey The key that corresponds to the appropriate State object.
+   * @throws DeserializationException If the response cannot be deserialized.
+   * @return The parsed and to some extent verified response.
    **/
-  Message parseResponse(String response, SerializationType serializationType, String stateKey)
+  public Message parseResponse(String response, SerializationType serializationType, String stateKey)
       throws DeserializationException;
 
   /**
@@ -82,11 +83,11 @@ public interface Service {
    * method does not require a stateKey since it is used for services that are not expected to store
    * state in the state DB.
    * 
-   * @param response
-   *          The response, can be either in a JSON or an urlencoded format
-   * @return the parsed and to some extent verified response
+   * @param response The response, can be either in a JSON or an urlencoded format
+   * @throws DeserializationException If the response cannot be deserialized.
+   * @return The parsed and to some extent verified response.
    **/
-  Message parseResponse(String response) throws DeserializationException;
+  public Message parseResponse(String response) throws DeserializationException;
 
   /**
    * This is the start of a pipeline that will:
@@ -98,13 +99,12 @@ public interface Service {
    * response to be parsed. This method does not require a stateKey since it is used for services
    * that are not expected to store state in the state DB.
    * 
-   * @param response
-   *          The response, can be either in a JSON or an urlencoded format
-   * @param serializationType
-   *          which serialization that was used
-   * @return the parsed and to some extent verified response
+   * @param response The response, can be either in a JSON or an urlencoded format.
+   * @param serializationType Which serialization that was used.
+   * @throws DeserializationException If the response cannot be deserialized.
+   * @return The parsed and to some extent verified response.
    **/
-  Message parseResponse(String response, SerializationType serializationType)
+  public Message parseResponse(String response, SerializationType serializationType)
       throws DeserializationException;
 
   /**
@@ -112,13 +112,14 @@ public interface Service {
    * stateKey in order for the service context to be updated. StateKey is used to fetch and update
    * the appropriate State associated with a specific service. This method may update certain
    * attributes of the service context such as issuer, clientId, or clientSecret.
-   * 
-   * @param response
-   *          The response as a Message instance
-   * @param stateKey
-   *          The key that corresponds to the appropriate State object
-   */
-  void updateServiceContext(Message response, String stateKey)
+   *
+   * @param response The response as a Message instance.
+   * @param stateKey The key that identifies the State object.
+   * @throws MissingRequiredAttributeException If the response is missing a required attribute.
+   * @throws ValueException If the response message is unexpected.
+   * @throws InvalidClaimException If the response contains invalid claims.
+   **/
+  public void updateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
 
   /**
@@ -126,11 +127,13 @@ public interface Service {
    * order for the service context to be updated. This method may update certain attributes of the
    * service context such as issuer, clientId, or clientSecret. This method does not require a
    * stateKey since it is used for services that are not expected to store state in the state DB.
-   * 
-   * @param response
-   *          The response as a Message instance
+   *
+   * @param response The response as a Message instance
+   * @throws MissingRequiredAttributeException If the response is missing a required attribute.
+   * @throws ValueException If the response message is unexpected.
+   * @throws InvalidClaimException If the response contains invalid claims.
    */
-  void updateServiceContext(Message response)
+  public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
   
   /**
@@ -138,47 +141,47 @@ public interface Service {
    * 
    * @return The request message for this service.
    */
-  Message getRequestMessage();
+  public Message getRequestMessage();
 
   /**
    * Get the response message for this service.
    * 
    * @return The response message for this service.
    */
-  Message getResponseMessage();
+  public Message getResponseMessage();
 
   /**
    * Get the service context attached to this service.
    * 
    * @return The service context attached to this service.
    */
-  ServiceContext getServiceContext();
+  public ServiceContext getServiceContext();
   
   /**
    * Get the map of arguments sent to the post constructors.
    * 
    * @return The map of arguments sent to the post constructors.
    */
-  Map<String, Object> getPostConstructorArgs();
+  public Map<String, Object> getPostConstructorArgs();
   
   /**
    * Get the map of arguments sent to the pre constructors.
    * 
    * @return The map of arguments sent to the pre constructors.
    */
-  Map<String, Object> getPreConstructorArgs();
+  public Map<String, Object> getPreConstructorArgs();
   
   /**
    * Get the state attached to this service.
    * 
    * @return The state attached to this service.
    */
-  State getState();
+  public State getState();
   
   /**
    * Get the name for this service.
    * 
    * @return The name for this service.
    */
-  ServiceName getServiceName();
+  public ServiceName getServiceName();
 }
