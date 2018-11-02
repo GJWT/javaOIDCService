@@ -22,7 +22,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.oidc.common.MissingRequiredAttributeException;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.RegistrationRequest;
@@ -91,7 +90,7 @@ public abstract class BaseRequestArgumentProcessorTest<T extends AbstractRequest
 
     @Override
     protected void doUpdateServiceContext(Message response, String stateKey)
-        throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+        throws MissingRequiredAttributeException, InvalidClaimException {
     }
 
     @Override

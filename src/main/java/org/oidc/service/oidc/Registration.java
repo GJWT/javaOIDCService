@@ -26,7 +26,6 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.RegistrationRequest;
@@ -71,9 +70,10 @@ public class Registration extends AbstractService {
     return defaultConfig;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+      throws MissingRequiredAttributeException, InvalidClaimException {
     if (!response.getClaims().containsKey("token_endpoint_auth_method")) {
       response.getClaims().put("token_endpoint_auth_method", "client_secret_basic");
     }

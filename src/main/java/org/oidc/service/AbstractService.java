@@ -223,17 +223,7 @@ public abstract class AbstractService implements Service {
 
   protected abstract ServiceConfig getDefaultServiceConfig();
 
-  /**
-   * This method will run after the response has been parsed and verified. It requires response and
-   * stateKey in order for the service context to be updated. StateKey is used to fetch and update
-   * the appropriate State associated with a specific service. This method may update certain
-   * attributes of the service context such as issuer, clientId, or clientSecret.
-   *
-   * @param response
-   *          the response as a Message instance
-   * @param stateKey
-   *          the key that identifies the State object
-   **/
+  /** {@inheritDoc} */
   public void updateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     if (response == null) {
@@ -254,22 +244,23 @@ public abstract class AbstractService implements Service {
     doUpdateServiceContext(response, stateKey);
   }
 
-  /**
-   * This method will run after the response has been parsed and verified. It requires response in
-   * order for the service context to be updated. This method may update certain attributes of the
-   * service context such as issuer, clientId, or clientSecret. This method does not require a
-   * stateKey since it is used for services that are not expected to store state in the state DB.
-   *
-   * @param response
-   *          the response as a Message instance
-   */
+  /** {@inheritDoc} */
   public void updateServiceContext(Message response)
       throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
     updateServiceContext(response, null);
   }
 
+  /**
+   * The extending services must implement this method to update the service context and service
+   * state as reflected by the response message. The response message is guaranteed to be expected type.
+   * 
+   * @param response The response as a Message instance.
+   * @param stateKey The key that identifies the State object.
+   * @throws MissingRequiredAttributeException If the response is missing a required attribute.
+   * @throws InvalidClaimException If the response contains invalid claims.
+   */
   protected abstract void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException;
+      throws MissingRequiredAttributeException, InvalidClaimException;
 
   /**
    * This the start of a pipeline that will:

@@ -29,7 +29,6 @@ import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oauth2.AccessTokenRequest;
@@ -72,12 +71,10 @@ public class AccessToken extends AbstractService {
     return defaultConfig;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (!(responseMessage instanceof AccessTokenResponse)) {
-      throw new ValueException("response not instance of AccessTokenResponse");
-    }
+      throws MissingRequiredAttributeException, InvalidClaimException {
     if (responseMessage.getClaims().containsKey("expires_in")) {
       responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
           + (long) responseMessage.getClaims().get("expires_in"));

@@ -21,7 +21,6 @@ import java.util.Date;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.AccessTokenRequest;
@@ -43,17 +42,15 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
     this.expectedResponseClass = AccessTokenResponse.class;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (!(responseMessage instanceof AccessTokenResponse)) {
-      throw new ValueException("response not instance of AccessTokenResponse");
-    }
+      throws MissingRequiredAttributeException, InvalidClaimException {
     if (((AccessTokenResponse) responseMessage).getVerifiedIdToken() != null) {
       IDToken idToken = ((AccessTokenResponse) responseMessage).getVerifiedIdToken();
       if (!stateKey
           .equals(getState().getStateKeyByNonce((String) idToken.getClaims().get("nonce")))) {
-        throw new ValueException(
+        throw new InvalidClaimException(
             String.format("nonce '%s' in the id token is not matching state record '%s'",
                 (String) idToken.getClaims().get("nonce"), stateKey));
       }

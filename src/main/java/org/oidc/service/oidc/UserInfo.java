@@ -29,7 +29,6 @@ import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.ValueException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
@@ -75,9 +74,10 @@ public class UserInfo extends AbstractService {
     return defaultConfig;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+      throws MissingRequiredAttributeException, InvalidClaimException {
     state.storeItem(responseMessage, stateKey, MessageType.USER_INFO);
   }
 

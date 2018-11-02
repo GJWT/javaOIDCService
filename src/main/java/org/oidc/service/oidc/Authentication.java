@@ -26,7 +26,6 @@ import org.oidc.common.MessageType;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.AuthenticationRequest;
@@ -78,17 +77,15 @@ public class Authentication extends AbstractService {
     return defaultConfig;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
-    if (!(responseMessage instanceof AuthenticationResponse)) {
-      throw new ValueException("response not instance of AuthenticationResponse");
-    }
+      throws MissingRequiredAttributeException, InvalidClaimException {
     if (((AuthenticationResponse) responseMessage).getVerifiedIdToken() != null) {
       IDToken idToken = ((AuthenticationResponse) responseMessage).getVerifiedIdToken();
       if (!stateKey
           .equals(getState().getStateKeyByNonce((String) idToken.getClaims().get("nonce")))) {
-        throw new ValueException(
+        throw new InvalidClaimException(
             String.format("nonce '%s' in the id token is not matching state record '%s'",
                 (String) idToken.getClaims().get("nonce"), stateKey));
       }

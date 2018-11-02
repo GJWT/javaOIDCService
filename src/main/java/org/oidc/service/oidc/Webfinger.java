@@ -78,9 +78,10 @@ public class Webfinger extends AbstractService {
     return defaultConfig;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+      throws MissingRequiredAttributeException, InvalidClaimException {
     if (stateKey != null) {
       throw new UnsupportedOperationException(
           "stateKey is not supported to update service context" + " for the WebFinger service");
@@ -96,7 +97,7 @@ public class Webfinger extends AbstractService {
           // allows for non-standard behavior for schema and issuer
           if (href.startsWith("http:") && (!serviceConfig.isShouldAllowHttp()
               || !serviceConfig.isShouldAllowNonStandardIssuer())) {
-            throw new ValueException("http link not allowed: " + href);
+            throw new InvalidClaimException("http link not allowed: " + href);
           }
           this.serviceContext.setIssuer(href);
           // pick the first one

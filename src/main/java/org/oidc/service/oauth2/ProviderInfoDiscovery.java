@@ -26,7 +26,6 @@ import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
-import org.oidc.common.ValueException;
 import org.oidc.msg.ErrorDetails;
 import org.oidc.msg.ErrorType;
 import org.oidc.msg.InvalidClaimException;
@@ -65,9 +64,10 @@ public class ProviderInfoDiscovery extends AbstractService {
     return defaultConfig;
   }
   
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+      throws MissingRequiredAttributeException, InvalidClaimException {
     if (stateKey != null) {
       throw new UnsupportedOperationException(
           "stateKey is not supported to update service context" + " for this service");
@@ -113,7 +113,7 @@ public class ProviderInfoDiscovery extends AbstractService {
     try {
       keyJar.loadKeys(response.getClaims(), issuer, false);
     } catch (KeyException | ImportException | IOException | JWKException | ValueError e) {
-      throw new ValueException(
+      throw new InvalidClaimException(
           String.format("Unable to load keys by jwks or jwks_uri value, '%s'", e.getMessage()));
     }
     // TODO: find out what kind of checks are needed at this point

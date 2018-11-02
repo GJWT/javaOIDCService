@@ -17,16 +17,13 @@
 package org.oidc.service.oidc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.oidc.common.EndpointName;
-import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.ServiceName;
-import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.ProviderConfigurationResponse;
@@ -81,9 +78,10 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
     this.expectedResponseClass = ProviderConfigurationResponse.class;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
-      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+      throws MissingRequiredAttributeException, InvalidClaimException {
     super.doUpdateServiceContext(response, stateKey);
 
     if (getServiceContext().getBehavior() == null) {
