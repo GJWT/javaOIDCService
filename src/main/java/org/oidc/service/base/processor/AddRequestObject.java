@@ -115,7 +115,7 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
     RequestObject requestObject = new RequestObject(requestObjectRequestArguments);
     if ("request".equals(requestMethod)) {
       try {
-        requestArguments.put("request", requestObject.toJwt(key, algorithm));
+        requestArguments.put("request", requestObject.toJwt(key, algorithm, null, null, null, null, null, null));
       } catch (SerializationException e) {
         // TODO: improve error handling, by returning better describing error
         error.getDetails()
