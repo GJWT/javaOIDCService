@@ -67,11 +67,27 @@ public interface Service {
    * @param serializationType Which serialization that was used.
    * @param stateKey The key that corresponds to the appropriate State object.
    * @throws DeserializationException If the response cannot be deserialized.
+   * @throws InvalidClaimException If the response cannot be verified.
    * @return The parsed and to some extent verified response.
    **/
   public Message parseResponse(String response, SerializationType serializationType, String stateKey)
-      throws DeserializationException;
+      throws DeserializationException, InvalidClaimException;
 
+  /**
+   * This the start of a pipeline that will:
+   * 
+   * - Deserializes a response into its response message class. - verifies the correctness of the
+   * response by running the verify method belonging to the message class used.
+   * 
+   * @param response The response, can be either in a JSON or an urlencoded format.
+   * @param stateKey The key that corresponds to the appropriate State object.
+   * @throws DeserializationException If the response cannot be deserialized.
+   * @throws InvalidClaimException If the response cannot be verified.
+   * @return The parsed and to some extent verified response.
+   **/
+  public Message parseResponse(String response, String stateKey)
+      throws DeserializationException, InvalidClaimException;
+  
   /**
    * This the start of a pipeline that will:
    * 
@@ -85,9 +101,11 @@ public interface Service {
    * 
    * @param response The response, can be either in a JSON or an urlencoded format
    * @throws DeserializationException If the response cannot be deserialized.
+   * @throws InvalidClaimException If the response cannot be verified.
    * @return The parsed and to some extent verified response.
    **/
-  public Message parseResponse(String response) throws DeserializationException;
+  public Message parseResponse(String response) 
+      throws DeserializationException, InvalidClaimException;
 
   /**
    * This is the start of a pipeline that will:
@@ -102,10 +120,11 @@ public interface Service {
    * @param response The response, can be either in a JSON or an urlencoded format.
    * @param serializationType Which serialization that was used.
    * @throws DeserializationException If the response cannot be deserialized.
+   * @throws InvalidClaimException If the response cannot be verified.
    * @return The parsed and to some extent verified response.
    **/
   public Message parseResponse(String response, SerializationType serializationType)
-      throws DeserializationException;
+      throws DeserializationException, InvalidClaimException;
 
   /**
    * This method will run after the response has been parsed and verified. It requires response and
