@@ -119,7 +119,7 @@ public class UserInfo extends AbstractService {
 
   @Override
   public Message postParseResponse(Message responseMessage, String stateKey)
-      throws DeserializationException {
+      throws DeserializationException, InvalidClaimException {
     Map<String, Object> args = new HashMap<String, Object>();
     getState().multipleExtendRequestArgs(args, stateKey, Arrays.asList("id_token"),
         Arrays.asList(MessageType.AUTHORIZATION_RESPONSE, MessageType.TOKEN_RESPONSE,
@@ -127,11 +127,11 @@ public class UserInfo extends AbstractService {
     if (args.containsKey("id_token")) {
       IDToken idToken = new IDToken();
       // ID Token has already been verified in this stage
-      idToken.fromJwt((String) responseMessage.getClaims().get("id_token"), null, null);
-      String expectedSub = (String) responseMessage.getClaims().get("sub");
-      String receivedSub = (String) idToken.getClaims().get("sub");
-      if (expectedSub.equals(receivedSub)) {
-        throw new DeserializationException(String
+      idToken.fromJwt((String) args.get("id_token"), null, null);
+      String receivedSub = (String) responseMessage.getClaims().get("sub");
+      String expectedSub = (String) idToken.getClaims().get("sub");
+      if (!expectedSub.equals(receivedSub)) {
+        throw new InvalidClaimException(String
             .format("expected sub value '%s' but got instead '%s'", expectedSub, receivedSub));
       }
     } else {
