@@ -237,10 +237,10 @@ public abstract class AbstractService implements Service {
       throw new ValueException("Unexpected response message type, not instance of "
           + this.responseMessage.getClass().getName());
     }
-    /*
-     * if (!response.verify()) { // TODO throw new InvalidClaimException("TODO: add details here");
-     * }
-     */
+    if (!response.verify()) {
+      throw new ValueException("The message validation failed: " +
+          response.getError().getDetails());
+    }
     doUpdateServiceContext(response, stateKey);
   }
 
@@ -263,22 +263,10 @@ public abstract class AbstractService implements Service {
       throws MissingRequiredAttributeException, InvalidClaimException;
 
   /**
-   * This the start of a pipeline that will:
-   * <p>
-   * - Deserializes a response into its response message class. - verifies the correctness of the
-   * response by running the verify method belonging to the message class used. Selects either error
-   * or success response message class to return.
-   *
-   * @param responseBody
-   *          The response, can be either in a JSON or an urlencoded format
-   * @param serializationType
-   *          which serialization that was used
-   * @param stateKey
-   *          the key that identifies the State object
-   * @return the parsed and to some extent verified response
+   * {@inheritDoc}
    **/
   public Message parseResponse(String responseBody, SerializationType serializationType,
-      String stateKey) throws DeserializationException {
+      String stateKey) throws DeserializationException, InvalidClaimException {
     if (serializationType != null) {
       this.serializationType = serializationType;
     }
@@ -348,41 +336,35 @@ public abstract class AbstractService implements Service {
    *          to store state.
    * @return post processed response.
    * @throws DeserializationException
+   * @throws InvalidClaimException If the message cannot be verified.
    */
   public Message postParseResponse(Message responseMessage, String stateKey)
-      throws DeserializationException {
+      throws DeserializationException, InvalidClaimException {
     return responseMessage;
   }
 
   /**
-   * This the start of a pipeline that will:
-   * <p>
-   * - Deserializes a response into its response message class. - verifies the correctness of the
-   * response by running the verify method belonging to the message class used.
-   *
-   * @param responseBody
-   *          The response, can be either in a JSON or an urlencoded format
-   * @return the parsed and to some extent verified response
+   * {@inheritDoc}
    **/
-  public Message parseResponse(String responseBody) throws DeserializationException {
+  public Message parseResponse(String responseBody) 
+      throws DeserializationException, InvalidClaimException {
     return parseResponse(responseBody, this.deserializationType, "");
   }
 
   /**
-   * This the start of a pipeline that will:
-   * <p>
-   * - Deserialize a response into its message class. - verifies the correctness of the response by
-   * running the verify method belonging to the message class used.
-   *
-   * @param responseBody
-   *          The response, can be either in a JSON or an urlencoded format
-   * @param serializationType
-   *          which serialization that was used
-   * @return the parsed and to some extent verified response
+   * {@inheritDoc}
    **/
   public Message parseResponse(String responseBody, SerializationType serializationType)
-      throws DeserializationException {
+      throws DeserializationException, InvalidClaimException {
     return parseResponse(responseBody, serializationType, "");
+  }
+
+  /**
+   * {@inheritDoc}
+   **/
+  public Message parseResponse(String responseBody, String stateKey)
+      throws DeserializationException, InvalidClaimException {
+    return parseResponse(responseBody, this.deserializationType, stateKey);
   }
 
   /**
