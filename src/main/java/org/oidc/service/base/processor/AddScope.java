@@ -19,7 +19,8 @@ package org.oidc.service.base.processor;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.oidc.msg.Error;
-import org.oidc.msg.ParameterVerification;
+import org.oidc.msg.ParameterVerificationDefinition;
+import org.oidc.msg.validator.ArrayClaimValidator;
 import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
@@ -30,7 +31,8 @@ import org.oidc.service.base.RequestArgumentProcessingException;
 public class AddScope extends AbstractRequestArgumentProcessor {
 
   {
-    paramVerDefs.put("scope", ParameterVerification.OPTIONAL_LIST_OF_SP_SEP_STRINGS.getValue());
+    paramVerDefs.put("scope", new ParameterVerificationDefinition(new ArrayClaimValidator(true), 
+        false));
   }
 
   @Override
