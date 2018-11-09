@@ -84,9 +84,19 @@ public class Registration extends AbstractService {
     getServiceContext()
         .setRegistrationAccessToken((String) response.getClaims().get("registration_access_token"));
     getServiceContext().setRegistrationResponse((RegistrationResponse) response);
-    // TODO: the behaviour should probably be merged with the client preferences
-    getServiceContext().setBehavior((RegistrationResponse) response);
     this.responseMessage = response;
+    // if behavior is already populated (for instance by ProviderInfoDiscovery), then include all
+    // its existing values to the registration response message
+    if (getServiceContext().getBehavior() != null) {
+      for (String behaviorKey : getServiceContext().getBehavior().getClaims().keySet()) {
+        if (!response.getClaims().containsKey(behaviorKey)) {
+          response.getClaims().put(behaviorKey, 
+              getServiceContext().getBehavior().getClaims().get(behaviorKey));
+        }
+      }
+    }
+    // and finally store the registration response as the behavior
+    getServiceContext().setBehavior((RegistrationResponse) response);
   }
 
   @Override
