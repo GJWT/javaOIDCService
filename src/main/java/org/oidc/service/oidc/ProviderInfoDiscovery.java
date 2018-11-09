@@ -60,6 +60,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       .put("token_endpoint_auth_method", "token_endpoint_auth_methods_supported")
       .put("token_endpoint_auth_signing_alg", "token_endpoint_auth_signing_alg_values_supported")
       .put("response_types", "response_types_supported").put("grant_types", "grant_types_supported")
+      .put("scope", "scopes_supported")
       .build();
 
   /**
@@ -106,6 +107,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
   protected void matchPreferences(ProviderConfigurationResponse pcr)
       throws MissingRequiredAttributeException {
     RegistrationRequest preferences = this.getServiceContext().getClientPreferences();
+    System.out.println("Going through preferences " + preferences);
     if (preferences == null) {
       return;
     }
@@ -114,6 +116,7 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       String providerKey = entry.getValue();
       Object preferenceValue = preferences.getClaims().get(preferenceKey);
       if (ServiceUtil.nullOrEmptyStringOrList(preferenceValue)) {
+        System.out.println("No preference value");
         continue;
       }
       Object providerValue = pcr.getClaims().get(providerKey);
