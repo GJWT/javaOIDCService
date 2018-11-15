@@ -19,7 +19,6 @@ package org.oidc.service.oidc;
 import com.google.common.base.Strings;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -201,14 +200,6 @@ public class Webfinger extends AbstractService {
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
       throws RequestArgumentProcessingException {
-    for (String value : Arrays.asList((String) requestArguments.get(Constants.WEBFINGER_RESOURCE),
-        getAddedClaims() == null ? null : getAddedClaims().getResource(),
-        this.serviceContext.getBaseUrl())) {
-      if (!Strings.isNullOrEmpty(value)) {
-        requestArguments.put(Constants.WEBFINGER_RESOURCE, value);
-        break;
-      }
-    }
     if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_RESOURCE))) {
       throw new RequestArgumentProcessingException(
           new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.MISSING_REQUIRED_VALUE));

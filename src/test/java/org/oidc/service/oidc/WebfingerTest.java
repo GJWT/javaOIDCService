@@ -25,11 +25,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.oidc.common.AddedClaims;
 import org.oidc.common.HttpMethod;
-import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.UnsupportedSerializationTypeException;
-import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.JsonResponseDescriptor;
@@ -111,29 +108,9 @@ public class WebfingerTest extends BaseServiceTest<Webfinger> {
     service.getRequestParameters(buildArgsWithResource(""));
   }
 
-  @Test
+  @Test(expected = RequestArgumentProcessingException.class)
   public void testGetRequestParametersNullResource() throws Exception {
-    AddedClaims addedClaims = new AddedClaims.AddedClaimsBuilder().setResource("resource")
-        .buildAddedClaims();
-    service.setAddedClaims(addedClaims);
-    Map<String, Object> requestArguments = new HashMap<String, Object>();
-    requestArguments.put("resource", null);
-    HttpArguments httpArguments = service.getRequestParameters(requestArguments);
-    Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
-    Assert.assertTrue(httpArguments.getUrl().equals(
-        "https://resource/.well-known/webfinger?resource=https%3A%2F%2Fresource&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
-  }
-
-  @Test
-  public void testGetRequestParametersNullResourceAndNullAddedClaimsResource() throws Exception {
-    ServiceContext serviceContext = SERVICE_CONTEXT;
-    serviceContext.setBaseUrl("baseUrl");
-    Webfinger webfinger = new Webfinger(serviceContext);
-    HttpArguments httpArguments = webfinger.getRequestParameters(null);
-    Assert.assertTrue(httpArguments.getHttpMethod().equals(HttpMethod.GET));
-    System.out.println(httpArguments.getUrl());
-    Assert.assertTrue(httpArguments.getUrl().equals(
-        "https://baseUrl/.well-known/webfinger?resource=https%3A%2F%2FbaseUrl&rel=http%3A%2F%2Fopenid.net%2Fspecs%2Fconnect%2F1.0%2Fissuer"));
+    service.getRequestParameters(buildArgsWithResource(null));
   }
 
   @Test(expected = RequestArgumentProcessingException.class)

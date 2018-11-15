@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.oidc.common.AddedClaims;
 import org.oidc.common.ClientAuthenticationMethod;
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
@@ -155,11 +154,6 @@ public abstract class AbstractService implements Service {
    * pre/postConstruct methods.
    */
   protected ServiceConfig serviceConfig;
-
-  /**
-   * Additional claims
-   */
-  private AddedClaims addedClaims;
 
   /**
    * Constants
@@ -581,14 +575,6 @@ public abstract class AbstractService implements Service {
 
   public void setServiceConfig(ServiceConfig serviceConfig) {
     this.serviceConfig = serviceConfig;
-  }
-
-  public AddedClaims getAddedClaims() {
-    return addedClaims;
-  }
-
-  public void setAddedClaims(AddedClaims addedClaims) {
-    this.addedClaims = addedClaims;
   }
 
   /**

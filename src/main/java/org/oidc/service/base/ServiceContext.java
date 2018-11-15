@@ -48,10 +48,6 @@ public class ServiceContext {
    */
   private KeyJar keyJar;
   /**
-   * Additional configuration arguments
-   */
-  private ServiceContextConfig config;
-  /**
    * Where dynamically received or statically assigned provider information is stored
    */
   private ASConfigurationResponse providerConfigurationResponse;
@@ -132,15 +128,14 @@ public class ServiceContext {
    */
   private Map<EndpointName, String> endpoints;
 
-  public ServiceContext(KeyJar keyJar, ServiceContextConfig config) {
+  public ServiceContext(KeyJar keyJar) {
     endpoints = new HashMap<EndpointName, String>();
     this.allow = new HashMap<>();
     this.keyJar = keyJar;
-    this.config = config;
   }
 
   public ServiceContext() {
-    this(null, null);
+    this(null);
   }
 
   /**
@@ -212,14 +207,6 @@ public class ServiceContext {
 
   public void setKeyJar(KeyJar keyJar) {
     this.keyJar = keyJar;
-  }
-
-  public ServiceContextConfig getConfig() {
-    return config;
-  }
-
-  public void setConfig(ServiceContextConfig config) {
-    this.config = config;
   }
 
   public ASConfigurationResponse getProviderConfigurationResponse() {
