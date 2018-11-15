@@ -130,8 +130,8 @@ public class ServiceConfigDeserializer extends StdDeserializer<ServiceConfig> {
     config.setPreConstructors(
         getDeserializedProcessors(node, Constants.SERVICE_CONFIG_KEY_PRE_CONSTRUCTORS));
 
-    config.setPreConstructorArgs(getDeserializedMap(node, "pre_construct_args"));
-    config.setPostConstructorArgs(getDeserializedMap(node, "post_construct_args"));
+    config.setPreConstructorArgs(getDeserializedMap(node, "pre_construct"));
+    config.setPostConstructorArgs(getDeserializedMap(node, "post_construct"));
     config.setRequestArguments(getDeserializedMap(node, "request_args"));
     return config;
   }

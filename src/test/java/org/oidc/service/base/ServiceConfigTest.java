@@ -216,8 +216,8 @@ public class ServiceConfigTest {
         "\"allow_non_standard_issuer\": true,\n" + 
         "\"allow_http\": true,\n" +
         "\"request_args\": { \"response_mode\" : \"query\" },\n" +
-        "\"pre_construct_args\": { \"pre_test\" : \"preValue\" }, \n" +
-        "\"post_construct_args\": { \"post_test\" : \"postValue\" } \n }";
+        "\"pre_construct\": { \"pre_test\" : \"preValue\" }, \n" +
+        "\"post_construct\": { \"post_test\" : \"postValue\" } \n }";
     System.out.println(json);
     ServiceConfig config = ServiceConfig.fromJson(json);
     Assert.assertEquals(ClientAuthenticationMethod.CLIENT_SECRET_BASIC, config.getDefaultAuthenticationMethod());
