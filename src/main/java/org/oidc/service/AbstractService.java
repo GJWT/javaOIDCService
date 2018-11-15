@@ -214,6 +214,12 @@ public abstract class AbstractService implements Service {
     } else {
       this.preConstructors = getDefaultServiceConfig().getPreConstructors();
     }
+    if (serviceConfig != null && serviceConfig.getPostConstructorArgs() != null) {
+      this.postConstructorArgs = serviceConfig.getPostConstructorArgs();
+    }
+    if (serviceConfig != null && serviceConfig.getPreConstructorArgs() != null) {
+      this.preConstructorArgs = serviceConfig.getPreConstructorArgs();
+    }
     if (serviceConfig != null && serviceConfig.getSerializationType() != null) {
       this.serializationType = serviceConfig.getSerializationType();
     } else {
