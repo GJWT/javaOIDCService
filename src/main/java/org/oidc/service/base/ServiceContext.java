@@ -16,8 +16,6 @@
 
 package org.oidc.service.base;
 
-import com.auth0.msg.Key;
-import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
 import com.google.common.base.Strings;
 import java.security.MessageDigest;
@@ -27,13 +25,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.oidc.common.Algorithm;
 import org.oidc.common.EndpointName;
-import org.oidc.common.FileOrUrl;
-import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
-import org.oidc.msg.DataLocation;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oidc.RegistrationRequest;
 import org.oidc.msg.oidc.RegistrationResponse;
@@ -139,13 +132,6 @@ public class ServiceContext {
    */
   private Map<EndpointName, String> endpoints;
 
-  /**
-   * Constants
-   */
-  private static final String SIG = "sig";
-  private static final String SHA_256 = "SHA-256";
-  private static final String ISSUER = "issuer";
-
   public ServiceContext(KeyJar keyJar, ServiceContextConfig config) {
     endpoints = new HashMap<EndpointName, String>();
     this.allow = new HashMap<>();
@@ -155,76 +141,6 @@ public class ServiceContext {
 
   public ServiceContext() {
     this(null, null);
-  }
-
-  /**
-   * The client needs its own set of keys. It can either dynamically create them or load them from
-   * local storage. This method can also fetch other entities keys provided that the URL points to a
-   * JWKS.
-   *
-   * @param keySpecifications
-   *          contains fileName and algorithm
-   **/
-  public void importKeys(Map<FileOrUrl, KeySpecifications> keySpecifications) {
-    if (keySpecifications == null) {
-      throw new IllegalArgumentException("null keySpecifications");
-    }
-
-    Set<FileOrUrl> keys = keySpecifications.keySet();
-    KeySpecifications keySpecificationsIndex;
-    Key rsaKey;
-    KeyBundle keyBundle;
-    Algorithm algorithm;
-    for (FileOrUrl key : keys) {
-      if (FileOrUrl.FILE.equals(key)) {
-        keySpecificationsIndex = keySpecifications.get(key);
-        algorithm = keySpecificationsIndex.getAlgorithm();
-        if (Algorithm.RS256.equals(algorithm) || Algorithm.RS384.equals(algorithm)
-            || Algorithm.RS512.equals(algorithm)) {
-          // commented for now, as KeyJar/Bundle under construction
-          /*
-          rsaKey = new RSAKey(Jwk.importPrivateRsaKeyFromFile(keySpecificationsIndex.getFileName()),
-              SIG);
-          keyBundle = new KeyBundle();
-          keyBundle.addKey(rsaKey);
-          keyJar.addKeyBundle("", keyBundle);*/
-        }
-      } else if (FileOrUrl.URL.equals(key)) {
-        /*
-        keyBundle = new KeyBundle();
-        keyJar.addKeyBundle(ISSUER, keyBundle);
-        */
-      }
-    }
-  }
-
-  /**
-   * A 1<->1 map is maintained between a URL pointing to a file and the name of the file in the file
-   * system.
-   * <p>
-   * As an example if the base_url is 'https://example.com' and a jwks_uri is
-   * 'https://example.com/jwks_uri.json' then the filename of the corresponding file on the local
-   * filesystem would be 'jwks_uri'. Relative to the directory from which the RP instance is run.
-   *
-   * @param webName
-   *          the published URL
-   * @return local filename
-   **/
-  public String fileNameFromWebname(String webName) throws ValueException {
-    if (Strings.isNullOrEmpty(webName)) {
-      throw new IllegalArgumentException("null or empty webName");
-    }
-
-    if (!webName.startsWith(this.baseUrl)) {
-      throw new ValueException("Webname does not match baseUrl");
-    }
-
-    webName = webName.substring(this.baseUrl.length());
-    if (webName.startsWith("/")) {
-      return webName.substring(1);
-    } else {
-      return webName;
-    }
   }
 
   /**
@@ -238,7 +154,7 @@ public class ServiceContext {
    **/
   public List<String> generateRequestUris(String requestsDirectory)
       throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
-    MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
+    MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 
     /*
      * Commented the code below as it doesn't make sense: issuer in the provider configuration

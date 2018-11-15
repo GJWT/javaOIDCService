@@ -17,8 +17,6 @@
 package org.oidc.service.base;
 
 import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
-import com.auth0.msg.Key;
-import com.auth0.msg.KeyBundle;
 import com.auth0.msg.KeyJar;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -27,13 +25,9 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.oidc.common.Algorithm;
-import org.oidc.common.FileOrUrl;
-import org.oidc.common.KeySpecifications;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oidc.ProviderConfigurationResponse;
@@ -51,81 +45,6 @@ public class ServiceContextTest {
     keyJar = new KeyJar();
   }
   
-  @Test
-  public void testImportKeysNullKeySpecifications() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("null keySpecifications");
-    ServiceContext serviceContext = new ServiceContext();
-    serviceContext.importKeys(null);
-  }
-
-  @Ignore
-  @Test
-  public void testImportKeysWithFile() {
-    /*
-    ServiceContext serviceContext = new ServiceContext();
-    KeyJar keyJar = new KeyJar();
-    KeyBundle keyBundle = new KeyBundle();
-    Key key = new Key();
-    keyBundle.addKey(key);
-    keyJar.addKeyBundle("owner", keyBundle);
-    serviceContext.setKeyJar(keyJar);
-    Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 0);
-    Map<FileOrUrl, KeySpecifications> keySpecificationsMap = new HashMap<>();
-    KeySpecifications keySpecifications = new KeySpecifications("salesforce.key", Algorithm.RS256);
-    keySpecificationsMap.put(FileOrUrl.FILE, keySpecifications);
-    serviceContext.importKeys(keySpecificationsMap);
-    Assert.assertTrue(serviceContext.getKeyJar().getKeyBundle().getKeys().size() == 1);
-    */
-  }
-
-  @Test
-  public void testFileNameFromWebnameNullUrl() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("null or empty webName");
-    ServiceContext serviceContext = new ServiceContext();
-    serviceContext.fileNameFromWebname(null);
-  }
-
-  @Test
-  public void testFileNameFromWebnameEmptyUrl() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("null or empty webName");
-    ServiceContext serviceContext = new ServiceContext();
-    serviceContext.fileNameFromWebname("");
-  }
-
-  @Test
-  public void testFileNameFromWebnameWhereWebNameDoesntStartWithBaseUrl() throws Exception {
-    thrown.expect(ValueException.class);
-    thrown.expectMessage("Webname does not match baseUrl");
-    ServiceContextConfig serviceContextConfig = new ServiceContextConfig.ServiceContextConfigBuilder()
-        .setBaseUrl("baseUrl").buildServiceContext();
-    ServiceContext serviceContext = new ServiceContext(keyJar, serviceContextConfig);
-    serviceContext.setBaseUrl("www.yahoo.com");
-    serviceContext.fileNameFromWebname("webName");
-  }
-
-  @Test
-  public void testFileNameFromWebnameWhereWebNameStartsWithForwardSlash() throws Exception {
-    ServiceContextConfig serviceContextConfig = new ServiceContextConfig.ServiceContextConfigBuilder()
-        .setBaseUrl("www.yahoo.com").buildServiceContext();
-    ServiceContext serviceContext = new ServiceContext(keyJar, serviceContextConfig);
-    serviceContext.setBaseUrl("www.yahoo.com");
-    String fileName = serviceContext.fileNameFromWebname("www.yahoo.com/1234");
-    Assert.assertTrue(fileName.equals("1234"));
-  }
-
-  @Test
-  public void testFileNameFromWebnameWhereWebNameDoesntStartsWithForwardSlash() throws Exception {
-    ServiceContextConfig serviceContextConfig = new ServiceContextConfig.ServiceContextConfigBuilder()
-        .setBaseUrl("www.yahoo.com").buildServiceContext();
-    ServiceContext serviceContext = new ServiceContext(keyJar, serviceContextConfig);
-    serviceContext.setBaseUrl("www.yahoo.com");
-    String fileName = serviceContext.fileNameFromWebname("www.yahoo.com:1234");
-    Assert.assertTrue(fileName.equals(":1234"));
-  }
-
   @Test
   public void testGenerateRequestUrisWithForwardSlash()
       throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
