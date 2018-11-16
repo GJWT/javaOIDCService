@@ -107,7 +107,6 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
   protected void matchPreferences(ProviderConfigurationResponse pcr)
       throws MissingRequiredAttributeException {
     RegistrationRequest preferences = this.getServiceContext().getClientPreferences();
-    System.out.println("Going through preferences " + preferences);
     if (preferences == null) {
       return;
     }
@@ -116,7 +115,6 @@ public class ProviderInfoDiscovery extends org.oidc.service.oauth2.ProviderInfoD
       String providerKey = entry.getValue();
       Object preferenceValue = preferences.getClaims().get(preferenceKey);
       if (ServiceUtil.nullOrEmptyStringOrList(preferenceValue)) {
-        System.out.println("No preference value");
         continue;
       }
       Object providerValue = pcr.getClaims().get(providerKey);
