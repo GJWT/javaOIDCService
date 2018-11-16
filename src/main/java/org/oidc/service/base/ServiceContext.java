@@ -127,6 +127,10 @@ public class ServiceContext {
    * Map of service endpoint URLs corresponding to the endpoint name.
    */
   private Map<EndpointName, String> endpoints;
+  /**
+   * The URL containing the public key information of this RP.
+   */
+  private String jwksUri;
 
   public ServiceContext(KeyJar keyJar) {
     endpoints = new HashMap<EndpointName, String>();
@@ -135,7 +139,7 @@ public class ServiceContext {
   }
 
   public ServiceContext() {
-    this(null);
+    this(new KeyJar());
   }
 
   /**
@@ -343,5 +347,13 @@ public class ServiceContext {
   
   public void setEndpoints(Map<EndpointName, String> map) {
     this.endpoints = map;
+  }
+  
+  public String getJwksUri() {
+    return this.jwksUri;
+  }
+  
+  public void setJwksUri(String uri) {
+    this.jwksUri = uri;
   }
 }
