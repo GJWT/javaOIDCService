@@ -16,6 +16,7 @@
 
 package org.oidc.service.oidc;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +44,11 @@ import org.oidc.service.base.processor.AddPostLogoutRedirectUris;
 import org.oidc.service.base.processor.AddRedirectUris;
 import org.oidc.service.base.processor.AddRequestUri;
 import org.oidc.service.data.State;
+
+import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
+import com.auth0.jwt.exceptions.oicmsg_exceptions.JWKException;
+import com.auth0.jwt.exceptions.oicmsg_exceptions.ValueError;
+import com.google.common.base.Strings;
 
 public class Registration extends AbstractService {
 
@@ -78,7 +84,15 @@ public class Registration extends AbstractService {
       response.getClaims().put("token_endpoint_auth_method", "client_secret_basic");
     }
     getServiceContext().setClientId((String) response.getClaims().get("client_id"));
-    getServiceContext().setClientSecret((String) response.getClaims().get("client_secret"));
+    String clientSecret = (String) response.getClaims().get("client_secret");
+    getServiceContext().setClientSecret(clientSecret);
+    if (!Strings.isNullOrEmpty(clientSecret)) {
+      try {
+        getServiceContext().getKeyJar().addSymmetricKey("", clientSecret.getBytes("UTF-8"), null);
+      } catch (ImportException | IOException | JWKException | ValueError e) {
+        throw new InvalidClaimException("Could not store the client secret to the key jar", e);
+      }
+    }
     getServiceContext()
         .setClientSecretExpiresAt((Date) response.getClaims().get("client_secret_expires_at"));
     getServiceContext()
