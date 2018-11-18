@@ -296,6 +296,15 @@ public abstract class AbstractService implements Service {
       }
     } catch (IOException e) {
       throw new DeserializationException("Could not deserialize the given message", e);
+    } catch (DeserializationException e) {
+      // This might be encrypted/signed userinfo response i.e. declared as type JSON
+      if (responseMessage instanceof CryptoMessage) {
+        CryptoMessage msg = (CryptoMessage) responseMessage;
+        responseMessage.fromJwt(responseBody, msg.getKeyJar(), msg.getIssuer(),
+            msg.getNoKidIssuers(), msg.getAllowMissingKid(), msg.getTrustJku());
+      } else {
+        throw e;
+      }
     }
     if (responseMessage == null) {
       throw new DeserializationException("Missing or faulty response");
