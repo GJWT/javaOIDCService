@@ -16,12 +16,17 @@
 
 package org.oidc.service.oidc;
 
+import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
+import com.auth0.jwt.exceptions.oicmsg_exceptions.JWKException;
+import com.auth0.jwt.exceptions.oicmsg_exceptions.ValueError;
+import com.auth0.msg.KeyBundle;
+import com.auth0.msg.SYMKey;
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
@@ -45,10 +50,7 @@ import org.oidc.service.base.processor.AddRedirectUris;
 import org.oidc.service.base.processor.AddRequestUri;
 import org.oidc.service.data.State;
 
-import com.auth0.jwt.exceptions.oicmsg_exceptions.ImportException;
-import com.auth0.jwt.exceptions.oicmsg_exceptions.JWKException;
-import com.auth0.jwt.exceptions.oicmsg_exceptions.ValueError;
-import com.google.common.base.Strings;
+
 
 public class Registration extends AbstractService {
 
@@ -88,7 +90,10 @@ public class Registration extends AbstractService {
     getServiceContext().setClientSecret(clientSecret);
     if (!Strings.isNullOrEmpty(clientSecret)) {
       try {
-        getServiceContext().getKeyJar().addSymmetricKey("", clientSecret.getBytes("UTF-8"), null);
+        KeyBundle bundle = new KeyBundle();
+        bundle.append(new SYMKey("sig", clientSecret));
+        bundle.append(new SYMKey("ver", clientSecret));
+        getServiceContext().getKeyJar().addKeyBundle("", bundle);
       } catch (ImportException | IOException | JWKException | ValueError e) {
         throw new InvalidClaimException("Could not store the client secret to the key jar", e);
       }
