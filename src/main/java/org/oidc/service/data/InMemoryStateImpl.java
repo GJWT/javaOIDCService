@@ -17,10 +17,11 @@
 package org.oidc.service.data;
 
 import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.codec.binary.Base64;
 import org.oidc.common.MessageType;
 import org.oidc.msg.Message;
 import org.oidc.msg.oidc.AccessTokenResponse;
@@ -130,7 +131,7 @@ public class InMemoryStateImpl implements State {
     if (state == null || state.isEmpty()) {
       byte[] rand = new byte[32];
       new SecureRandom().nextBytes(rand);
-      state = Base64.getUrlEncoder().encodeToString(rand);
+      state = Base64.encodeBase64URLSafeString(rand);
     }
     Map<String, Object> claims = new HashMap<String, Object>();
     claims.put("iss", issuer);

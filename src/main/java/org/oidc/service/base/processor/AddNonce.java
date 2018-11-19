@@ -17,10 +17,10 @@
 package org.oidc.service.base.processor;
 
 import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.binary.Base64;
 import org.oidc.msg.Error;
 import org.oidc.msg.ParameterVerification;
 import org.oidc.service.Service;
@@ -44,7 +44,7 @@ public class AddNonce extends AbstractRequestArgumentProcessor {
       if (Pattern.compile("\\bid_token\\b").matcher(responseType).find()) {
         byte[] rand = new byte[32];
         new SecureRandom().nextBytes(rand);
-        String nonce = Base64.getUrlEncoder().encodeToString(rand);
+        String nonce = Base64.encodeBase64URLSafeString(rand);
         requestArguments.put("nonce", nonce);
       }
     }

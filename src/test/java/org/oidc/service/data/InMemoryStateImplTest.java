@@ -42,7 +42,8 @@ public class InMemoryStateImplTest {
 
   @Test
   public void testStateLength() throws Exception {
-    Assert.assertEquals(44, state.length());
+    System.out.println(state);
+    Assert.assertEquals(43, state.length());
   }
 
   @Test
