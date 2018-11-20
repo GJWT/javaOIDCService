@@ -22,6 +22,8 @@ import org.oidc.msg.Error;
 import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
+import com.google.common.base.Strings;
+
 public class AddJwksUriOrJwks extends AbstractRequestArgumentProcessor {
 
   @Override
@@ -35,6 +37,8 @@ public class AddJwksUriOrJwks extends AbstractRequestArgumentProcessor {
     } else if (requestArguments.containsKey("jwks")){
       return;
     }
-    //TODO: should we try to get jwks and jwks_uri values from serviceContext (like in Python?)
+    if (!Strings.isNullOrEmpty(service.getServiceContext().getJwksUri())) {
+      requestArguments.put("jwks_uri", service.getServiceContext().getJwksUri());
+    }
   }
 }
