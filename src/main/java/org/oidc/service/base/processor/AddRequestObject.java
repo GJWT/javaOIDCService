@@ -28,6 +28,7 @@ import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RequestObject;
 import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
+import org.oidc.service.util.ServiceUtil;
 
 /**
  * Class to add request object to the request if post constructor arguments have a string value of
@@ -88,7 +89,7 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
       if (service.getPostConstructorArgs().containsKey("key")) {
         key = (Key) service.getPostConstructorArgs().get("key");
       } else {
-        String keyType = algorithmToKeytypeForJWS(algorithm);
+        String keyType = ServiceUtil.algorithmToKeytypeForJWS(algorithm);
         // TODO: if kid is not in arguments, search for kid in service context or remove this
         // comment if secondary source is not needed.
         String kid = service.getPostConstructorArgs().containsKey("sig_kid")
@@ -125,26 +126,5 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
       }
     }
     // TODO: support for request_uri
-  }
-
-  /**
-   * Temporarily here until made public in jawa-jwt.
-   * 
-   * @param algorithm
-   *          algorithm to convert to keytype.
-   * @return keytype.
-   */
-  private String algorithmToKeytypeForJWS(String algorithm) {
-    if (algorithm == null || algorithm.toLowerCase().equals("none")) {
-      return "none";
-    } else if (algorithm.startsWith("RS") || algorithm.startsWith("PS")) {
-      return "RSA";
-    } else if (algorithm.startsWith("HS") || algorithm.startsWith("A")) {
-      return "oct";
-    } else if (algorithm.startsWith("ES") || algorithm.startsWith("ECDH-ES")) {
-      return "EC";
-    } else {
-      return null;
-    }
   }
 }

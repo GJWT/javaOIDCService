@@ -171,4 +171,25 @@ public class ServiceUtil {
     }
     return map;    
   }
+  
+  /**
+   * Temporarily here until made public in jawa-jwt.
+   * 
+   * @param algorithm
+   *          algorithm to convert to keytype.
+   * @return keytype.
+   */
+  public static String algorithmToKeytypeForJWS(String algorithm) {
+    if (algorithm == null || algorithm.toLowerCase().equals("none")) {
+      return "none";
+    } else if (algorithm.startsWith("RS") || algorithm.startsWith("PS")) {
+      return "RSA";
+    } else if (algorithm.startsWith("HS") || algorithm.startsWith("A")) {
+      return "oct";
+    } else if (algorithm.startsWith("ES") || algorithm.startsWith("ECDH-ES")) {
+      return "EC";
+    } else {
+      return null;
+    }
+  }
 }
