@@ -35,6 +35,7 @@ import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
+import org.oidc.service.Service;
 import org.oidc.service.base.InvalidConfigurationPropertyException;
 import org.oidc.service.base.RequestArgumentProcessor;
 
@@ -190,6 +191,23 @@ public class ServiceUtil {
       return "EC";
     } else {
       return null;
+    }
+  }
+  
+  /**
+   * Get the request_object_signing_alg value from the client behavior values, if it has been
+   * defined in the service context.
+   * 
+   * @param service The service whose service context and client behavior are used.
+   * @return The value defined in the behavior, or RS256 if it is not defined.
+   */
+  public static String getAlgorithmFromBehavior(Service service) {
+    if (service.getServiceContext().getBehavior() != null && service.getServiceContext()
+        .getBehavior().getClaims().containsKey("request_object_signing_alg")) {
+      return (String) service.getServiceContext().getBehavior().getClaims()
+          .get("request_object_signing_alg");
+    } else {
+      return "RS256";
     }
   }
 }

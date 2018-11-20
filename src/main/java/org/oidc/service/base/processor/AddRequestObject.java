@@ -75,14 +75,7 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
     if (service.getPostConstructorArgs().containsKey("request_object_signing_alg")) {
       algorithm = (String) service.getPostConstructorArgs().get("request_object_signing_alg");
     } else {
-      if (service.getServiceContext().getBehavior() != null && service.getServiceContext()
-          .getBehavior().getClaims().containsKey("request_object_signing_alg")) {
-        algorithm = (String) service.getServiceContext().getBehavior().getClaims()
-            .get("request_object_signing_alg");
-
-      } else {
-        algorithm = "RS256";
-      }
+      algorithm = ServiceUtil.getAlgorithmFromBehavior(service);
     }
     Key key = null;
     if (!"none".equals(algorithm)) {
