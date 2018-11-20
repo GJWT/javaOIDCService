@@ -35,4 +35,8 @@ public class RequestArgumentProcessingException extends Exception {
   public Error getError() {
     return error;
   }
+  
+  public String getMessage() {
+    return error.getDetails().toString();
+  }
 }
