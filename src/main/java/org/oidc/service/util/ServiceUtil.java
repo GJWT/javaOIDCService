@@ -195,19 +195,21 @@ public class ServiceUtil {
   }
   
   /**
-   * Get the request_object_signing_alg value from the client behavior values, if it has been
-   * defined in the service context.
+   * Get the desired algorithm value from the client behavior values, if it has been defined in
+   * the service context.
    * 
    * @param service The service whose service context and client behavior are used.
-   * @return The value defined in the behavior, or RS256 if it is not defined.
+   * @param claim The name of the algorithm claim.
+   * @param defaultValue The default value if the claim is not found.
+   * @return The value defined in the behavior, or defaultValue if it is not defined.
    */
-  public static String getAlgorithmFromBehavior(Service service) {
+  public static String getAlgorithmFromBehavior(Service service, String claim, 
+      String defaultValue) {
     if (service.getServiceContext().getBehavior() != null && service.getServiceContext()
-        .getBehavior().getClaims().containsKey("request_object_signing_alg")) {
-      return (String) service.getServiceContext().getBehavior().getClaims()
-          .get("request_object_signing_alg");
+        .getBehavior().getClaims().containsKey(claim)) {
+      return (String) service.getServiceContext().getBehavior().getClaims().get(claim);
     } else {
-      return "RS256";
+      return defaultValue;
     }
   }
 }
