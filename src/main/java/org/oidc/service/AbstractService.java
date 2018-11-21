@@ -309,17 +309,18 @@ public abstract class AbstractService implements Service {
     if (responseMessage == null) {
       throw new DeserializationException("Missing or faulty response");
     }
-    try {
-      if (responseMessage instanceof ResponseMessage
-          && ((ResponseMessage) responseMessage).indicatesErrorResponseMessage()) {
-        errorResponseMessage.getClaims().putAll(responseMessage.getClaims());
-        errorResponseMessage.verify();
-        return errorResponseMessage;
+    if (responseMessage instanceof ResponseMessage
+        && ((ResponseMessage) responseMessage).indicatesErrorResponseMessage()) {
+      errorResponseMessage.getClaims().putAll(responseMessage.getClaims());
+      if (!errorResponseMessage.verify()) {
+        throw new InvalidClaimException("The error response has unexpected contents: " 
+            + errorResponseMessage.getError().getDetails());
       }
-      responseMessage.verify();
-    } catch (InvalidClaimException e) {
-      throw new DeserializationException(
-          String.format("Deserialized message failed to verify '%s'", e.getMessage()));
+      return errorResponseMessage;
+    }
+    if (!responseMessage.verify()) {
+      throw new InvalidClaimException("The response message has unexpected contents: "
+          +responseMessage.getError().getDetails());
     }
     return postParseResponse(responseMessage, stateKey);
   }
