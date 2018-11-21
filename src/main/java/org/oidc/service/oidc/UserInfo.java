@@ -141,15 +141,18 @@ public class UserInfo extends AbstractService {
         || !responseMessage.getClaims().containsKey("_claim_names")) {
       return responseMessage;
     }
-    GenericMessage claimNames = new GenericMessage();
-    claimNames.fromJson((String) responseMessage.getClaims().get("_claim_names"));
-    GenericMessage claimSources = new GenericMessage();
-    claimSources.fromJson((String) responseMessage.getClaims().get("_claim_sources"));
+    @SuppressWarnings("unchecked")
+    GenericMessage claimNames = new GenericMessage(((Map<String, Object>)
+        responseMessage.getClaims().get("_claim_names")));
+    @SuppressWarnings("unchecked")
+    GenericMessage claimSources = new GenericMessage(((Map<String, Object>)
+        responseMessage.getClaims().get("_claim_sources")));
     for (Entry<String, Object> entry : claimNames.getClaims().entrySet()) {
       String claim = entry.getKey();
       String src = (String) entry.getValue();
-      ClaimSource claimSource = new ClaimSource();
-      claimSource.fromJson((String) claimSources.getClaims().get(src));
+      @SuppressWarnings("unchecked")
+      ClaimSource claimSource = new ClaimSource(((Map<String, Object>)
+          claimSources.getClaims().get(src)));
       if (claimSource.getClaims().containsKey("JWT")) {
         GenericMessage claimSourcesJwt = new GenericMessage();
         // TODO verify what is needed to verify aggregated claims
