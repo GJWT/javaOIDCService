@@ -41,7 +41,6 @@ import org.oidc.msg.ParameterVerification;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oauth2.AccessTokenRequest;
 import org.oidc.msg.oauth2.AccessTokenResponse;
-import org.oidc.msg.oidc.util.AlgorithmResolver;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessingException;
