@@ -93,6 +93,8 @@ public class Registration extends AbstractService {
         KeyBundle bundle = new KeyBundle();
         bundle.append(new SYMKey("sig", clientSecret));
         bundle.append(new SYMKey("ver", clientSecret));
+        bundle.append(new SYMKey("enc", clientSecret));
+        bundle.append(new SYMKey("dec", clientSecret));
         getServiceContext().getKeyJar().addKeyBundle("", bundle);
       } catch (ImportException | IOException | JWKException | ValueError e) {
         throw new InvalidClaimException("Could not store the client secret to the key jar", e);
