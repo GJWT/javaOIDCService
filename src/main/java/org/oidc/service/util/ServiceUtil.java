@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.oidc.common.SerializationType;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.common.ValueException;
 import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
@@ -211,5 +212,30 @@ public class ServiceUtil {
     } else {
       return defaultValue;
     }
+  }
+  
+  /**
+   * A 1<->1 map is maintained between a URL pointing to a file and the name of the file in the
+   * file system.
+   * 
+   * As an example if the base_url is 'https://example.com' and a jwks_uri is 
+   * 'https://example.com/jwks_uri.json' then the filename of the corresponding file on the local
+   * filesystem would be 'jwks_uri'. Relative to the directory from which the RP instance is run.
+   * 
+   * @param baseUrl The base URL.
+   * @param webname The published URL.
+   * @return The relative filename in the local filesystem.
+   * @throws ValueException If the baseUrl and webanme don't match.
+   */
+  public static String getFilenameFromWebname(String baseUrl, String webname) 
+      throws ValueException {
+    if (!webname.startsWith(baseUrl)) {
+      throw new ValueException("Webname doesn't match baseUrl");
+    }
+    String filename = webname.substring(baseUrl.length());
+    if (filename.startsWith("/")) {
+      return filename.substring(1);
+    }
+    return filename;
   }
 }
