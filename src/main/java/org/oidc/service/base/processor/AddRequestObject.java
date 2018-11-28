@@ -17,12 +17,23 @@
 package org.oidc.service.base.processor;
 
 import com.auth0.msg.Key;
+import com.google.common.base.Strings;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.codec.binary.Base64;
+import org.oidc.common.ValueException;
 import org.oidc.msg.Error;
 import org.oidc.msg.ErrorDetails;
 import org.oidc.msg.ErrorType;
+import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.ParameterVerification;
 import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.RequestObject;
@@ -62,6 +73,7 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
     postParamVerDefs.put("sig_kid", ParameterVerification.SINGLE_OPTIONAL_STRING.getValue());
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
@@ -139,19 +151,91 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
     requestObjectRequestArguments.remove("request");
     requestObjectRequestArguments.remove("request_uri");
     RequestObject requestObject = new RequestObject(requestObjectRequestArguments);
+    String requestObjectJwt;
+    try {
+      requestObjectJwt = requestObject.toJwt(signingKey, alg, keyTransportKey, encAlg, encEnc,
+          service.getServiceContext().getKeyJar(), service.getServiceContext().getIssuer(),
+          service.getServiceContext().getClientId());
+    } catch (SerializationException e) {
+      error.getDetails().add(new ErrorDetails(requestMethod, ErrorType.VALUE_NOT_ALLOWED, 
+          "Not able to form jwt", e));
+      throw new RequestArgumentProcessingException(error);
+    }
     if ("request".equals(requestMethod)) {
-      try {
-        requestArguments.put("request",
-            requestObject.toJwt(signingKey, alg, keyTransportKey, encAlg, encEnc,
-                service.getServiceContext().getKeyJar(), service.getServiceContext().getIssuer(),
-                service.getServiceContext().getClientId()));
-      } catch (SerializationException e) {
-        error.getDetails()
-            .add(new ErrorDetails(String.format("Not able to form jwt: '%s'", e.getMessage()),
-                ErrorType.VALUE_NOT_ALLOWED));
-        throw new RequestArgumentProcessingException(error);
+      requestArguments.put("request", requestObjectJwt);
+    } else {
+      // is always request_uri
+      Object registeredUri = 
+          service.getServiceContext().getBehavior().getClaims().get("request_uris");
+      String filename;
+      if (registeredUri != null && registeredUri instanceof List && 
+          !Strings.isNullOrEmpty(((List<String>) registeredUri).get(0))) {
+        String registeredUriStr = ((List<String>) registeredUri).get(0);
+        try {
+          filename = ServiceUtil.getFilenameFromWebname(service.getServiceContext().getBaseUrl(),
+              registeredUriStr);
+        } catch (ValueException e) {
+          error.getDetails().add(new ErrorDetails("request_uri", 
+              ErrorType.VALUE_NOT_ALLOWED, e));
+          throw new RequestArgumentProcessingException(error);
+        }
+        requestArguments.put("request_uri", registeredUriStr);
+      } else {
+        byte[] randomBytes = new byte[10];
+        new SecureRandom(randomBytes);
+        String requestDirectory = service.getServiceContext().getRequestsDirectory();
+        String uriBase;
+        try {
+          uriBase = service.getServiceContext().generateRequestUris(requestDirectory).get(0);
+        } catch (NoSuchAlgorithmException | ValueException | InvalidClaimException e) {
+          error.getDetails().add(new ErrorDetails("request_uri", ErrorType.VALUE_NOT_ALLOWED, 
+              "Could not build the base URL for the request_uris", e));
+          throw new RequestArgumentProcessingException(error);
+        }
+        String directory = uriBase.substring(service.getServiceContext().getBaseUrl().length());
+        createDirectoryIfNotExist(directory, error);
+        filename = directory + "/" + Base64.encodeBase64URLSafeString(randomBytes) + ".jwt";
+        requestArguments.put("request_uri", uriBase + filename);
+      }
+      writeJwtToFile(filename, requestObjectJwt, error);
+    }
+  }
+  
+  protected static void createDirectoryIfNotExist(String filename, Error error) 
+      throws RequestArgumentProcessingException {
+    File file = new File(filename);
+    if (!file.exists()) {
+      if (!file.mkdir()) {
+        error.getDetails().add(new ErrorDetails("request_uri", ErrorType.VALUE_NOT_ALLOWED,
+            "Could not create a directory " + filename));
+        throw new RequestArgumentProcessingException(error);        
       }
     }
-    // TODO: support for request_uri
+  }
+  
+  protected static void writeJwtToFile(String filename, String jwt, Error error) 
+      throws RequestArgumentProcessingException {
+    File file = new File(filename);
+    if (file.exists()) {
+      if (!file.delete()) {
+        error.getDetails().add(new ErrorDetails("request_uri", ErrorType.VALUE_NOT_ALLOWED,
+            "Could not delete the existing file for JWT " + filename));
+        throw new RequestArgumentProcessingException(error);        
+      }
+    }
+    try {
+      file.createNewFile();
+    } catch (IOException e) {
+      error.getDetails().add(new ErrorDetails("request_uri", ErrorType.VALUE_NOT_ALLOWED,
+          "Could not create a file for JWT " + filename, e));
+      throw new RequestArgumentProcessingException(error);
+    }
+    try (FileWriter writer = new FileWriter(file)) {
+      writer.write(jwt);
+    } catch (IOException e) {
+      error.getDetails().add(new ErrorDetails("request_uri", ErrorType.VALUE_NOT_ALLOWED,
+          "Could not write JWT to file " + filename, e));
+      throw new RequestArgumentProcessingException(error);
+    }
   }
 }
