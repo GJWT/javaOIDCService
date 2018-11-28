@@ -31,6 +31,8 @@ public class URIUtil {
       String pattern = "tel:\\+[0-9]{10,12}";
       return url.matches(pattern);
     }
+    // allows underscores, otherwise urlvalidator fails
+    url = url.replace("_", "-");
     url = url.replaceFirst("@", ".");
     url = url.replaceFirst(".jp", ".com");
     if (url.contains("acct:")) {
