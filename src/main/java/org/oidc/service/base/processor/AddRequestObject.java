@@ -69,36 +69,67 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
     if (!"request".equals(requestMethod) && !"request_uri".equals(requestMethod)) {
       return;
     }
-    String algorithm;
-    // TODO: Rolands version has secondary input arg "algorithm". Add if needed or remove this
-    // comment.
+    String alg;
     if (service.getPostConstructorArgs().containsKey("request_object_signing_alg")) {
-      algorithm = (String) service.getPostConstructorArgs().get("request_object_signing_alg");
+      alg = (String) service.getPostConstructorArgs().get("request_object_signing_alg");
     } else {
-      algorithm = ServiceUtil.getAlgorithmFromBehavior(service, "request_object_signing_alg", 
+      alg = ServiceUtil.getAlgorithmFromBehavior(service, "request_object_signing_alg", 
           "RS256");
     }
-    Key key = null;
-    if (!"none".equals(algorithm)) {
+    Key signingKey = null;
+    if (!"none".equals(alg)) {
       if (service.getPostConstructorArgs().containsKey("key")) {
-        key = (Key) service.getPostConstructorArgs().get("key");
+        signingKey = (Key) service.getPostConstructorArgs().get("key");
       } else {
-        String keyType = ServiceUtil.algorithmToKeytypeForJWS(algorithm);
-        // TODO: if kid is not in arguments, search for kid in service context or remove this
-        // comment if secondary source is not needed.
+        String keyType = service.getServiceContext().getKeyJar().algorithmToKeytypeForJWS(alg);
         String kid = service.getPostConstructorArgs().containsKey("sig_kid")
             ? (String) service.getPostConstructorArgs().get("sig_kid")
             : null;
         Map<String, String> args = new HashMap<String, String>();
-        args.put("alg", algorithm);
+        args.put("alg", alg);
         List<Key> keys = service.getServiceContext().getKeyJar().getSigningKey(keyType, "", kid,
             args);
         if (keys == null || keys.size() == 0) {
-          // TODO: improve error handling, by returning better describing error
           error.getDetails().add(new ErrorDetails("key", ErrorType.MISSING_REQUIRED_VALUE));
           throw new RequestArgumentProcessingException(error);
         }
-        key = keys.get(0);
+        signingKey = keys.get(0);
+      }
+    }
+    String encAlg;
+    if (service.getPostConstructorArgs().containsKey("request_object_encryption_alg")) {
+      encAlg = (String) service.getPostConstructorArgs().get("request_object_encryption_alg");
+    } else {
+      encAlg = ServiceUtil.getAlgorithmFromBehavior(service, "request_object_encryption_alg", null);
+    }
+    Key keyTransportKey = null;
+    String encEnc = null;
+    if (encAlg != null) {
+      if (service.getPostConstructorArgs().containsKey("keytransport_key")) {
+        keyTransportKey = (Key) service.getPostConstructorArgs().get("keytransport_key");
+      } else {
+        String keyType = service.getServiceContext().getKeyJar().algorithmToKeytypeForJWE(alg);
+        Map<String, String> args = new HashMap<String, String>();
+        args.put("alg", alg);
+        List<Key> keys = service.getServiceContext().getKeyJar().getEncryptKey(keyType,
+            service.getServiceContext().getIssuer(), null, args);
+        if (keys == null || keys.size() == 0) {
+          error.getDetails()
+              .add(new ErrorDetails("keytransport_key", ErrorType.MISSING_REQUIRED_VALUE));
+          throw new RequestArgumentProcessingException(error);
+        }
+        keyTransportKey = keys.get(0);
+      }
+      if (service.getPostConstructorArgs().containsKey("request_object_encryption_enc")) {
+        encEnc = (String) service.getPostConstructorArgs().get("request_object_encryption_enc");
+      } else {
+        encEnc = ServiceUtil.getAlgorithmFromBehavior(service, "request_object_encryption_enc",
+            null);
+      }
+      if (encEnc == null) {
+        error.getDetails().add(
+            new ErrorDetails("request_object_encryption_enc", ErrorType.MISSING_REQUIRED_VALUE));
+        throw new RequestArgumentProcessingException(error);
       }
     }
     // Form request object
@@ -110,9 +141,11 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
     RequestObject requestObject = new RequestObject(requestObjectRequestArguments);
     if ("request".equals(requestMethod)) {
       try {
-        requestArguments.put("request", requestObject.toJwt(key, algorithm, null, null, null, null, null, null));
+        requestArguments.put("request",
+            requestObject.toJwt(signingKey, alg, keyTransportKey, encAlg, encEnc,
+                service.getServiceContext().getKeyJar(), service.getServiceContext().getIssuer(),
+                service.getServiceContext().getClientId()));
       } catch (SerializationException e) {
-        // TODO: improve error handling, by returning better describing error
         error.getDetails()
             .add(new ErrorDetails(String.format("Not able to form jwt: '%s'", e.getMessage()),
                 ErrorType.VALUE_NOT_ALLOWED));
