@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.codec.binary.Base64;
 import org.oidc.common.EndpointName;
 import org.oidc.common.ValueException;
 import org.oidc.msg.InvalidClaimException;
@@ -136,6 +138,7 @@ public class ServiceContext {
     endpoints = new HashMap<EndpointName, String>();
     this.allow = new HashMap<>();
     this.keyJar = keyJar;
+    this.requestsDirectory = "requests";
   }
 
   public ServiceContext() {
@@ -155,36 +158,24 @@ public class ServiceContext {
       throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
     MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 
-    /*
-     * Commented the code below as it doesn't make sense: issuer in the provider configuration
-     * response is always single string and always existing.
-     * 
-     * Claim issuerClaim = new Claim(Constants.ISSUER); if
-     * (this.providerConfigurationResponse.getClaims() != null &&
-     * this.providerConfigurationResponse.getClaims().get(issuerClaim) != null &&
-     * this.providerConfigurationResponse.getClaims().get(issuerClaim) instanceof List && !((List)
-     * this.providerConfigurationResponse.getClaims().get(issuerClaim)).isEmpty()) { for (String
-     * issuer : ((List<String>) this.providerConfigurationResponse.getClaims() .get(issuerClaim))) {
-     * messageDigest.update(issuer.getBytes()); }
-     */
     if (this.providerConfigurationResponse.getClaims() != null
         && this.providerConfigurationResponse.getClaims().get(Constants.ISSUER) != null) {
       messageDigest
           .update(((String) this.providerConfigurationResponse.getClaims().get(Constants.ISSUER))
               .getBytes());
-      // This is where the commented code ended
     } else {
       if (!Strings.isNullOrEmpty(this.issuer)) {
         messageDigest.update(this.issuer.getBytes());
       } else {
-        throw new ValueException("null or empty issuer");
+        throw new ValueException("Issuer could not be resolved");
       }
     }
     messageDigest.update(this.baseUrl.getBytes());
+    String digest = Base64.encodeBase64URLSafeString(messageDigest.digest());
     if (!requestsDirectory.startsWith("/")) {
-      return Arrays.asList(this.baseUrl + "/" + requestsDirectory + "/" + messageDigest.digest());
+      return Arrays.asList(this.baseUrl + "/" + requestsDirectory + "/" + digest);
     } else {
-      return Arrays.asList(this.baseUrl + requestsDirectory + "/" + messageDigest.digest());
+      return Arrays.asList(this.baseUrl + requestsDirectory + "/" + digest);
     }
   }
 
