@@ -37,6 +37,7 @@ import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
+import org.oidc.service.base.processor.AddClientId;
 import org.oidc.service.base.processor.AddNonce;
 import org.oidc.service.base.processor.AddRequestObject;
 import org.oidc.service.base.processor.AddResponseType;
@@ -68,9 +69,9 @@ public class Authentication extends AbstractService {
     defaultConfig.setHttpMethod(HttpMethod.GET);
     defaultConfig.setSerializationType(SerializationType.URL_ENCODED);
     defaultConfig.setDeSerializationType(SerializationType.URL_ENCODED);
-    defaultConfig.setPreConstructors(
-        (List<RequestArgumentProcessor>) Arrays.asList((RequestArgumentProcessor) new AddState(),
-            new PickRedirectUri(), new AddResponseType(), new AddScope(), new AddNonce()));
+    defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays.asList(
+        (RequestArgumentProcessor) new AddClientId(), new AddState(), new PickRedirectUri(),
+        new AddResponseType(), new AddScope(), new AddNonce()));
     defaultConfig.setPostConstructors(
         (List<RequestArgumentProcessor>) Arrays.asList((RequestArgumentProcessor) new StoreNonce(),
             new AddRequestObject(), new StoreAuthenticationRequest()));
