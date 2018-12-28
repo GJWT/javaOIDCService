@@ -18,8 +18,6 @@ package org.oidc.service.base.processor;
 
 import java.security.SecureRandom;
 import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.apache.commons.codec.binary.Base64;
 import org.oidc.msg.Error;
 import org.oidc.msg.ParameterVerification;
@@ -27,7 +25,7 @@ import org.oidc.service.Service;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
- * Class ensures nonce value exists if response_type contains id_token value.
+ * Class ensures nonce value exists always.
  */
 public class AddNonce extends AbstractRequestArgumentProcessor {
 
@@ -39,14 +37,12 @@ public class AddNonce extends AbstractRequestArgumentProcessor {
   @Override
   protected void processVerifiedArguments(Map<String, Object> requestArguments, Service service,
       Error error) throws RequestArgumentProcessingException {
-    if (!requestArguments.containsKey("nonce") && requestArguments.containsKey("response_type")) {
-      String responseType = (String) requestArguments.get("response_type");
-      if (Pattern.compile("\\bid_token\\b").matcher(responseType).find()) {
-        byte[] rand = new byte[32];
-        new SecureRandom().nextBytes(rand);
-        String nonce = Base64.encodeBase64URLSafeString(rand);
-        requestArguments.put("nonce", nonce);
-      }
+    if (requestArguments.containsKey("nonce")) {
+      return;
     }
+    byte[] rand = new byte[32];
+    new SecureRandom().nextBytes(rand);
+    String nonce = Base64.encodeBase64URLSafeString(rand);
+    requestArguments.put("nonce", nonce);
   }
 }

@@ -43,13 +43,6 @@ public class AddNonceTest extends BaseRequestArgumentProcessorTest<AddNonce> {
   @Test
   public void testAddNonceNoArguments() throws RequestArgumentProcessingException {
     processor.processRequestArguments(requestArguments, service);
-    Assert.assertEquals(0, requestArguments.size());
-  }
-
-  @Test
-  public void testAddNonceNoIdToken() throws RequestArgumentProcessingException {
-    requestArguments.put("response_type", "code token");
-    processor.processRequestArguments(requestArguments, service);
     Assert.assertEquals(1, requestArguments.size());
   }
 
