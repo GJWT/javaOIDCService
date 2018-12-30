@@ -54,6 +54,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
             String.format("nonce '%s' in the id token is not matching state record '%s'",
                 (String) idToken.getClaims().get("nonce"), stateKey));
       }
+      getState().storeItem(idToken, stateKey, MessageType.VERIFIED_IDTOKEN);
     }
     if (responseMessage.getClaims().containsKey("expires_in")) {
       responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)

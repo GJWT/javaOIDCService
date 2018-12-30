@@ -27,6 +27,7 @@ import org.oidc.msg.Message;
 import org.oidc.msg.oidc.AccessTokenResponse;
 import org.oidc.msg.oidc.AuthenticationRequest;
 import org.oidc.msg.oidc.AuthenticationResponse;
+import org.oidc.msg.oidc.IDToken;
 import org.oidc.msg.oidc.RefreshAccessTokenRequest;
 import org.oidc.msg.oidc.UserInfoRequest;
 
@@ -64,7 +65,10 @@ public class InMemoryStateImpl implements State {
             && message instanceof RefreshAccessTokenRequest)
         || (MessageType.REFRESH_TOKEN_RESPONSE.equals(messageType)
             && message instanceof AccessTokenResponse)
-        || (MessageType.USER_INFO.equals(messageType) && message instanceof UserInfoRequest));
+        || (MessageType.USER_INFO.equals(messageType) 
+            && message instanceof UserInfoRequest)
+        || (MessageType.VERIFIED_IDTOKEN.equals(messageType) 
+            && message instanceof IDToken));
   }
 
   @Override

@@ -39,6 +39,8 @@ public class StateRecord extends AbstractMessage {
         ParameterVerification.SINGLE_OPTIONAL_MESSAGE.getValue());
     paramVerDefs.put(MessageType.USER_INFO.name(),
         ParameterVerification.SINGLE_OPTIONAL_MESSAGE.getValue());
+    paramVerDefs.put(MessageType.VERIFIED_IDTOKEN.name(),
+        ParameterVerification.SINGLE_OPTIONAL_MESSAGE.getValue());
   }
 
   public StateRecord(Map<String, Object> claims) {
