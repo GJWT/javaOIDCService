@@ -147,6 +147,11 @@ public abstract class AbstractService implements Service {
    * Arguments for processors run before message construction.
    */
   private Map<String, Object> postConstructorArgs = new HashMap<String, Object>();
+  
+  /**
+   * Service configuration request arguments.
+   */
+  private Map<String, Object> requestArguments = new HashMap<String, Object>();
 
   /**
    * Configuration that is specific to every service Additional configuration arguments that could
@@ -219,6 +224,11 @@ public abstract class AbstractService implements Service {
     } else {
       this.serializationType = getDefaultServiceConfig().getSerializationType();
     }
+    if (serviceConfig != null && serviceConfig.getRequestArguments() != null) {
+      this.requestArguments = serviceConfig.getRequestArguments();
+    } else if (getDefaultServiceConfig().getRequestArguments() != null) {
+      this.requestArguments = getDefaultServiceConfig().getRequestArguments();
+    }    
   }
 
   protected abstract ServiceConfig getDefaultServiceConfig();
@@ -405,14 +415,8 @@ public abstract class AbstractService implements Service {
     if (getEndpoint() == null) {
       setEndpoint(getServiceContext().getEndpoints().get(this.endpointName));
     }
-    /*
-     * if (Strings.isNullOrEmpty((String) requestArguments.get(AUTHENTICATION_METHOD))) {
-     * requestArguments.put(AUTHENTICATION_METHOD, this.defaultAuthenticationMethod.name()); }
-     * 
-     * if (Strings.isNullOrEmpty((String) requestArguments.get(SERIALIZATION_TYPE))) {
-     * requestArguments.put(SERIALIZATION_TYPE, this.serializationType.name()); }
-     */
-
+    // Add request arguments from service configuration
+    requestArguments.putAll(this.requestArguments);
     requestMessage = constructRequest(requestArguments);
 
     HttpArguments httpArguments = new HttpArguments();
