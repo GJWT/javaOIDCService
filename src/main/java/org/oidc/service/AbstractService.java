@@ -149,9 +149,9 @@ public abstract class AbstractService implements Service {
   private Map<String, Object> postConstructorArgs = new HashMap<String, Object>();
   
   /**
-   * Service configuration request arguments.
+   * Service configuration request parameters.
    */
-  private Map<String, Object> requestArguments = new HashMap<String, Object>();
+  private Map<String, Object> requestParameters = new HashMap<String, Object>();
 
   /**
    * Configuration that is specific to every service Additional configuration arguments that could
@@ -224,10 +224,10 @@ public abstract class AbstractService implements Service {
     } else {
       this.serializationType = getDefaultServiceConfig().getSerializationType();
     }
-    if (serviceConfig != null && serviceConfig.getRequestArguments() != null) {
-      this.requestArguments = serviceConfig.getRequestArguments();
-    } else if (getDefaultServiceConfig().getRequestArguments() != null) {
-      this.requestArguments = getDefaultServiceConfig().getRequestArguments();
+    if (serviceConfig != null && serviceConfig.getRequestParameters() != null) {
+      this.requestParameters = serviceConfig.getRequestParameters();
+    } else if (getDefaultServiceConfig().getRequestParameters() != null) {
+      this.requestParameters = getDefaultServiceConfig().getRequestParameters();
     }    
   }
 
@@ -388,40 +388,24 @@ public abstract class AbstractService implements Service {
   }
 
   /**
-   * Builds the request message and constructs the HTTP headers.
-   * <p>
-   * This is the starting pont for a pipeline that will:
-   * <p>
-   * - construct the request message - add/remove information to/from the request message in the way
-   * a specific client authentication method requires. - gather a set of HTTP headers like
-   * Content-type and Authorization. - serialize the request message into the necessary format
-   * (JSON, urlencoded, signed JWT)
-   *
-   * @param requestArguments
-   * @return HttpArguments
-   * @throws MissingRequiredAttributeException
-   * @throws ValueException
-   * @throws UnsupportedSerializationTypeException
-   * @throws JsonProcessingException
-   * @throws SerializationException
-   * @throws InvalidClaimException
-   */
-  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
+   * {@inheritDoc}
+   **/
+  public HttpArguments getRequestParameters(Map<String, Object> requestParams)
       throws UnsupportedSerializationTypeException, RequestArgumentProcessingException,
       SerializationException {
-    if (requestArguments == null) {
-      requestArguments = new HashMap<String, Object>();
+    if (requestParams == null) {
+      requestParams = new HashMap<String, Object>();
     }
     if (getEndpoint() == null) {
       setEndpoint(getServiceContext().getEndpoints().get(this.endpointName));
     }
     // Add request arguments from service configuration
-    requestArguments.putAll(this.requestArguments);
-    requestMessage = constructRequest(requestArguments);
+    requestParams.putAll(this.requestParameters);
+    requestMessage = constructRequest(requestParams);
 
     HttpArguments httpArguments = new HttpArguments();
     httpArguments.setHttpMethod(
-        requestArguments.containsKey(HTTP_METHOD) ? (HttpMethod) requestArguments.get(HTTP_METHOD)
+        requestParams.containsKey(HTTP_METHOD) ? (HttpMethod) requestParams.get(HTTP_METHOD)
             : httpMethod);
 
     SerializationType contentType;
@@ -445,7 +429,7 @@ public abstract class AbstractService implements Service {
       }
     }
 
-    httpArguments = finalizeGetRequestParameters(httpArguments, requestArguments);
+    httpArguments = finalizeGetRequestParameters(httpArguments, requestParams);
     // TODO: check getUrl() here or leave it to the user?
     return httpArguments;
   }

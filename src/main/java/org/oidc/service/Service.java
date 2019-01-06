@@ -47,13 +47,13 @@ public interface Service {
    * Content-type and Authorization. - serialize the request message into the necessary format
    * (JSON, urlencoded, signed JWT)
    * 
-   * @param requestArguments The request arguments used for constructing the message.
+   * @param requestParameters Additional request parameters used for constructing the message.
    * @return The information needed for building the HTTP request to OP.
    * @throws UnsupportedSerializationTypeException If the serialization type is not supported.
    * @throws RequestArgumentProcessingException If the request arguments are invalid.
    * @throws SerializationException If the request cannot be serialized.
    */
-  public HttpArguments getRequestParameters(Map<String, Object> requestArguments)
+  public HttpArguments getRequestParameters(Map<String, Object> requestParameters)
       throws UnsupportedSerializationTypeException, RequestArgumentProcessingException,
       SerializationException;
 

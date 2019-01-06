@@ -111,7 +111,7 @@ public class Webfinger extends AbstractService {
    * query, fragment. The schema can be one of the 3 values: https, acct (when resource looks like
    * email address), device.
    *
-   * @param requestArguments
+   * @param requestParameters
    *          The request arguments must have String-values for resource and rel.
    * @return
    * @throws Exception

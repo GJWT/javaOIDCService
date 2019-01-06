@@ -86,7 +86,7 @@ public class ServiceConfig {
   /**
    * The (additional) arguments for the request message.
    */
-  protected Map<String, Object> requestArguments;
+  protected Map<String, Object> requestParameters;
   /**
    * The OIDC standard in many places states that you *MUST* use HTTPS and not HTTP. In a number of
    * use cases, that causes a problem. Therefore, the libraries should still be used in those use
@@ -223,12 +223,12 @@ public class ServiceConfig {
     this.postConstructorArgs = postConstructArgs;
   }
   
-  public Map<String, Object> getRequestArguments() {
-    return requestArguments;
+  public Map<String, Object> getRequestParameters() {
+    return requestParameters;
   }
   
-  public void setRequestArguments(Map<String, Object> requestArgs) {
-    this.requestArguments = requestArgs;
+  public void setRequestParameters(Map<String, Object> requestParams) {
+    this.requestParameters = requestParams;
   }  
   
   public boolean isShouldAllowHttp() {

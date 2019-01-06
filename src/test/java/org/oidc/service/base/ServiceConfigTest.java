@@ -215,7 +215,7 @@ public class ServiceConfigTest {
         "\"serialization_type\": \"URL_ENCODED\",\n" + 
         "\"allow_non_standard_issuer\": true,\n" + 
         "\"allow_http\": true,\n" +
-        "\"request_args\": { \"response_mode\" : \"query\" },\n" +
+        "\"request_params\": { \"response_mode\" : \"query\" },\n" +
         "\"pre_construct\": { \"pre_test\" : \"preValue\" }, \n" +
         "\"post_construct\": { \"post_test\" : \"postValue\" } \n }";
     System.out.println(json);
@@ -227,9 +227,9 @@ public class ServiceConfigTest {
     Assert.assertEquals(SerializationType.URL_ENCODED, config.getSerializationType());
     Assert.assertTrue(config.isShouldAllowHttp());
     Assert.assertTrue(config.isShouldAllowNonStandardIssuer());
-    Assert.assertTrue(config.getRequestArguments() != null);
-    Assert.assertEquals(1, config.getRequestArguments().size());
-    Assert.assertEquals("query", config.getRequestArguments().get("response_mode"));
+    Assert.assertTrue(config.getRequestParameters() != null);
+    Assert.assertEquals(1, config.getRequestParameters().size());
+    Assert.assertEquals("query", config.getRequestParameters().get("response_mode"));
     Assert.assertTrue(config.getPreConstructorArgs() != null);
     Assert.assertEquals(1, config.getPreConstructorArgs().size());
     Assert.assertEquals("preValue", config.getPreConstructorArgs().get("pre_test"));
