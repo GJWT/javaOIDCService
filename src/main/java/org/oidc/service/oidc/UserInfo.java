@@ -78,7 +78,7 @@ public class UserInfo extends AbstractService {
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, InvalidClaimException {
-    state.storeItem(responseMessage, stateKey, MessageType.USER_INFO);
+    state.storeItem(response, stateKey, MessageType.USER_INFO);
   }
 
   @Override
