@@ -28,8 +28,8 @@ import org.oidc.msg.oidc.AccessTokenResponse;
 import org.oidc.msg.oidc.AuthenticationRequest;
 import org.oidc.msg.oidc.AuthenticationResponse;
 import org.oidc.msg.oidc.IDToken;
+import org.oidc.msg.oidc.OpenIDSchema;
 import org.oidc.msg.oidc.RefreshAccessTokenRequest;
-import org.oidc.msg.oidc.UserInfoRequest;
 
 /** In memory implementation of State database. */
 public class InMemoryStateImpl implements State {
@@ -66,7 +66,7 @@ public class InMemoryStateImpl implements State {
         || (MessageType.REFRESH_TOKEN_RESPONSE.equals(messageType)
             && message instanceof AccessTokenResponse)
         || (MessageType.USER_INFO.equals(messageType) 
-            && message instanceof UserInfoRequest)
+            && message instanceof OpenIDSchema)
         || (MessageType.VERIFIED_IDTOKEN.equals(messageType) 
             && message instanceof IDToken));
   }
