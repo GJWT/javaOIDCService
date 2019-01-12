@@ -19,7 +19,7 @@ package org.oidc.service.base.processor;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
+import org.oidc.msg.DataLocation;
 import org.oidc.msg.Error;
 import org.oidc.msg.ParameterVerification;
 import org.oidc.service.Service;
@@ -62,8 +62,8 @@ public class PickRedirectUri extends AbstractRequestArgumentProcessor {
       return;
     }
     if ("form_post".equals(requestArguments.get("response_mode"))) {
-      if (context.getCallBack().get("form_post") != null) {
-        requestArguments.put("redirect_uri", context.getCallBack().get("form_post"));
+      if (context.getCallBack().get(DataLocation.FORM_POST) != null) {
+        requestArguments.put("redirect_uri", context.getCallBack().get(DataLocation.FORM_POST));
       }
       return;
     }
@@ -78,10 +78,10 @@ public class PickRedirectUri extends AbstractRequestArgumentProcessor {
       responseType = "code";
     }
     if (Pattern.compile("\\bcode\\b").matcher(responseType).find()
-        && context.getCallBack().get("code") != null) {
-      requestArguments.put("redirect_uri", context.getCallBack().get("code"));
-    } else if (context.getCallBack().get("implicit") != null) {
-      requestArguments.put("redirect_uri", context.getCallBack().get("implicit"));
+        && context.getCallBack().get(DataLocation.QUERY_STRING) != null) {
+      requestArguments.put("redirect_uri", context.getCallBack().get(DataLocation.QUERY_STRING));
+    } else if (context.getCallBack().get(DataLocation.FRAGMENT) != null) {
+      requestArguments.put("redirect_uri", context.getCallBack().get(DataLocation.FRAGMENT));
     }
   }
 }
