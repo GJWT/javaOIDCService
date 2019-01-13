@@ -82,8 +82,8 @@ public class Authentication extends AbstractService {
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, InvalidClaimException {
-    if (((AuthenticationResponse) responseMessage).getVerifiedIdToken() != null) {
-      IDToken idToken = ((AuthenticationResponse) responseMessage).getVerifiedIdToken();
+    if (((AuthenticationResponse) response).getVerifiedIdToken() != null) {
+      IDToken idToken = ((AuthenticationResponse) response).getVerifiedIdToken();
       if (!stateKey
           .equals(getState().getStateKeyByNonce((String) idToken.getClaims().get("nonce")))) {
         throw new InvalidClaimException(
@@ -92,9 +92,9 @@ public class Authentication extends AbstractService {
       }
       getState().storeItem(idToken, stateKey, MessageType.VERIFIED_IDTOKEN);
     }
-    if (responseMessage.getClaims().containsKey("expires_in")) {
-      responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
-          + (long) responseMessage.getClaims().get("expires_in"));
+    if (response.getClaims().containsKey("expires_in")) {
+      response.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
+          + (long) response.getClaims().get("expires_in"));
     }
     getState().storeItem(response, stateKey, MessageType.AUTHORIZATION_RESPONSE);
   }
