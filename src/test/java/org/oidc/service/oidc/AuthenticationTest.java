@@ -18,6 +18,7 @@ package org.oidc.service.oidc;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MessageType;
+import org.oidc.common.MissingRequiredAttributeException;
+import org.oidc.common.ValueException;
+import org.oidc.msg.InvalidClaimException;
+import org.oidc.msg.Message;
+import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.AuthenticationRequest;
+import org.oidc.msg.oidc.AuthenticationResponse;
+import org.oidc.msg.oidc.IDToken;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
@@ -39,9 +47,10 @@ import org.oidc.service.data.State;
 public class AuthenticationTest extends BaseServiceTest<Authentication> {
 
   ServiceContext serviceContext;
-  String issuer;
+  String issuer = "https://www.example.com";
   Map<String, Object> map = new HashMap<String, Object>();
   State state;
+  String stateKey;
 
   String endpoint = "https://www.example.com/authorize";
   String callback = "https://example.com/cb";
@@ -53,12 +62,12 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
   public void init() {
     serviceContext = new ServiceContext();
     state = new InMemoryStateImpl();
+    stateKey = state.createStateRecord(issuer, null);
     service = new Authentication(serviceContext, state, null);
     service.setEndpoint(endpoint);
     List<String> redirectUris = new ArrayList<String>();
     redirectUris.add(callback);
     serviceContext.setRedirectUris(redirectUris);
-    issuer = "https://www.example.com";
     serviceContext.setIssuer(issuer);
     map.clear();
     map.put("response_type", responseType);
@@ -77,8 +86,8 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
     Assert.assertTrue(
         httpArguments.getUrl().contains("redirect_uri=" + URLEncoder.encode(callback, "UTF-8")));
     String stateKey = (String) service.getRequestMessage().getClaims().get("state");
-    AuthenticationRequest storedRequest =
-        (AuthenticationRequest) state.getItem(stateKey, MessageType.AUTHORIZATION_REQUEST);
+    AuthenticationRequest storedRequest = (AuthenticationRequest) state.getItem(stateKey,
+        MessageType.AUTHORIZATION_REQUEST);
     Assert.assertEquals(scope, storedRequest.getClaims().get("scope"));
     Assert.assertEquals(clientId, storedRequest.getClaims().get("client_id"));
     Assert.assertEquals(responseType, storedRequest.getClaims().get("response_type"));
@@ -91,6 +100,54 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
     requestParameters.put("httpMethod", httpMethod);
     HttpArguments httpArguments = service.getRequestParameters(requestParameters);
     Assert.assertEquals(HttpMethod.POST, httpArguments.getHttpMethod());
+  }
+
+  @Test
+  public void testdoUpdateServiceContextResponseStored()
+      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+    AuthenticationResponse response = new AuthenticationResponse();
+    response.addClaim("any", "value");
+    service.updateServiceContext(response, stateKey);
+    Message storedResponse = state.getItem(stateKey, MessageType.AUTHORIZATION_RESPONSE);
+    Assert.assertTrue(storedResponse instanceof AuthenticationResponse);
+    Assert.assertEquals("value", response.getClaims().get("any"));
+  }
+
+  @Test
+  public void testdoUpdateServiceContextIdTokenStored() throws MissingRequiredAttributeException,
+      ValueException, InvalidClaimException, SerializationException {
+    // We have to create a id token that passes the tests
+    AuthenticationResponse response = new AuthenticationResponse();
+    Date now = new Date();
+    response.setSigAlg("none");
+    response.setClientId(clientId);
+    IDToken idToken = new IDToken();
+    idToken.addClaim("iss", issuer);
+    idToken.addClaim("sub", "user01");
+    idToken.addClaim("aud", clientId);
+    idToken.addClaim("exp", new Date(now.getTime() + 1000));
+    idToken.addClaim("iat", now);
+    idToken.addClaim("nonce", "noncevalue");
+    response.addClaim("id_token", idToken.toJwt(null, "none", null, null, null, null, null, null));
+    state.storeStateKeyForNonce("noncevalue", stateKey);
+    service.updateServiceContext(response, stateKey);
+    Message storedIDToken = state.getItem(stateKey, MessageType.VERIFIED_IDTOKEN);
+    Message storedResponse = state.getItem(stateKey, MessageType.AUTHORIZATION_RESPONSE);
+    Assert.assertNotNull(((AuthenticationResponse) storedResponse).getVerifiedIdToken());
+    Assert.assertTrue(storedIDToken instanceof IDToken);
+    Assert.assertEquals("noncevalue", storedIDToken.getClaims().get("nonce"));
+  }
+
+  @Test
+  public void testdoUpdateServiceContextExpiresAt()
+      throws MissingRequiredAttributeException, ValueException, InvalidClaimException {
+    AuthenticationResponse response = new AuthenticationResponse();
+    long expires = 3600;
+    response.addClaim("expires_in", expires);
+    service.updateServiceContext(response, stateKey);
+    Message storedResponse = state.getItem(stateKey, MessageType.AUTHORIZATION_RESPONSE);
+    Assert.assertTrue(storedResponse instanceof AuthenticationResponse);
+    Assert.assertTrue(response.getClaims().containsKey("__expires_at"));
   }
 
 }
