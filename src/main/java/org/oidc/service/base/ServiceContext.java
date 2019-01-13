@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.oidc.common.EndpointName;
 import org.oidc.common.ValueException;
+import org.oidc.msg.DataLocation;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.oauth2.ASConfigurationResponse;
 import org.oidc.msg.oidc.RegistrationRequest;
@@ -133,7 +134,7 @@ public class ServiceContext {
    * of 3 such modes: fragment, queryString, formPost In callback, we can keep the redirect URIs per
    * response mode separate.
    */
-  private Map<String, String> callBack;
+  private Map<DataLocation, String> callBack;
 
   /**
    * URL to which the RP is requesting that the End-User's User Agent be redirected after a logout
@@ -536,7 +537,7 @@ public class ServiceContext {
    * 
    * @return map containing redirect URI per response mode
    */
-  public Map<String, String> getCallBack() {
+  public Map<DataLocation, String> getCallBack() {
     return callBack;
   }
 
@@ -549,7 +550,7 @@ public class ServiceContext {
    * @param callBack
    *          map containing redirect URI per response mode
    */
-  public void setCallBack(Map<String, String> callBack) {
+  public void setCallBack(Map<DataLocation, String> callBack) {
     this.callBack = callBack;
   }
 

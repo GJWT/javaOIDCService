@@ -22,6 +22,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.oidc.msg.DataLocation;
 import org.oidc.service.base.RequestArgumentProcessingException;
 
 /**
@@ -30,14 +31,21 @@ import org.oidc.service.base.RequestArgumentProcessingException;
 public class PickRedirectUriTest extends BaseRequestArgumentProcessorTest<PickRedirectUri> {
 
   Map<String, Object> requestArguments;
+  
+  String postUrl;
+  String queryUrl;
+  String fragmentUrl;
 
   @Before
   public void initTest() {
     requestArguments = new HashMap<String, Object>();
-    Map<String, String> callBack = new HashMap<String, String>();
-    callBack.put("form_post", "http://example.com/form_post");
-    callBack.put("code", "http://example.com/code");
-    callBack.put("implicit", "http://example.com/implicit");
+    postUrl = "http://example.com/form_post";
+    queryUrl = "http://example.com/query";
+    fragmentUrl = "http://example.com/implicit";
+    Map<DataLocation, String> callBack = new HashMap<>();
+    callBack.put(DataLocation.FORM_POST, postUrl);
+    callBack.put(DataLocation.QUERY_STRING, queryUrl);
+    callBack.put(DataLocation.FRAGMENT, fragmentUrl);
     service.getServiceContext().setCallBack(callBack);
     service.getServiceContext()
         .setRedirectUris(Arrays.asList("http://example.com/0", "http://example.com/1"));
@@ -59,20 +67,18 @@ public class PickRedirectUriTest extends BaseRequestArgumentProcessorTest<PickRe
   public void testPickRedirectUriForFormPost() throws RequestArgumentProcessingException {
     requestArguments.put("response_mode", "form_post");
     processor.processRequestArguments(requestArguments, service);
-    Assert.assertEquals("http://example.com/form_post",
-        (String) requestArguments.get("redirect_uri"));
+    Assert.assertEquals(postUrl, (String) requestArguments.get("redirect_uri"));
   }
 
   @Test
   public void testPickRedirectUriByResponseType() throws RequestArgumentProcessingException {
     requestArguments.put("response_type", "code id_token token");
     processor.processRequestArguments(requestArguments, service);
-    Assert.assertEquals("http://example.com/code", (String) requestArguments.get("redirect_uri"));
+    Assert.assertEquals(queryUrl, (String) requestArguments.get("redirect_uri"));
     requestArguments.remove("redirect_uri");
     requestArguments.put("response_type", "id_token");
     processor.processRequestArguments(requestArguments, service);
-    Assert.assertEquals("http://example.com/implicit",
-        (String) requestArguments.get("redirect_uri"));
+    Assert.assertEquals(fragmentUrl, (String) requestArguments.get("redirect_uri"));
   }
 
   @Test
