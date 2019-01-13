@@ -123,8 +123,10 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
         String keyType = service.getServiceContext().getKeyJar().algorithmToKeytypeForJWE(alg);
         Map<String, String> args = new HashMap<String, String>();
         args.put("alg", alg);
-        List<Key> keys = service.getServiceContext().getKeyJar().getEncryptKey(keyType,
-            service.getServiceContext().getIssuer(), null, args);
+        // For ECDH family we locate our own key
+        String keyOwner = alg.startsWith("ECDH") ? "" : service.getServiceContext().getIssuer();
+        List<Key> keys = service.getServiceContext().getKeyJar().getEncryptKey(keyType, keyOwner,
+            null, args);
         if (keys == null || keys.size() == 0) {
           error.getDetails()
               .add(new ErrorDetails("keytransport_key", ErrorType.MISSING_REQUIRED_VALUE));
