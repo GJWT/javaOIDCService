@@ -24,89 +24,124 @@ import org.oidc.common.HttpMethod;
 public class HttpArguments {
 
   /**
-   * Specifies whether it is a POST or GET request
+   * Specifies whether it is a POST or GET request. GET by default.
    */
   private HttpMethod httpMethod;
+  
   /**
-   * The url of the resource
+   * The url of the resource.
    */
   private String url;
+  
   /**
-   * Used to carry the entity-body associated with the request or response (optional)
+   * Used to carry the entity-body associated with the request or response (optional).
    */
   private String body;
+  
   /**
-   * Defines the operating parameters of the Http transaction
+   * Defines the operating parameters of the Http transaction.
    */
   private HttpHeader header;
 
   /**
-   * @param httpMethod
-   *          Specifies whether it is a POST or GET request
-   * @param url
-   *          The url of the resource
-   * @param body
-   *          Used to carry the entity-body associated with the request or response (optional)
-   * @param header
-   *          Defines the operating parameters of the Http transaction
+   * @param httpMethod Specifies whether it is a POST or GET request.
+   * @param url The url of the resource.
+   * @param body Used to carry the entity-body associated with the request or response (optional).
+   * @param header Defines the operating parameters of the Http transaction.
    */
   public HttpArguments(HttpMethod httpMethod, String url, String body, HttpHeader header) {
     this.httpMethod = httpMethod;
     this.url = url;
     this.body = body;
-    this.header = header;
+    this.header = header == null ? new HttpHeader() : header;
   }
 
   /**
-   * @param httpMethod
-   *          Specifies whether it is a POST or GET request
-   * @param url
-   *          The url of the resource
+   * Constructor.
+   * 
+   * @param httpMethod Specifies whether it is a POST or GET request.
+   * @param url The url of the resource.
    */
   public HttpArguments(HttpMethod httpMethod, String url) {
-    this.httpMethod = httpMethod;
-    this.url = url;
+    this(httpMethod, url, null, null);
   }
 
   /**
-   * @param httpMethod
-   *          Specifies whether it is a POST or GET request
+   * Constructor.
+   * 
+   * @param httpMethod Specifies whether it is a POST or GET request.
    */
   public HttpArguments(HttpMethod httpMethod) {
-    this.httpMethod = httpMethod;
+    this(httpMethod, null);
   }
 
+  /**
+   * Constructor. Sets method to GET.
+   */
   public HttpArguments() {
+    this(HttpMethod.GET);
   }
 
+  /**
+   * Get the HTTP method.
+   * @return The HTTP method.
+   */
   public HttpMethod getHttpMethod() {
     return httpMethod;
   }
 
+  /**
+   * Set the HTTP method.
+   * @param httpMethod What to set.
+   */
   public void setHttpMethod(HttpMethod httpMethod) {
     this.httpMethod = httpMethod;
   }
 
+  /**
+   * Get the url of the resource.
+   * @return The url of the resource.
+   */
   public String getUrl() {
     return url;
   }
 
+  /**
+   * Set the url of the resource
+   * @param url What to set.
+   */
   public void setUrl(String url) {
     this.url = url;
   }
 
+  /**
+   * Get the entity-body associated with the request or response (optional).
+   * @return The entity-body associated with the request or response (optional)
+   */
   public String getBody() {
     return body;
   }
 
+  /**
+   * Set the entity-body associated with the request or response (optional)
+   * @param body What to set.
+   */
   public void setBody(String body) {
     this.body = body;
   }
 
+  /**
+   * Get the operating parameters of the Http transaction.
+   * @return The operating parameters of the Http transaction.
+   */
   public HttpHeader getHeader() {
     return header;
   }
 
+  /**
+   * Set the operating parameters of the Http transaction.
+   * @param header What to set.
+   */
   public void setHeader(HttpHeader header) {
     this.header = header;
   }
