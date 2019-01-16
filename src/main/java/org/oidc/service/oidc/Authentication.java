@@ -53,6 +53,14 @@ import org.oidc.service.data.State;
  */
 public class Authentication extends AbstractService {
 
+  /**
+   * Constructor.
+   * 
+   * @param serviceContext service context shared by services
+   * @param state state parameter originating from the authentication request
+   * @param serviceConfig service specific configuration
+   *          
+   */
   public Authentication(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
     this.serviceName = ServiceName.AUTHORIZATION;
@@ -93,8 +101,8 @@ public class Authentication extends AbstractService {
       getState().storeItem(idToken, stateKey, MessageType.VERIFIED_IDTOKEN);
     }
     if (response.getClaims().containsKey("expires_in")) {
-      response.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
-          + (long) response.getClaims().get("expires_in"));
+      response.getClaims().put("__expires_at",
+          (System.currentTimeMillis() / 1000) + (long) response.getClaims().get("expires_in"));
     }
     getState().storeItem(response, stateKey, MessageType.AUTHORIZATION_RESPONSE);
   }
@@ -130,7 +138,7 @@ public class Authentication extends AbstractService {
       response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
           .get("id_token_encrypted_response_enc"));
     }
-    if (getServiceContext().getAllow().containsKey("missing_kid")) {
+    if (getServiceContext().getAllow().get("missing_kid") != null) {
       response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid"));
     }
     return responseMessage;
