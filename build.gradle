@@ -28,7 +28,7 @@ repositories {
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '12.0'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
-    compile group: 'com.auth0', name: 'jawa-jwt', version: '3.2.0-SNAPSHOT'
+    compile group: 'com.auth0', name: 'java-jwt', version: '3.2.0-SNAPSHOT'
     compile group: 'org.oidc', name: 'javaOIDCMessage', version: '1.0-SNAPSHOT'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.2'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.6'
