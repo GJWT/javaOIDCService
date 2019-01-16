@@ -35,6 +35,14 @@ import org.oidc.service.data.State;
  */
 public class AccessToken extends org.oidc.service.oauth2.AccessToken {
 
+  /**
+   * Constructor.
+   * 
+   * @param serviceContext service context shared by services, must not be null
+   * @param state state database, must not be null
+   * @param serviceConfig service specific configuration
+   *          
+   */
   public AccessToken(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
     this.requestMessage = new AccessTokenRequest();
@@ -44,7 +52,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
 
   /** {@inheritDoc} */
   @Override
-  protected void doUpdateServiceContext(Message response, String stateKey)
+  protected void doUpdateServiceContext(Message responseMessage, String stateKey)
       throws MissingRequiredAttributeException, InvalidClaimException {
     if (((AccessTokenResponse) responseMessage).getVerifiedIdToken() != null) {
       IDToken idToken = ((AccessTokenResponse) responseMessage).getVerifiedIdToken();
@@ -60,7 +68,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
       responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
           + ((Date) responseMessage.getClaims().get("expires_in")).getTime() / 1000);
     }
-    getState().storeItem(response, stateKey, MessageType.TOKEN_RESPONSE);
+    getState().storeItem(responseMessage, stateKey, MessageType.TOKEN_RESPONSE);
   }
 
   @Override
@@ -82,7 +90,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
       response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
           .get("id_token_encrypted_response_enc"));
     }
-    if (getServiceContext().getAllow().containsKey("missing_kid")) {
+    if (getServiceContext().getAllow().get("missing_kid") != null) {
       response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid"));
     }
     return responseMessage;
@@ -90,10 +98,12 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
 
   @Override
   public ClientAuthenticationMethod getDefaultAuthenticationMethod() {
-    if (getServiceContext().getBehavior().getClaims().containsKey("token_endpoint_auth_method")) {
+    if (getServiceContext().getBehavior().getClaims().get("token_endpoint_auth_method") != null) {
       String method = (String) getServiceContext().getBehavior().getClaims()
           .get("token_endpoint_auth_method");
-      return ClientAuthenticationMethod.fromClaimValue(method);
+      ClientAuthenticationMethod parsedMethod = ClientAuthenticationMethod.fromClaimValue(method);
+      // We fallback to default method is value is not valid
+      return parsedMethod != null ? parsedMethod : defaultAuthenticationMethod;
     }
     return defaultAuthenticationMethod;
   }
