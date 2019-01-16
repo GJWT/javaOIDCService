@@ -57,7 +57,7 @@ public class Authentication extends AbstractService {
    * Constructor.
    * 
    * @param serviceContext service context shared by services
-   * @param state state parameter originating from the authentication request
+   * @param state StateDB, must not be null
    * @param serviceConfig service specific configuration
    *          
    */
