@@ -35,11 +35,14 @@ import org.oidc.msg.SerializationException;
 import org.oidc.msg.oidc.AuthenticationRequest;
 import org.oidc.msg.oidc.AuthenticationResponse;
 import org.oidc.msg.oidc.IDToken;
+import org.oidc.msg.oidc.RegistrationResponse;
 import org.oidc.service.BaseServiceTest;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.InMemoryStateImpl;
 import org.oidc.service.data.State;
+
+import com.auth0.msg.KeyJar;
 
 /**
  * Unit tests for {@link Authentication}.
@@ -69,6 +72,14 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
     redirectUris.add(callback);
     serviceContext.setRedirectUris(redirectUris);
     serviceContext.setIssuer(issuer);
+    serviceContext.setKeyJar(new KeyJar());
+    serviceContext.setClientId(clientId);
+    serviceContext.setClockSkew(10);
+    serviceContext.setBehavior(new RegistrationResponse());
+    serviceContext.getBehavior().getClaims().put("id_token_signed_response_alg", "RS256");
+    serviceContext.getBehavior().getClaims().put("id_token_encrypted_response_alg", "RSA1_5");
+    serviceContext.getBehavior().getClaims().put("id_token_encrypted_response_enc", "A128GCM");
+    serviceContext.getAllow().put("missing_kid", true);
     map.clear();
     map.put("response_type", responseType);
     map.put("scope", scope);
@@ -148,6 +159,24 @@ public class AuthenticationTest extends BaseServiceTest<Authentication> {
     Message storedResponse = state.getItem(stateKey, MessageType.AUTHORIZATION_RESPONSE);
     Assert.assertTrue(storedResponse instanceof AuthenticationResponse);
     Assert.assertTrue(response.getClaims().containsKey("__expires_at"));
+  }
+
+  @Test
+  public void testprepareMessageForVerification() {
+    AuthenticationResponse response = new AuthenticationResponse();
+    service.prepareMessageForVerification(response);
+    Assert.assertEquals(serviceContext.getIssuer(), response.getIssuer());
+    Assert.assertEquals(serviceContext.getClientId(), response.getClientId());
+  }
+  
+  @Test
+  public void testprepareMessageForVerificationNullInput() {
+    AuthenticationResponse response = new AuthenticationResponse();
+    serviceContext.setBehavior(null);
+    serviceContext.getAllow().put("missing_kid", null);
+    service.prepareMessageForVerification(response);
+    Assert.assertEquals(serviceContext.getIssuer(), response.getIssuer());
+    Assert.assertEquals(serviceContext.getClientId(), response.getClientId());
   }
 
 }
