@@ -32,8 +32,7 @@ import org.oidc.msg.Message;
 import org.oidc.msg.oauth2.AccessTokenRequest;
 import org.oidc.msg.oauth2.AccessTokenResponse;
 import org.oidc.msg.oauth2.RefreshAccessTokenRequest;
-import org.oidc.service.AbstractService;
-import org.oidc.service.base.HttpArguments;
+import org.oidc.service.AbstractAuthenticatedService;
 import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
@@ -44,27 +43,33 @@ import org.oidc.service.data.State;
 /**
  * OAUTH2 provider refresh access token service.
  */
-public class RefreshAccessToken extends AbstractService {
+public class RefreshAccessToken extends AbstractAuthenticatedService {
 
+  /**
+   * Constructor.
+   * 
+   * @param serviceContext service context shared by services, must not be null
+   * @param state state database, must not be null
+   * @param serviceConfig service specific configuration
+   *          
+   */
   public RefreshAccessToken(ServiceContext serviceContext, State state,
       ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
-    this.serviceName = ServiceName.REFRESH_ACCESS_TOKEN;
-    this.endpointName = EndpointName.TOKEN;
-    this.requestMessage = new RefreshAccessTokenRequest();
-    this.responseMessage = new AccessTokenResponse();
-    this.isSynchronous = true;
-    this.expectedResponseClass = AccessTokenResponse.class;
-
-    this.preConstructors = (List<RequestArgumentProcessor>) Arrays
+    serviceName = ServiceName.REFRESH_ACCESS_TOKEN;
+    endpointName = EndpointName.TOKEN;
+    requestMessage = new RefreshAccessTokenRequest();
+    responseMessage = new AccessTokenResponse();
+    isSynchronous = true;
+    expectedResponseClass = AccessTokenResponse.class;
+    preConstructors = (List<RequestArgumentProcessor>) Arrays
         .asList((RequestArgumentProcessor) new ExtendRefreshAccessTokenRequestArguments());
-
   }
 
   @Override
   protected ServiceConfig getDefaultServiceConfig() {
     ServiceConfig defaultConfig = new ServiceConfig();
-    defaultConfig.setDefaultAuthenticationMethod(ClientAuthenticationMethod.BEARER_HEADER);
+    defaultConfig.setDefaultAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
     defaultConfig.setHttpMethod(HttpMethod.POST);
     defaultConfig.setSerializationType(SerializationType.URL_ENCODED);
     defaultConfig.setDeSerializationType(SerializationType.JSON);
@@ -75,23 +80,17 @@ public class RefreshAccessToken extends AbstractService {
   @Override
   protected void doUpdateServiceContext(Message response, String stateKey)
       throws MissingRequiredAttributeException, InvalidClaimException {
-    if (responseMessage.getClaims().containsKey("expires_in")) {
-      responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
-          + (long) responseMessage.getClaims().get("expires_in"));
+    if (response.getClaims().containsKey("expires_in")) {
+      response.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
+          + (long) response.getClaims().get("expires_in"));
     }
     getState().storeItem(response, stateKey, MessageType.TOKEN_RESPONSE);
   }
-
-  public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
-      Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
-
-    return httpArguments;
-  }
-
+  
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
       throws RequestArgumentProcessingException {
     return new AccessTokenRequest(requestArguments);
   }
-
+  
 }
