@@ -62,6 +62,9 @@ public class ExtendRefreshAccessTokenRequestArguments extends AbstractRequestArg
     service.getState().extendRequestArgs(args, MessageType.REFRESH_TOKEN_RESPONSE, state,
         new ArrayList<String>(
             service.getRequestMessage().getParameterVerificationDefinitions().keySet()));
+    if (!args.containsKey("grant_type")) {
+      args.put("grant_type", "refresh_token");
+    }
     requestArguments.putAll(args);
   }
 }
