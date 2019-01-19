@@ -64,7 +64,7 @@ public class ExtendRefreshAccessTokenRequestArgumentsTest
     service.getPreConstructorArgs().put("state", "U09NRVJBTkRPTVNUQVRF");
     processor.processRequestArguments(requestArguments, service);
     Assert.assertEquals("U09NRU5FV1JFRlJFU0hUT0tFTg==", requestArguments.get("refresh_token"));
-    Assert.assertEquals(1, requestArguments.size());
+    Assert.assertEquals(2, requestArguments.size());
   }
 
 }
