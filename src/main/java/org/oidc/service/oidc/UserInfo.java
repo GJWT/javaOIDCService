@@ -51,14 +51,22 @@ import org.oidc.service.data.State;
  */
 public class UserInfo extends AbstractService {
 
+  /**
+   * Constructor.
+   * 
+   * @param serviceContext service context shared by services, must not be null
+   * @param state state database, must not be null
+   * @param serviceConfig service specific configuration
+   *          
+   */
   public UserInfo(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
-    this.serviceName = ServiceName.USER_INFO;
-    this.endpointName = EndpointName.USER_INFO;
-    this.requestMessage = new UserInfoRequest();
-    this.responseMessage = new OpenIDSchema();
-    this.expectedResponseClass = OpenIDSchema.class;
-    this.isSynchronous = true;
+    serviceName = ServiceName.USER_INFO;
+    endpointName = EndpointName.USER_INFO;
+    requestMessage = new UserInfoRequest();
+    responseMessage = new OpenIDSchema();
+    expectedResponseClass = OpenIDSchema.class;
+    isSynchronous = true;
   }
   
   @Override
@@ -67,8 +75,6 @@ public class UserInfo extends AbstractService {
     defaultConfig.setDefaultAuthenticationMethod(ClientAuthenticationMethod.BEARER_HEADER);
     defaultConfig.setHttpMethod(HttpMethod.GET);
     defaultConfig.setDeSerializationType(SerializationType.JSON);
-    // TODO: python implementation ensures state parameter availability for postConstructrors.. bit
-    // uncertain if needed.
     defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays
         .asList((RequestArgumentProcessor) new ExtendUserInfoRequestArguments()));
     return defaultConfig;

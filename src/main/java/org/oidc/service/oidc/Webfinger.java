@@ -31,10 +31,10 @@ import org.oidc.msg.Error;
 import org.oidc.msg.ErrorDetails;
 import org.oidc.msg.ErrorType;
 import org.oidc.msg.InvalidClaimException;
-import org.oidc.msg.oidc.JsonResponseDescriptor;
-import org.oidc.msg.oidc.Link;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
+import org.oidc.msg.oidc.JsonResponseDescriptor;
+import org.oidc.msg.oidc.Link;
 import org.oidc.msg.oidc.WebfingerRequest;
 import org.oidc.service.AbstractService;
 import org.oidc.service.base.HttpArguments;
@@ -53,12 +53,20 @@ import org.oidc.service.util.URIUtil;
  */
 public class Webfinger extends AbstractService {
 
+  /**
+   * Constructor.
+   * 
+   * @param serviceContext service context shared by services, must not be null
+   * @param state state database, must be null
+   * @param config service specific configuration
+   *          
+   */
   public Webfinger(ServiceContext serviceContext, State state, ServiceConfig config) {
     super(serviceContext, state, config);
-    this.serviceName = ServiceName.WEBFINGER;
-    this.requestMessage = new WebfingerRequest();
-    this.responseMessage = new JsonResponseDescriptor();
-    this.expectedResponseClass = JsonResponseDescriptor.class;
+    serviceName = ServiceName.WEBFINGER;
+    requestMessage = new WebfingerRequest();
+    responseMessage = new JsonResponseDescriptor();
+    expectedResponseClass = JsonResponseDescriptor.class;
   }
 
   public Webfinger(ServiceContext serviceContext) {
@@ -98,7 +106,7 @@ public class Webfinger extends AbstractService {
               || !serviceConfig.isShouldAllowNonStandardIssuer())) {
             throw new InvalidClaimException("http link not allowed: " + href);
           }
-          this.serviceContext.setIssuer(href);
+          serviceContext.setIssuer(href);
           // pick the first one
           break;
         }
@@ -187,7 +195,7 @@ public class Webfinger extends AbstractService {
     }
     String endpoint = getEndpointWithoutQuery(resource);
     try {
-      httpArguments.setUrl(endpoint + "?" + this.requestMessage.toUrlEncoded());
+      httpArguments.setUrl(endpoint + "?" + requestMessage.toUrlEncoded());
     } catch (SerializationException e) {
       ErrorDetails details = new ErrorDetails(Constants.WEBFINGER_RESOURCE,
           ErrorType.VALUE_NOT_ALLOWED, "Could not serialize the request", e);

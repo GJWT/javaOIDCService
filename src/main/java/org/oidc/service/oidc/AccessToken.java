@@ -45,9 +45,9 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
    */
   public AccessToken(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
-    this.requestMessage = new AccessTokenRequest();
-    this.responseMessage = new AccessTokenResponse();
-    this.expectedResponseClass = AccessTokenResponse.class;
+    requestMessage = new AccessTokenRequest();
+    responseMessage = new AccessTokenResponse();
+    expectedResponseClass = AccessTokenResponse.class;
   }
 
   /** {@inheritDoc} */
@@ -102,7 +102,7 @@ public class AccessToken extends org.oidc.service.oauth2.AccessToken {
       String method = (String) getServiceContext().getBehavior().getClaims()
           .get("token_endpoint_auth_method");
       ClientAuthenticationMethod parsedMethod = ClientAuthenticationMethod.fromClaimValue(method);
-      // We fallback to default method is value is not valid
+      // We fallback to default method if value is not valid
       return parsedMethod != null ? parsedMethod : defaultAuthenticationMethod;
     }
     return defaultAuthenticationMethod;

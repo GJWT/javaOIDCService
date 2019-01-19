@@ -63,12 +63,12 @@ public class Authentication extends AbstractService {
    */
   public Authentication(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
-    this.serviceName = ServiceName.AUTHORIZATION;
-    this.endpointName = EndpointName.AUTHORIZATION;
-    this.requestMessage = new AuthenticationRequest();
-    this.responseMessage = new AuthenticationResponse();
-    this.isSynchronous = false;
-    this.expectedResponseClass = AuthenticationResponse.class;
+    serviceName = ServiceName.AUTHORIZATION;
+    endpointName = EndpointName.AUTHORIZATION;
+    requestMessage = new AuthenticationRequest();
+    responseMessage = new AuthenticationResponse();
+    isSynchronous = false;
+    expectedResponseClass = AuthenticationResponse.class;
   }
 
   @Override

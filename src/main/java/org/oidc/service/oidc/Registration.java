@@ -44,23 +44,29 @@ import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.base.processor.AddClientBehaviourPreference;
 import org.oidc.service.base.processor.AddJwksUriOrJwks;
-import org.oidc.service.base.processor.AddOidcResponseTypes;
+import org.oidc.service.base.processor.AddOidcGrantTypes;
 import org.oidc.service.base.processor.AddPostLogoutRedirectUris;
 import org.oidc.service.base.processor.AddRedirectUris;
 import org.oidc.service.base.processor.AddRequestUri;
 import org.oidc.service.data.State;
 
-
-
 public class Registration extends AbstractService {
 
+  /**
+   * Constructor.
+   * 
+   * @param serviceContext service context shared by services, must not be null
+   * @param state state database, must be null
+   * @param serviceConfig service specific configuration
+   *          
+   */
   public Registration(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
     super(serviceContext, state, serviceConfig);
-    this.serviceName = ServiceName.REGISTRATION;
-    this.endpointName = EndpointName.REGISTRATION;
-    this.requestMessage = new RegistrationRequest();
-    this.responseMessage = new RegistrationResponse();
-    this.expectedResponseClass = RegistrationResponse.class;
+    serviceName = ServiceName.REGISTRATION;
+    endpointName = EndpointName.REGISTRATION;
+    requestMessage = new RegistrationRequest();
+    responseMessage = new RegistrationResponse();
+    expectedResponseClass = RegistrationResponse.class;
   }
 
   @Override
@@ -69,12 +75,12 @@ public class Registration extends AbstractService {
     defaultConfig.setHttpMethod(HttpMethod.POST);
     defaultConfig.setSerializationType(SerializationType.JSON);
     defaultConfig.setDeSerializationType(SerializationType.JSON);
-    defaultConfig.setEndpoint(serviceContext.getEndpoints().get(this.endpointName));
+    defaultConfig.setEndpoint(serviceContext.getEndpoints().get(endpointName));
     defaultConfig.setPreConstructors((List<RequestArgumentProcessor>) Arrays.asList(
         (RequestArgumentProcessor) new AddClientBehaviourPreference(), new AddRedirectUris(),
         new AddRequestUri(), new AddPostLogoutRedirectUris(), new AddJwksUriOrJwks()));
     defaultConfig
-        .setPostConstructors(Arrays.asList((RequestArgumentProcessor) new AddOidcResponseTypes()));
+        .setPostConstructors(Arrays.asList((RequestArgumentProcessor) new AddOidcGrantTypes()));
     return defaultConfig;
   }
 
@@ -105,7 +111,7 @@ public class Registration extends AbstractService {
     getServiceContext()
         .setRegistrationAccessToken((String) response.getClaims().get("registration_access_token"));
     getServiceContext().setRegistrationResponse((RegistrationResponse) response);
-    this.responseMessage = response;
+    responseMessage = response;
     // if behavior is already populated (for instance by ProviderInfoDiscovery), then include all
     // its existing values to the registration response message
     if (getServiceContext().getBehavior() != null) {
@@ -127,6 +133,7 @@ public class Registration extends AbstractService {
     return response;
   }
 
+  /** {@inheritDoc} */
   public HttpArguments finalizeGetRequestParameters(HttpArguments httpArguments,
       Map<String, Object> requestArguments) throws RequestArgumentProcessingException {
 
