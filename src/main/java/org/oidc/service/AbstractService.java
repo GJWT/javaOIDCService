@@ -16,8 +16,6 @@
 
 package org.oidc.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -44,7 +42,6 @@ import org.oidc.service.base.RequestArgumentProcessor;
 import org.oidc.service.base.ServiceConfig;
 import org.oidc.service.base.ServiceContext;
 import org.oidc.service.data.State;
-import org.oidc.service.util.Constants;
 import org.oidc.service.util.ServiceUtil;
 
 /**
@@ -164,10 +161,6 @@ public abstract class AbstractService implements Service {
    * Constants
    */
   private static final String HTTP_METHOD = "httpMethod";
-  /**
-   * Open ID connection provider
-   */
-  protected static final String linkRelationType = Constants.OIDC_ISSUER;
 
   /**
    * @param serviceContext

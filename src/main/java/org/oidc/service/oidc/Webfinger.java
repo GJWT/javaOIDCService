@@ -98,7 +98,7 @@ public class Webfinger extends AbstractService {
 
     for (Link link : links) {
       String rel = (String) link.getClaims().get("rel");
-      if (!Strings.isNullOrEmpty(rel) && rel.equals(linkRelationType)) {
+      if (!Strings.isNullOrEmpty(rel) && rel.equals(Constants.OIDC_ISSUER)) {
         String href = (String) link.getClaims().get("href");
         if (href != null) {
           // allows for non-standard behavior for schema and issuer
@@ -213,7 +213,7 @@ public class Webfinger extends AbstractService {
           new ErrorDetails(Constants.WEBFINGER_RESOURCE, ErrorType.MISSING_REQUIRED_VALUE));
     }
     if (Strings.isNullOrEmpty((String) requestArguments.get(Constants.WEBFINGER_REL))) {
-      requestArguments.put(Constants.WEBFINGER_REL, linkRelationType);
+      requestArguments.put(Constants.WEBFINGER_REL, Constants.OIDC_ISSUER);
     }
     WebfingerRequest message = new WebfingerRequest(requestArguments);
     return message;
