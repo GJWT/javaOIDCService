@@ -164,7 +164,6 @@ public abstract class AbstractService implements Service {
    * Constants
    */
   private static final String HTTP_METHOD = "httpMethod";
-  private static final String AUTHENTICATION_METHOD = "authenticationMethod";
   /**
    * Open ID connection provider
    */
@@ -519,10 +518,7 @@ public abstract class AbstractService implements Service {
     return httpMethod;
   }
 
-  public static String getAuthenticationMethod() {
-    return AUTHENTICATION_METHOD;
-  }
-
+  
   public void setHttpMethod(HttpMethod httpMethod) {
     this.httpMethod = httpMethod;
   }
