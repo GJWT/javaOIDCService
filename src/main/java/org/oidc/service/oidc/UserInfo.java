@@ -117,7 +117,7 @@ public class UserInfo extends AbstractService {
       response.setEncEnc((String) getServiceContext().getBehavior().getClaims()
           .get("userinfo_encrypted_response_enc"));
     }
-    if (getServiceContext().getAllow().containsKey("missing_kid")) {
+    if (getServiceContext().getAllow().get("missing_kid") != null) {
       response.setAllowMissingKid(getServiceContext().getAllow().get("missing_kid"));
     }
     return responseMessage;
@@ -140,8 +140,6 @@ public class UserInfo extends AbstractService {
         throw new InvalidClaimException(String
             .format("expected sub value '%s' but got instead '%s'", expectedSub, receivedSub));
       }
-    } else {
-      // TODO: log warning about not being able to verify sub
     }
     if (!responseMessage.getClaims().containsKey("_claim_sources")
         || !responseMessage.getClaims().containsKey("_claim_names")) {
@@ -161,12 +159,9 @@ public class UserInfo extends AbstractService {
           claimSources.getClaims().get(src)));
       if (claimSource.getClaims().containsKey("JWT")) {
         GenericMessage claimSourcesJwt = new GenericMessage();
-        // TODO verify what is needed to verify aggregated claims
         claimSourcesJwt.fromJwt((String) claimSource.getClaims().get("JWT"),
             getServiceContext().getKeyJar(), "");
         if (claimSourcesJwt.getClaims().containsKey(src) && !"sub".equals(claim)) {
-          // TODO:aggregated claims are copied here to normal claims. Verify that really is
-          // intention.
           responseMessage.getClaims().put(claim, claimSourcesJwt.getClaims().get(src));
         }
       } else if (claimSource.getClaims().containsKey("endpoint")) {
