@@ -28,11 +28,16 @@ import org.oidc.common.EndpointName;
 import org.oidc.common.HttpMethod;
 import org.oidc.common.MissingRequiredAttributeException;
 import org.oidc.common.SerializationType;
+import org.oidc.common.ServiceName;
 import org.oidc.common.UnsupportedSerializationTypeException;
+import org.oidc.msg.DeserializationException;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
 import org.oidc.msg.SerializationException;
+import org.oidc.msg.oauth2.ResponseMessage;
 import org.oidc.msg.oidc.AuthenticationResponse;
+import org.oidc.msg.oidc.GenericMessage;
+import org.oidc.msg.oidc.OpenIDSchema;
 import org.oidc.service.base.HttpArguments;
 import org.oidc.service.base.RequestArgumentProcessingException;
 import org.oidc.service.base.RequestArgumentProcessor;
@@ -185,13 +190,152 @@ public class AbstractServiceTest {
     Assert.assertTrue(service.getPreConstructors().contains(processor));
   }
 
-  // TODO: rest of the setters
+  @Test
+  public void testsetRequestMessage() {
+    GenericMessage message = new GenericMessage();
+    service.setRequestMessage(message);
+    Assert.assertEquals(message, service.getRequestMessage());
+  }
+
+  @Test
+  public void testsetSynchronous() {
+    service.setSynchronous(true);
+    Assert.assertTrue(service.isSynchronous);
+    service.setSynchronous(false);
+    Assert.assertFalse(service.isSynchronous);
+  }
+
+  @Test
+  public void testsetServiceName() {
+    service.setServiceName(ServiceName.ACCESS_TOKEN);
+    Assert.assertEquals(ServiceName.ACCESS_TOKEN, service.getServiceName());
+  }
+
+  @Test
+  public void testsetSerializationType() {
+    service.setSerializationType(SerializationType.JSON);
+    Assert.assertEquals(SerializationType.JSON, service.getSerializationType());
+  }
+
+  @Test
+  public void testsetState() {
+    State state = new InMemoryStateImpl();
+    service.setState(state);
+    Assert.assertEquals(state, service.getState());
+  }
+
+  @Test
+  public void testsetServiceContext() {
+    ServiceContext serviceContext = new ServiceContext();
+    service.setServiceContext(serviceContext);
+    Assert.assertEquals(serviceContext, service.getServiceContext());
+  }
+
+  @Test
+  public void testsetServiceConfig() {
+    ServiceConfig serviceConfig = new ServiceConfig();
+    service.setServiceConfig(serviceConfig);
+    Assert.assertEquals(serviceConfig, service.getServiceConfig());
+  }
+
+  @Test
+  public void testparseResponseJson()
+      throws DeserializationException, InvalidClaimException, SerializationException {
+    GenericMessage msg = new GenericMessage();
+    msg.addClaim("testclaim", "testvalue");
+    service.setDeserializationType(SerializationType.JSON);
+    service.setResponseMessage(new ResponseMessage());
+    Message parsedMsg = service.parseResponse(msg.toJson(), "stateKey");
+    Assert.assertEquals("testvalue", parsedMsg.getClaims().get("testclaim"));
+    Assert.assertEquals("addedvalue", parsedMsg.getClaims().get("addedclaim"));
+  }
+
+  @Test
+  public void testparseResponseError()
+      throws DeserializationException, InvalidClaimException, SerializationException {
+    GenericMessage msg = new GenericMessage();
+    msg.addClaim("error", "errorvalue");
+    service.setDeserializationType(SerializationType.JSON);
+    service.setResponseMessage(new ResponseMessage());
+    Message parsedMsg = service.parseResponse(msg.toJson(), "stateKey");
+    Assert.assertEquals("errorvalue", parsedMsg.getClaims().get("error"));
+  }
+
+  @Test(expected = InvalidClaimException.class)
+  public void testparseInvalidResponseError()
+      throws DeserializationException, InvalidClaimException, SerializationException {
+    GenericMessage msg = new GenericMessage();
+    msg.addClaim("error", 5);
+    service.setDeserializationType(SerializationType.JSON);
+    service.setResponseMessage(new ResponseMessage());
+    Message parsedMsg = service.parseResponse(msg.toJson(), "stateKey");
+    Assert.assertEquals("errorvalue", parsedMsg.getClaims().get("error"));
+  }
+
+  @Test
+  public void testparseResponseUrl()
+      throws DeserializationException, InvalidClaimException, SerializationException {
+    GenericMessage msg = new GenericMessage();
+    msg.addClaim("testclaim", "testvalue");
+    service.setDeserializationType(SerializationType.URL_ENCODED);
+    service.setResponseMessage(new ResponseMessage());
+    Message parsedMsg = service.parseResponse("https://example.com?" + msg.toUrlEncoded(),
+        "stateKey");
+    Assert.assertEquals("testvalue", parsedMsg.getClaims().get("testclaim"));
+    Assert.assertEquals("addedvalue", parsedMsg.getClaims().get("addedclaim"));
+  }
+
+  @Test
+  public void testparseResponseJWT()
+      throws DeserializationException, InvalidClaimException, SerializationException {
+    GenericMessage msg = new GenericMessage();
+    msg.addClaim("sub", "joe");
+    msg.addClaim("testclaim", "testvalue");
+    OpenIDSchema respMsg = new OpenIDSchema();
+    respMsg.setSigAlg("none");
+    service.setResponseMessage(respMsg);
+    service.setDeserializationType(SerializationType.JWT);
+    Message parsedMsg = service
+        .parseResponse(msg.toJwt(null, "none", null, null, null, null, null, null), "stateKey");
+    Assert.assertEquals("testvalue", parsedMsg.getClaims().get("testclaim"));
+    Assert.assertEquals("addedvalue", parsedMsg.getClaims().get("addedclaim"));
+  }
+
+  @Test(expected = InvalidClaimException.class)
+  public void testparseResponseJWTFailVerify()
+      throws DeserializationException, InvalidClaimException, SerializationException {
+    GenericMessage msg = new GenericMessage();
+    msg.addClaim("testclaim", "testvalue");
+    OpenIDSchema respMsg = new OpenIDSchema();
+    respMsg.setSigAlg("none");
+    service.setResponseMessage(respMsg);
+    service.setDeserializationType(SerializationType.JWT);
+    Message parsedMsg = service
+        .parseResponse(msg.toJwt(null, "none", null, null, null, null, null, null), "stateKey");
+  }
+
+  @Test
+  public void testparseResponseJWT2()
+      throws DeserializationException, InvalidClaimException, SerializationException {
+    GenericMessage msg = new GenericMessage();
+    msg.addClaim("sub", "joe");
+    msg.addClaim("testclaim", "testvalue");
+    OpenIDSchema respMsg = new OpenIDSchema();
+    respMsg.setSigAlg("none");
+    service.setResponseMessage(respMsg);
+    // expect JSON but get JWT
+    service.setDeserializationType(SerializationType.JSON);
+    Message parsedMsg = service
+        .parseResponse(msg.toJwt(null, "none", null, null, null, null, null, null), "stateKey");
+    Assert.assertEquals("testvalue", parsedMsg.getClaims().get("testclaim"));
+    Assert.assertEquals("addedvalue", parsedMsg.getClaims().get("addedclaim"));
+  }
 
   public class MockService extends AbstractService {
 
     public MockService(ServiceContext serviceContext, State state, ServiceConfig serviceConfig) {
       super(serviceContext, state, serviceConfig);
-      // TODO Auto-generated constructor stub
+      responseMessage = new GenericMessage();
     }
 
     @Override
@@ -220,6 +364,12 @@ public class AbstractServiceTest {
       requestParams.put("altkey2", "altvalue2");
       serviceConfig.setRequestParameters(requestParams);
       return serviceConfig;
+    }
+
+    public Message postParseResponse(Message responseMessage, String stateKey)
+        throws DeserializationException, InvalidClaimException {
+      responseMessage.addClaim("addedclaim", "addedvalue");
+      return responseMessage;
     }
 
     @Override
