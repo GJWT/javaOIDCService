@@ -70,7 +70,7 @@ public class RefreshAccessToken extends org.oidc.service.oauth2.RefreshAccessTok
       responseMessage.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
           + ((Date) responseMessage.getClaims().get("expires_in")).getTime() / 1000);
     }
-    getState().storeItem(responseMessage, stateKey, MessageType.TOKEN_RESPONSE);
+    getState().storeItem(responseMessage, stateKey, MessageType.REFRESH_TOKEN_RESPONSE);
   }
 
   @Override
