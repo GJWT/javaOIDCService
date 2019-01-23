@@ -185,7 +185,7 @@ public class ServiceContext {
       throws NoSuchAlgorithmException, ValueException, InvalidClaimException {
     MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 
-    if (providerConfigurationResponse.getClaims() != null
+    if (providerConfigurationResponse != null && providerConfigurationResponse.getClaims() != null
         && providerConfigurationResponse.getClaims().get(Constants.ISSUER) != null) {
       messageDigest.update(
           ((String) providerConfigurationResponse.getClaims().get(Constants.ISSUER)).getBytes());
