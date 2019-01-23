@@ -197,7 +197,8 @@ public class AddRequestObject extends AbstractRequestArgumentProcessor {
         String directory = uriBase.substring(service.getServiceContext().getBaseUrl().length());
         createDirectoryIfNotExist(directory, error);
         filename = directory + "/" + Base64.encodeBase64URLSafeString(randomBytes) + ".jwt";
-        requestArguments.put("request_uri", uriBase + filename);
+        requestArguments.put("request_uri",
+            service.getServiceContext().getBaseUrl() + "/" + filename);
       }
       writeJwtToFile(filename, requestObjectJwt, error);
     }
