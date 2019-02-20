@@ -56,6 +56,12 @@ public class ExtendRefreshAccessTokenRequestArguments extends AbstractRequestArg
     }
 
     Map<String, Object> args = new HashMap<String, Object>();
+    service.getState().extendRequestArgs(args, MessageType.AUTHORIZATION_REQUEST, state,
+        new ArrayList<String>(
+            service.getRequestMessage().getParameterVerificationDefinitions().keySet()));
+    service.getState().extendRequestArgs(args, MessageType.AUTHORIZATION_RESPONSE, state,
+        new ArrayList<String>(
+            service.getRequestMessage().getParameterVerificationDefinitions().keySet()));
     service.getState().extendRequestArgs(args, MessageType.TOKEN_RESPONSE, state,
         new ArrayList<String>(
             service.getRequestMessage().getParameterVerificationDefinitions().keySet()));
