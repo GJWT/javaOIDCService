@@ -29,7 +29,6 @@ import org.oidc.common.SerializationType;
 import org.oidc.common.ServiceName;
 import org.oidc.msg.InvalidClaimException;
 import org.oidc.msg.Message;
-import org.oidc.msg.oauth2.AccessTokenRequest;
 import org.oidc.msg.oauth2.AccessTokenResponse;
 import org.oidc.msg.oauth2.RefreshAccessTokenRequest;
 import org.oidc.service.AbstractAuthenticatedService;
@@ -84,13 +83,13 @@ public class RefreshAccessToken extends AbstractAuthenticatedService {
       response.getClaims().put("__expires_at", (System.currentTimeMillis() / 1000)
           + (long) response.getClaims().get("expires_in"));
     }
-    getState().storeItem(response, stateKey, MessageType.TOKEN_RESPONSE);
+    getState().storeItem(response, stateKey, MessageType.REFRESH_TOKEN_RESPONSE);
   }
   
   @Override
   protected Message doConstructRequest(Map<String, Object> requestArguments)
       throws RequestArgumentProcessingException {
-    return new AccessTokenRequest(requestArguments);
+    return new RefreshAccessTokenRequest(requestArguments);
   }
   
 }
